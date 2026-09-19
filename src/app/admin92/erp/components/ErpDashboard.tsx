@@ -822,7 +822,7 @@ export default function ErpDashboard({
 }: Props) {
   const [chartsReady, setChartsReady] = useState(false);
   const [categoriesTab, setCategoriesTab] = useState<"categories" | "history">(
-    "categories",
+    "history",
   );
   const [liveNowMs, setLiveNowMs] = useState(() => Date.now());
   const liveActive = useMemo(
@@ -1036,6 +1036,8 @@ export default function ErpDashboard({
             <WorkCategoriesHistory
               logs={periodLogs}
               icons={workIcons}
+              onPersist={onPersistWorkEditLog}
+              persisting={workEditSaving}
               activeWorkTimer={activeWorkTimer}
               onStartLiveTimer={onStartLiveTimer}
               timerSaving={timerSaving}

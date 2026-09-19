@@ -29,8 +29,12 @@ type Props = {
   persisting?: boolean;
   /** Vista agregada (semana/mes): solo lectura */
   readOnly?: boolean;
-  /** Texto bajo el título; por defecto la fecha del log */
+  /** Texto bajo el título; por defecto la fecha del log. String vacío oculta el renglón. */
   subtitle?: string;
+  /** Ocultar categorías sin horas ni timers (Historial). */
+  hideEmptyCategories?: boolean;
+  /** duration = Categorías; newest = Historial (array se guarda antiguo→nuevo). */
+  timerOrder?: "duration" | "newest";
   icons: Record<WorkCategoryKey, ComponentType<{ className?: string }>>;
   activeWorkTimer?: ErpActiveWorkTimer | null;
   onStartLiveTimer?: (category: WorkCategoryKey, name: string) => Promise<void>;
@@ -72,6 +76,8 @@ export default function WorkCategoriesEditor({
   persisting = false,
   readOnly = false,
   subtitle,
+  hideEmptyCategories = false,
+  timerOrder = "duration",
   icons,
   activeWorkTimer = null,
   onStartLiveTimer,
@@ -95,13 +101,25 @@ export default function WorkCategoriesEditor({
   const work = useMemo(() => normalizeWork(editLog.work), [editLog.work]);
   const workTotal = sumWorkHours(work);
 
-  const categories = WORK_CATEGORY_META.map((c) => ({
-    ...c,
-    hours: work[c.key] ?? 0,
-    timers: (workTimers[c.key] ?? [])
-      .map((timer, index) => ({ timer, index }))
-      .sort((a, b) => b.timer.seconds - a.timer.seconds || a.timer.name.localeCompare(b.timer.name)),
-  }));
+  const categories = WORK_CATEGORY_META.map((c) => {
+    const withIndex = (workTimers[c.key] ?? []).map((timer, index) => ({
+      timer,
+      index,
+    }));
+    const timers =
+      timerOrder === "newest"
+        ? [...withIndex].reverse()
+        : [...withIndex].sort(
+            (a, b) =>
+              b.timer.seconds - a.timer.seconds ||
+              a.timer.name.localeCompare(b.timer.name),
+          );
+    return {
+      ...c,
+      hours: work[c.key] ?? 0,
+      timers,
+    };
+  }).filter((c) => !hideEmptyCategories || c.hours > 0 || c.timers.length > 0);
 
   const timerKey = (category: WorkCategoryKey, index: number) => `${category}:${index}`;
   const orphanKey = (category: WorkCategoryKey) => `${category}:orphan`;
@@ -446,11 +464,13 @@ export default function WorkCategoriesEditor({
 
   return (
     <div className="space-y-3">
-      <p className="text-xs font-medium text-slate-500">
-        {subtitle ??
-          `${formatLocalDate(editLog.date)} · click en un timer para editar`}
-        {!readOnly && persisting ? " · Guardando…" : ""}
-      </p>
+      {subtitle !== "" ? (
+        <p className="text-xs font-medium text-slate-500">
+          {subtitle ??
+            `${formatLocalDate(editLog.date)} · click en un timer para editar`}
+          {!readOnly && persisting ? " · Guardando…" : ""}
+        </p>
+      ) : null}
 
       {categories.map((cat) => {
         const Icon = icons[cat.key];
