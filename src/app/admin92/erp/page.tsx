@@ -6,6 +6,7 @@ import { ArrowLeft, ChevronLeft, ChevronRight, LayoutDashboard, PenLine } from "
 import ErpDashboard from "@/app/admin92/erp/components/ErpDashboard";
 import ErpDayForm from "@/app/admin92/erp/components/ErpDayForm";
 import ErpLiveTimer from "@/app/admin92/erp/components/ErpLiveTimer";
+import ErpNoFumar from "@/app/admin92/erp/components/ErpNoFumar";
 import ErpObservations from "@/app/admin92/erp/components/ErpObservations";
 import ErpPeriodPicker from "@/app/admin92/erp/components/ErpPeriodPicker";
 import ErpReflection from "@/app/admin92/erp/components/ErpReflection";
@@ -445,6 +446,7 @@ export default function ErpPage() {
 
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex rounded-xl border border-slate-200 bg-white p-1 shadow-sm">
+              <ErpNoFumar />
               <ErpObservations />
               <button
                 type="button"
