@@ -6,6 +6,7 @@ import { ArrowLeft, ChevronLeft, ChevronRight, LayoutDashboard, PenLine } from "
 import ErpDashboard from "@/app/admin92/erp/components/ErpDashboard";
 import ErpDayForm from "@/app/admin92/erp/components/ErpDayForm";
 import ErpLiveTimer from "@/app/admin92/erp/components/ErpLiveTimer";
+import ErpEntregables from "@/app/admin92/erp/components/ErpEntregables";
 import ErpNoFumar from "@/app/admin92/erp/components/ErpNoFumar";
 import ErpObservations from "@/app/admin92/erp/components/ErpObservations";
 import ErpPeriodPicker from "@/app/admin92/erp/components/ErpPeriodPicker";
@@ -447,7 +448,7 @@ export default function ErpPage() {
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex rounded-xl border border-slate-200 bg-white p-1 shadow-sm">
               <ErpNoFumar />
-              <ErpObservations />
+              <ErpEntregables />
               <button
                 type="button"
                 onClick={() => setView("dashboard")}
@@ -511,32 +512,35 @@ export default function ErpPage() {
                 ))}
               </div>
 
-              <div className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white px-2 py-1.5 shadow-sm">
-                <button
-                  type="button"
-                  onClick={goPrev}
-                  aria-label="Período anterior"
-                  className="rounded-lg p-1.5 text-slate-500 transition hover:bg-slate-50 hover:text-slate-900 cursor-pointer"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </button>
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white px-2 py-1.5 shadow-sm">
+                  <button
+                    type="button"
+                    onClick={goPrev}
+                    aria-label="Período anterior"
+                    className="rounded-lg p-1.5 text-slate-500 transition hover:bg-slate-50 hover:text-slate-900 cursor-pointer"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </button>
 
-                <ErpPeriodPicker
-                  period={period}
-                  value={selectedDate}
-                  rangeLabel={rangeLabel}
-                  onChange={setSelectedDate}
-                  logsDates={dayLogs.map((log) => log.date)}
-                />
+                  <ErpPeriodPicker
+                    period={period}
+                    value={selectedDate}
+                    rangeLabel={rangeLabel}
+                    onChange={setSelectedDate}
+                    logsDates={dayLogs.map((log) => log.date)}
+                  />
 
-                <button
-                  type="button"
-                  onClick={goNext}
-                  aria-label="Período siguiente"
-                  className="rounded-lg p-1.5 text-slate-500 transition hover:bg-slate-50 hover:text-slate-900 cursor-pointer"
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </button>
+                  <button
+                    type="button"
+                    onClick={goNext}
+                    aria-label="Período siguiente"
+                    className="rounded-lg p-1.5 text-slate-500 transition hover:bg-slate-50 hover:text-slate-900 cursor-pointer"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
+                <ErpObservations />
               </div>
             </div>
 
