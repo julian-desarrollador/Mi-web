@@ -168,24 +168,18 @@ export function parseEntregableInput(
     const description = parseDescription(body.description);
     if (isError(description)) return { ok: false, error: description.error };
     value.description = description;
-  } else if (mode === "create") {
-    value.description = null;
   }
 
   if (mode === "create" || has("dueOn")) {
     const dueOn = parseDueOn(body.dueOn);
     if (isError(dueOn)) return { ok: false, error: dueOn.error };
     value.dueOn = dueOn;
-  } else if (mode === "create") {
-    value.dueOn = null;
   }
 
   if (mode === "create" || has("dayPart")) {
     const dayPart = parseDayPart(body.dayPart);
     if (isError(dayPart)) return { ok: false, error: dayPart.error };
     value.dayPart = dayPart;
-  } else if (mode === "create") {
-    value.dayPart = null;
   }
 
   if (mode === "create" || has("status")) {

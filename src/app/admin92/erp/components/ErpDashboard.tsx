@@ -57,6 +57,7 @@ import {
 import { formatHoursAsHm, formatMinutesAsHm, emptyMembershipMonth, emptyDayLog, elapsedActiveSeconds, normalizeActiveWorkTimer, sumWorkHours, type ErpActiveWorkTimer, type ErpDayLog, type ErpMembershipMonth, type ErpMembershipServiceKey, type WorkCategoryKey } from "@/app/admin92/erp/lib/erpTypes";
 import { formatCurrency, formatLocalDate, formatMonthLabel, MONTH_NAMES, todayYmd } from "@/app/admin92/contabilidad/lib/utils";
 import { formatSecondsAsClock } from "@/app/admin92/erp/lib/parseWorkTimersPaste";
+import ErpObservations from "@/app/admin92/erp/components/ErpObservations";
 import WorkCategoriesEditor from "@/app/admin92/erp/components/WorkCategoriesEditor";
 import WorkCategoriesHistory from "@/app/admin92/erp/components/WorkCategoriesHistory";
 
@@ -1047,15 +1048,17 @@ export default function ErpDashboard({
       </section>
 
       <section>
-        <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.18em] text-blue-600">
-              <Sparkles className="h-3.5 w-3.5" />
-              Rendimiento
-            </p>
-            <h2 className="mt-1 text-xl font-bold text-slate-950 sm:text-2xl">{title}</h2>
-            <p className="mt-1 text-xs text-slate-400">{rangeLabel}</p>
+        <div className="mb-4">
+          <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.18em] text-blue-600">
+            <Sparkles className="h-3.5 w-3.5" />
+            Rendimiento
+          </p>
+          <div className="mt-1 flex items-center justify-between gap-3">
+            <h2 className="text-xl font-bold text-slate-950 sm:text-2xl">{title}</h2>
+            <ErpObservations />
           </div>
+          <div className="mt-1 flex flex-wrap items-center justify-between gap-3">
+            <p className="text-xs text-slate-400">{rangeLabel}</p>
           {overall === null ? (
             <div className="text-sm font-medium text-slate-400">{emptyPreviousLabel}</div>
           ) : (
@@ -1073,6 +1076,7 @@ export default function ErpDashboard({
               {overall}%
             </div>
           )}
+          </div>
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">

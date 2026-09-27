@@ -8,7 +8,6 @@ import ErpDayForm from "@/app/admin92/erp/components/ErpDayForm";
 import ErpLiveTimer from "@/app/admin92/erp/components/ErpLiveTimer";
 import ErpEntregables from "@/app/admin92/erp/components/ErpEntregables";
 import ErpNoFumar from "@/app/admin92/erp/components/ErpNoFumar";
-import ErpObservations from "@/app/admin92/erp/components/ErpObservations";
 import ErpPeriodPicker from "@/app/admin92/erp/components/ErpPeriodPicker";
 import ErpReflection from "@/app/admin92/erp/components/ErpReflection";
 import {
@@ -512,8 +511,7 @@ export default function ErpPage() {
                 ))}
               </div>
 
-              <div className="flex flex-wrap items-center gap-2">
-                <div className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white px-2 py-1.5 shadow-sm">
+              <div className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white px-2 py-1.5 shadow-sm">
                   <button
                     type="button"
                     onClick={goPrev}
@@ -540,8 +538,6 @@ export default function ErpPage() {
                     <ChevronRight className="h-4 w-4" />
                   </button>
                 </div>
-                <ErpObservations />
-              </div>
             </div>
 
             <ErpReflection />
