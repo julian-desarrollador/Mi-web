@@ -20,7 +20,18 @@ function ymdFromParts(y: number, m: number, d: number): string {
   return `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
 }
 
-function popoverPosition(anchor: DOMRect): { top: number; left: number } {
+function popoverPosition(
+  anchor: DOMRect,
+  placement: "anchor" | "center",
+): { top: number; left: number } {
+  if (placement === "center") {
+    const left = Math.max(8, (window.innerWidth - POPOVER_WIDTH) / 2);
+    const top = Math.max(8, (window.innerHeight - POPOVER_HEIGHT) / 2);
+    return {
+      top: Math.min(top, Math.max(8, window.innerHeight - POPOVER_HEIGHT - 8)),
+      left: Math.min(left, Math.max(8, window.innerWidth - POPOVER_WIDTH - 8)),
+    };
+  }
   let left = anchor.left;
   if (left + POPOVER_WIDTH > window.innerWidth - 8) {
     left = Math.max(8, window.innerWidth - POPOVER_WIDTH - 8);
@@ -77,6 +88,7 @@ type Props = {
   "aria-label"?: string;
   allowClear?: boolean;
   placeholder?: string;
+  placement?: "anchor" | "center";
 };
 
 export default function DatePickerField({
@@ -90,6 +102,7 @@ export default function DatePickerField({
   "aria-label": ariaLabel,
   allowClear = false,
   placeholder = "Elegir fecha",
+  placement = "anchor",
 }: Props) {
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -122,7 +135,7 @@ export default function DatePickerField({
     const updatePos = () => {
       const el = rootRef.current;
       if (!el) return;
-      setPos(popoverPosition(el.getBoundingClientRect()));
+      setPos(popoverPosition(el.getBoundingClientRect(), placement));
     };
     updatePos();
     window.addEventListener("scroll", updatePos, true);
@@ -131,7 +144,7 @@ export default function DatePickerField({
       window.removeEventListener("scroll", updatePos, true);
       window.removeEventListener("resize", updatePos);
     };
-  }, [open]);
+  }, [open, placement]);
 
   useEffect(() => {
     if (!open) return;
@@ -282,7 +295,7 @@ export default function DatePickerField({
           }
           onFocus?.();
           const el = rootRef.current;
-          if (el) setPos(popoverPosition(el.getBoundingClientRect()));
+          if (el) setPos(popoverPosition(el.getBoundingClientRect(), placement));
           setOpen(true);
         }}
         className={`inline-flex items-center gap-1.5 text-left text-slate-800 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${stretch ? "w-full" : ""} ${className}`}

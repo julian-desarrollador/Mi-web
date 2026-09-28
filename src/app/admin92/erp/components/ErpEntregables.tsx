@@ -1,7 +1,22 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Package, Plus, Trash2, X } from "lucide-react";
+import {
+  closestCenter,
+  DndContext,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { Check, ChevronRight, GripVertical, Package, Plus, Trash2, X } from "lucide-react";
 import DatePickerField from "@/app/admin92/contabilidad/components/DatePickerField";
 import {
   ENTREGABLE_DAY_PART_LABEL,
@@ -13,6 +28,7 @@ import {
   type EntregableStatus,
   type ErpEntregable,
   type ErpEntregableBlock,
+  type ErpEntregableSubtask,
 } from "@/app/admin92/erp/lib/erpEntregables";
 
 type TaskDraft = {
@@ -139,6 +155,407 @@ function StatusButtons({
   );
 }
 
+function ConfirmDeleteDialog({
+  title,
+  name,
+  busy,
+  onCancel,
+  onConfirm,
+}: {
+  title: string;
+  name: string;
+  busy?: boolean;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      event.stopPropagation();
+      onCancel();
+    };
+    document.addEventListener("keydown", onKey, true);
+    return () => document.removeEventListener("keydown", onKey, true);
+  }, [onCancel]);
+
+  return (
+    <div
+      className="fixed inset-0 z-[90] flex items-center justify-center bg-neutral-950/45 p-4"
+      role="presentation"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onCancel();
+      }}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+        className="w-full max-w-sm rounded-2xl border border-[#b7cce4] bg-[#e4eef8] p-5 shadow-[0_24px_60px_rgba(15,23,42,0.22)]"
+      >
+        <h3 className="text-base font-semibold text-[#0f2744]">{title}</h3>
+        <p className="mt-1.5 text-sm leading-relaxed text-[#3d5270]">
+          ¿Eliminar <span className="font-semibold text-[#0f2744]">“{name}”</span>? Esta acción no
+          se puede deshacer.
+        </p>
+        <div className="mt-5 flex justify-end gap-2">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="rounded-xl border border-[#c5d4e8] bg-white px-3.5 py-2 text-sm font-semibold text-[#3d5270] hover:bg-[#e4eef8] cursor-pointer"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            disabled={busy}
+            onClick={onConfirm}
+            className="rounded-xl bg-rose-600 px-3.5 py-2 text-sm font-semibold text-white hover:bg-rose-700 cursor-pointer disabled:opacity-50"
+          >
+            Eliminar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SortableSubtaskRow({
+  row,
+  disabled,
+  dragDisabled,
+  editing,
+  editingTitle,
+  onToggle,
+  onStartEdit,
+  onEditingTitle,
+  onCommitTitle,
+  onCancelEdit,
+  onDueChange,
+  onRemove,
+}: {
+  row: ErpEntregableSubtask;
+  disabled: boolean;
+  dragDisabled: boolean;
+  editing: boolean;
+  editingTitle: string;
+  onToggle: () => void;
+  onStartEdit: () => void;
+  onEditingTitle: (title: string) => void;
+  onCommitTitle: () => void;
+  onCancelEdit: () => void;
+  onDueChange: (dueOn: string) => void;
+  onRemove: () => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: row.id,
+    disabled: dragDisabled,
+  });
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  return (
+    <li
+      ref={setNodeRef}
+      style={style}
+      className={`flex items-start gap-2 ${isDragging ? "relative z-10 rounded-md bg-white" : ""}`}
+    >
+      <button
+        type="button"
+        aria-label={`Reordenar ${row.title}`}
+        title="Arrastrá para reordenar"
+        disabled={dragDisabled}
+        className={`mt-0.5 shrink-0 rounded p-0.5 text-[#3d5270] touch-none select-none ${
+          dragDisabled
+            ? "cursor-not-allowed opacity-40"
+            : "cursor-grab hover:bg-[#e4eef8] hover:text-[#1d4e89] active:cursor-grabbing"
+        }`}
+        {...attributes}
+        {...listeners}
+      >
+        <GripVertical className="h-3.5 w-3.5" />
+      </button>
+      <button
+        type="button"
+        role="checkbox"
+        aria-checked={row.done}
+        aria-label={row.done ? `Marcar pendiente ${row.title}` : `Marcar hecha ${row.title}`}
+        disabled={disabled}
+        onClick={onToggle}
+        className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border cursor-pointer disabled:opacity-50 ${
+          row.done
+            ? "border-green-700 bg-green-700 text-white"
+            : "border-[#1d4e89] bg-white text-[#1d4e89]"
+        }`}
+      >
+        {row.done ? <Check className="h-3 w-3" strokeWidth={3} /> : null}
+      </button>
+      <div className="min-w-0 flex-1">
+        {editing ? (
+          <input
+            value={editingTitle}
+            autoFocus
+            aria-label={`Título de ${row.title}`}
+            onChange={(event) => onEditingTitle(event.target.value)}
+            onBlur={onCommitTitle}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                event.preventDefault();
+                event.currentTarget.blur();
+              }
+              if (event.key === "Escape") {
+                event.preventDefault();
+                event.stopPropagation();
+                onCancelEdit();
+              }
+            }}
+            className="w-full rounded-md border border-[#c5d4e8] bg-white px-2 py-0.5 text-sm text-[#0f2744]"
+          />
+        ) : (
+          <button
+            type="button"
+            onClick={onStartEdit}
+            className={`block w-full cursor-pointer whitespace-normal break-words text-left text-sm ${
+              row.done ? "text-[#3d5270] line-through" : "text-[#0f2744]"
+            }`}
+          >
+            {row.title}
+          </button>
+        )}
+        <p className="text-[11px] text-[#3d5270]">Cargada {formatCreatedDay(row.createdAt)}</p>
+      </div>
+      <div className="flex shrink-0 flex-col items-end gap-1.5">
+        <span className="text-[11px] font-medium text-[#3d5270]">Entrega</span>
+        <DatePickerField
+          value={row.dueOn ?? ""}
+          onChange={onDueChange}
+          disabled={disabled}
+          allowClear
+          placeholder="Sin fecha"
+          aria-label={`Entrega de ${row.title}`}
+          placement="center"
+          className="rounded-md border border-[#c5d4e8] bg-white px-1.5 py-0.5 text-xs font-semibold text-[#1d4e89]"
+        />
+      </div>
+      <button
+        type="button"
+        disabled={disabled}
+        aria-label={`Quitar ${row.title}`}
+        onClick={onRemove}
+        className="rounded-md p-1 text-[#3d5270] hover:text-rose-600 cursor-pointer disabled:opacity-50"
+      >
+        <Trash2 className="h-3.5 w-3.5" />
+      </button>
+    </li>
+  );
+}
+
+function TaskSubtasks({
+  item,
+  disabled,
+  onSave,
+}: {
+  item: ErpEntregable;
+  disabled?: boolean;
+  onSave: (subtasks: ErpEntregableSubtask[]) => Promise<ErpEntregable | null>;
+}) {
+  const subtasks = item.subtasks ?? [];
+  const [draftTitle, setDraftTitle] = useState("");
+  const [draftDue, setDraftDue] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingTitle, setEditingTitle] = useState("");
+  const [expanded, setExpanded] = useState(false);
+  const [pending, setPending] = useState<ErpEntregableSubtask[] | null>(null);
+  const [subtaskToDelete, setSubtaskToDelete] = useState<ErpEntregableSubtask | null>(null);
+  const list = pending ?? subtasks;
+  const doneCount = list.filter((row) => row.done).length;
+  const busy = useRef(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+  );
+
+  useEffect(() => {
+    setPending(null);
+  }, [item.updatedAt]);
+
+  useEffect(() => {
+    if (!expanded) return;
+    const onMouseDown = (event: MouseEvent) => {
+      const target = event.target;
+      if (!(target instanceof Node)) return;
+      if (target instanceof Element && target.closest('[aria-label="Elegir fecha"]')) return;
+      if (rootRef.current?.contains(target)) return;
+      setExpanded(false);
+    };
+    document.addEventListener("mousedown", onMouseDown);
+    return () => document.removeEventListener("mousedown", onMouseDown);
+  }, [expanded]);
+
+  const save = async (next: ErpEntregableSubtask[]) => {
+    if (busy.current || disabled) return null;
+    busy.current = true;
+    try {
+      return await onSave(next);
+    } finally {
+      busy.current = false;
+    }
+  };
+
+  const addSubtask = async () => {
+    const title = draftTitle.trim();
+    if (!title || disabled) return;
+    const saved = await save([
+      ...list,
+      {
+        id: crypto.randomUUID(),
+        title,
+        done: false,
+        dueOn: draftDue || null,
+        createdAt: new Date().toISOString(),
+      },
+    ]);
+    if (saved) {
+      setDraftTitle("");
+      setDraftDue("");
+    }
+  };
+
+  const commitTitle = (id: string) => {
+    const title = editingTitle.trim();
+    setEditingId(null);
+    if (!title) return;
+    const current = list.find((row) => row.id === id);
+    if (!current || current.title === title) return;
+    void save(list.map((row) => (row.id === id ? { ...row, title } : row)));
+  };
+
+  const onDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const oldIndex = list.findIndex((row) => row.id === active.id);
+    const newIndex = list.findIndex((row) => row.id === over.id);
+    if (oldIndex < 0 || newIndex < 0) return;
+    const next = arrayMove(list, oldIndex, newIndex);
+    setPending(next);
+    void save(next).then((saved) => {
+      if (!saved) setPending(null);
+    });
+  };
+
+  return (
+    <div ref={rootRef} className="mt-2 space-y-1.5">
+      <button
+        type="button"
+        aria-expanded={expanded}
+        onClick={() => setExpanded((value) => !value)}
+        className="inline-flex items-center gap-1 rounded-md px-1 py-0.5 text-[11px] font-semibold text-[#1d4e89] hover:bg-[#e4eef8] cursor-pointer"
+      >
+        <ChevronRight className={`h-3.5 w-3.5 ${expanded ? "rotate-90" : ""}`} />
+        Subtareas
+        {list.length > 0 ? (
+          <span className="font-medium text-[#3d5270]">
+            {doneCount}/{list.length}
+          </span>
+        ) : null}
+      </button>
+      {expanded ? (
+      <>
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+        <SortableContext items={list.map((row) => row.id)} strategy={verticalListSortingStrategy}>
+          <ul className="space-y-1.5">
+            {list.map((row) => (
+              <SortableSubtaskRow
+                key={row.id}
+                row={row}
+                disabled={Boolean(disabled)}
+                dragDisabled={Boolean(disabled) || list.length < 2}
+                editing={editingId === row.id}
+                editingTitle={editingTitle}
+                onToggle={() => {
+                  void save(
+                    list.map((entry) =>
+                      entry.id === row.id ? { ...entry, done: !entry.done } : entry,
+                    ),
+                  );
+                }}
+                onStartEdit={() => {
+                  setEditingId(row.id);
+                  setEditingTitle(row.title);
+                }}
+                onEditingTitle={setEditingTitle}
+                onCommitTitle={() => commitTitle(row.id)}
+                onCancelEdit={() => setEditingId(null)}
+                onDueChange={(dueOn) => {
+                  void save(
+                    list.map((entry) =>
+                      entry.id === row.id ? { ...entry, dueOn: dueOn || null } : entry,
+                    ),
+                  );
+                }}
+                onRemove={() => setSubtaskToDelete(row)}
+              />
+            ))}
+          </ul>
+        </SortableContext>
+      </DndContext>
+      <div className="flex items-center gap-2">
+        <input
+          value={draftTitle}
+          disabled={disabled}
+          onChange={(event) => setDraftTitle(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              event.preventDefault();
+              void addSubtask();
+            }
+          }}
+          placeholder="Subtarea"
+          aria-label="Nueva subtarea"
+          className="min-w-0 flex-1 rounded-md border border-[#c5d4e8] bg-white px-2 py-1 text-sm text-[#0f2744] placeholder:text-[#3d5270]"
+        />
+        <DatePickerField
+          value={draftDue}
+          onChange={setDraftDue}
+          disabled={disabled}
+          allowClear
+          placeholder="Sin fecha"
+          aria-label="Entrega de la subtarea"
+          placement="center"
+          className="rounded-md border border-[#c5d4e8] bg-white px-1.5 py-1 text-xs font-semibold text-[#1d4e89]"
+        />
+        <button
+          type="button"
+          disabled={disabled || !draftTitle.trim()}
+          onClick={() => void addSubtask()}
+          aria-label="Agregar subtarea"
+          className="rounded-md border border-[#1d4e89] bg-[#1d4e89] p-1 text-white hover:bg-[#163d6b] cursor-pointer disabled:opacity-50"
+        >
+          <Plus className="h-3.5 w-3.5" />
+        </button>
+      </div>
+      </>
+      ) : null}
+      {subtaskToDelete ? (
+        <ConfirmDeleteDialog
+          title="Eliminar subtarea"
+          name={subtaskToDelete.title}
+          busy={disabled}
+          onCancel={() => setSubtaskToDelete(null)}
+          onConfirm={() => {
+            const target = subtaskToDelete;
+            void save(list.filter((entry) => entry.id !== target.id)).then((saved) => {
+              if (saved) setSubtaskToDelete(null);
+            });
+          }}
+        />
+      ) : null}
+    </div>
+  );
+}
+
 export default function ErpEntregables() {
   const [open, setOpen] = useState(false);
   const [blocks, setBlocks] = useState<ErpEntregableBlock[]>([]);
@@ -152,9 +569,12 @@ export default function ErpEntregables() {
   const [composerOpen, setComposerOpen] = useState<Record<string, boolean>>({});
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editDraft, setEditDraft] = useState<TaskDraft | null>(null);
+  const [taskToDelete, setTaskToDelete] = useState<ErpEntregable | null>(null);
   const editingIdRef = useRef<string | null>(null);
   const editDraftRef = useRef<TaskDraft | null>(null);
   const createDraftsRef = useRef<Record<string, TaskDraft>>({});
+  const composerRefs = useRef(new Map<string, HTMLDivElement>());
+  const editFormRef = useRef<HTMLLIElement | null>(null);
 
   const updateEditDraft = (patch: Partial<TaskDraft>) => {
     const prev = editDraftRef.current;
@@ -182,7 +602,69 @@ export default function ErpEntregables() {
 
   useEffect(() => {
     if (!open) return;
+    const scrollY = window.scrollY;
+    const prevBodyOverflow = document.body.style.overflow;
+    const prevHtmlOverflow = document.documentElement.style.overflow;
+    const prevBodyPosition = document.body.style.position;
+    const prevBodyTop = document.body.style.top;
+    const prevBodyLeft = document.body.style.left;
+    const prevBodyRight = document.body.style.right;
+    const prevBodyWidth = document.body.style.width;
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.left = "0";
+    document.body.style.right = "0";
+    document.body.style.width = scrollbarWidth > 0 ? `calc(100% - ${scrollbarWidth}px)` : "100%";
+
+    return () => {
+      document.body.style.overflow = prevBodyOverflow;
+      document.documentElement.style.overflow = prevHtmlOverflow;
+      document.body.style.position = prevBodyPosition;
+      document.body.style.top = prevBodyTop;
+      document.body.style.left = prevBodyLeft;
+      document.body.style.right = prevBodyRight;
+      document.body.style.width = prevBodyWidth;
+      window.scrollTo(0, scrollY);
+    };
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
     void loadBlocks();
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onMouseDown = (event: MouseEvent) => {
+      const target = event.target;
+      if (!(target instanceof Node)) return;
+      if (target instanceof Element && target.closest('[aria-label="Elegir fecha"]')) return;
+
+      const editForm = editFormRef.current;
+      if (editingIdRef.current && editForm && !editForm.contains(target)) {
+        closeEdit();
+      }
+
+      setComposerOpen((prev) => {
+        const openIds = Object.keys(prev).filter((id) => prev[id]);
+        if (openIds.length === 0) return prev;
+        let changed = false;
+        const next = { ...prev };
+        for (const id of openIds) {
+          const node = composerRefs.current.get(id);
+          if (node?.contains(target)) continue;
+          next[id] = false;
+          changed = true;
+        }
+        return changed ? next : prev;
+      });
+    };
+    document.addEventListener("mousedown", onMouseDown);
+    return () => document.removeEventListener("mousedown", onMouseDown);
   }, [open]);
 
   const loadBlocks = async () => {
@@ -368,8 +850,6 @@ export default function ErpEntregables() {
   };
 
   const removeItem = async (item: ErpEntregable) => {
-    const ok = window.confirm(`¿Eliminar “${item.title}”?`);
-    if (!ok) return;
     setSaving(true);
     setError(null);
     try {
@@ -389,6 +869,7 @@ export default function ErpEntregables() {
       setError(err instanceof Error ? err.message : "No se pudo eliminar la tarea.");
     } finally {
       setSaving(false);
+      setTaskToDelete(null);
     }
   };
 
@@ -414,7 +895,7 @@ export default function ErpEntregables() {
 
       {open ? (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/45 p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center overscroll-none bg-neutral-950/45 p-4"
           role="presentation"
           onMouseDown={(event) => {
             if (event.target === event.currentTarget) setOpen(false);
@@ -512,7 +993,8 @@ export default function ErpEntregables() {
                           editingId === item._id && editDraft ? (
                             <li
                               key={item._id}
-                              className={`space-y-2 rounded-lg border bg-[radial-gradient(black,transparent)] p-3 ${taskBorderClass(editDraft.status)}`}
+                              ref={editFormRef}
+                              className={`space-y-2 rounded-lg border max-md:bg-white md:bg-[radial-gradient(black,transparent)] p-3 ${taskBorderClass(editDraft.status)}`}
                             >
                               <input
                                 value={editDraft.title}
@@ -529,7 +1011,7 @@ export default function ErpEntregables() {
                                 placeholder="Descripción (opcional)"
                                 className="w-full resize-y rounded-lg border border-[#c5d4e8] bg-white px-2.5 py-1.5 text-sm text-[#0f2744]"
                               />
-                              <div className="space-y-1">
+                              <div className="flex items-center gap-3">
                                 <span className="text-[11px] font-medium text-[#3d5270]">Entrega</span>
                                 <DatePickerField
                                   value={editDraft.dueOn}
@@ -537,6 +1019,7 @@ export default function ErpEntregables() {
                                   allowClear
                                   placeholder="Sin fecha de entrega"
                                   aria-label="Entrega"
+                                  placement="center"
                                   className="rounded-lg border border-[#c5d4e8] bg-white px-2.5 py-1.5 text-sm text-[#0f2744]"
                                 />
                               </div>
@@ -549,27 +1032,11 @@ export default function ErpEntregables() {
                                 onChange={(status) => updateEditDraft({ status })}
                                 disabled={saving}
                               />
-                              {blocks.length > 1 ? (
-                                <div className="flex flex-wrap items-center gap-1">
-                                  <span className="text-[11px] font-medium text-[#3d5270]">
-                                    Bloque
-                                  </span>
-                                  {blocks.map((target) => (
-                                    <button
-                                      key={target._id}
-                                      type="button"
-                                      onClick={() => updateEditDraft({ blockId: target._id })}
-                                      className={`rounded-md border px-2 py-1 text-[11px] font-semibold cursor-pointer ${
-                                        editDraft.blockId === target._id
-                                          ? "border-[#1d4e89] bg-[#1d4e89] text-white"
-                                          : "border-[#c5d4e8] bg-white text-[#3d5270]"
-                                      }`}
-                                    >
-                                      {target.name}
-                                    </button>
-                                  ))}
-                                </div>
-                              ) : null}
+                              <TaskSubtasks
+                                item={item}
+                                disabled={saving}
+                                onSave={(subtasks) => patchItem(item._id, { subtasks })}
+                              />
                               <div className="flex justify-end gap-2">
                                 <button
                                   type="button"
@@ -591,7 +1058,7 @@ export default function ErpEntregables() {
                           ) : (
                             <li
                               key={item._id}
-                              className={`rounded-lg border bg-[radial-gradient(black,transparent)] px-3 py-2 ${taskBorderClass(item.status)}`}
+                              className={`rounded-lg border max-md:bg-white md:bg-[radial-gradient(black,transparent)] px-3 py-2 ${taskBorderClass(item.status)}`}
                             >
                               <div className="flex items-start gap-2">
                                 <button
@@ -637,7 +1104,7 @@ export default function ErpEntregables() {
                                 <div className="flex shrink-0 items-center gap-1">
                                   <button
                                     type="button"
-                                    onClick={() => void removeItem(item)}
+                                    onClick={() => setTaskToDelete(item)}
                                     disabled={saving}
                                     aria-label={`Eliminar ${item.title}`}
                                     className="rounded-md p-1 text-[#3d5270] hover:text-rose-600 cursor-pointer disabled:opacity-50"
@@ -646,6 +1113,11 @@ export default function ErpEntregables() {
                                   </button>
                                 </div>
                               </div>
+                              <TaskSubtasks
+                                item={item}
+                                disabled={saving}
+                                onSave={(subtasks) => patchItem(item._id, { subtasks })}
+                              />
                               <div className="mt-2">
                                 <StatusButtons
                                   value={item.status}
@@ -663,7 +1135,13 @@ export default function ErpEntregables() {
                     )}
 
                     {composerOpen[block._id] ? (
-                    <div className="space-y-2 rounded-lg border border-dashed border-[#c5d4e8] bg-[#f4f8fc] p-3">
+                    <div
+                      ref={(node) => {
+                        if (node) composerRefs.current.set(block._id, node);
+                        else composerRefs.current.delete(block._id);
+                      }}
+                      className="space-y-2 rounded-lg border border-dashed border-[#c5d4e8] bg-[#f4f8fc] p-3"
+                    >
                       <input
                         value={draft.title}
                         onChange={(event) => setDraft({ title: event.target.value })}
@@ -685,7 +1163,7 @@ export default function ErpEntregables() {
                       />
                       <div className="flex flex-wrap items-end justify-between gap-2">
                         <div className="space-y-2">
-                          <div className="space-y-1">
+                          <div className="flex items-center gap-3">
                             <span className="text-[11px] font-medium text-[#3d5270]">Entrega</span>
                             <DatePickerField
                               value={draft.dueOn}
@@ -693,6 +1171,7 @@ export default function ErpEntregables() {
                               allowClear
                               placeholder="Sin fecha de entrega"
                               aria-label="Entrega"
+                              placement="center"
                               className="rounded-lg border border-[#c5d4e8] bg-white px-2.5 py-1.5 text-sm text-[#0f2744]"
                             />
                           </div>
@@ -770,6 +1249,15 @@ export default function ErpEntregables() {
               </button>
             </div>
           </article>
+          {taskToDelete ? (
+            <ConfirmDeleteDialog
+              title="Eliminar tarea"
+              name={taskToDelete.title}
+              busy={saving}
+              onCancel={() => setTaskToDelete(null)}
+              onConfirm={() => void removeItem(taskToDelete)}
+            />
+          ) : null}
         </div>
       ) : null}
     </>

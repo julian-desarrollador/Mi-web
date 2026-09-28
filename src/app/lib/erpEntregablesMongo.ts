@@ -8,6 +8,7 @@ import {
   type ErpEntregableBlock,
   type ErpEntregableBlockInput,
   type ErpEntregableInput,
+  type ErpEntregableSubtask,
 } from "@/app/admin92/erp/lib/erpEntregables";
 
 type BlockDoc = {
@@ -26,6 +27,7 @@ type ItemDoc = {
   dueOn: string | null;
   dayPart: EntregableDayPart | null;
   status: EntregableStatus;
+  subtasks?: ErpEntregableSubtask[];
   createdAt: Date;
   updatedAt: Date;
 };
@@ -60,6 +62,24 @@ async function getCollections() {
   return { blocks, items };
 }
 
+function toSubtasks(value: unknown): ErpEntregableSubtask[] {
+  if (!Array.isArray(value)) return [];
+  const rows: ErpEntregableSubtask[] = [];
+  for (const row of value) {
+    if (!row || typeof row !== "object") continue;
+    const doc = row as Partial<ErpEntregableSubtask>;
+    if (typeof doc.id !== "string" || typeof doc.title !== "string") continue;
+    rows.push({
+      id: doc.id,
+      title: doc.title,
+      done: doc.done === true,
+      dueOn: typeof doc.dueOn === "string" && doc.dueOn ? doc.dueOn : null,
+      createdAt: typeof doc.createdAt === "string" ? doc.createdAt : "",
+    });
+  }
+  return rows;
+}
+
 function toItem(doc: WithId<ItemDoc>): ErpEntregable {
   return {
     _id: doc._id.toString(),
@@ -69,6 +89,7 @@ function toItem(doc: WithId<ItemDoc>): ErpEntregable {
     dueOn: doc.dueOn ?? null,
     dayPart: doc.dayPart ?? null,
     status: doc.status,
+    subtasks: toSubtasks(doc.subtasks),
     createdAt: doc.createdAt.toISOString(),
     updatedAt: doc.updatedAt.toISOString(),
   };
@@ -155,6 +176,7 @@ export async function insertEntregable(input: ErpEntregableInput): Promise<ErpEn
     dueOn: input.dueOn,
     dayPart: input.dayPart,
     status: input.status,
+    subtasks: input.subtasks,
     createdAt: now,
     updatedAt: now,
   };
@@ -180,6 +202,7 @@ export async function updateEntregable(
   if (input.dueOn !== undefined) updates.dueOn = input.dueOn;
   if (input.dayPart !== undefined) updates.dayPart = input.dayPart;
   if (input.status !== undefined) updates.status = input.status;
+  if (input.subtasks !== undefined) updates.subtasks = input.subtasks;
 
   const result = await items.findOneAndUpdate(
     { _id: new ObjectId(id) },

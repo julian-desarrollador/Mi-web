@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
     if (!parsed.ok) {
       return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
-    const { blockId, title, description, dueOn, dayPart, status } = parsed.value;
+    const { blockId, title, description, dueOn, dayPart, status, subtasks } = parsed.value;
     if (!blockId || !title || !status) {
       return NextResponse.json({ error: "Faltan datos de la tarea" }, { status: 400 });
     }
@@ -46,6 +46,7 @@ export async function POST(req: NextRequest) {
       dueOn: dueOn ?? null,
       dayPart: dayPart ?? null,
       status,
+      subtasks: subtasks ?? [],
     });
     if (!item) {
       return NextResponse.json({ error: "Bloque no encontrado" }, { status: 404 });

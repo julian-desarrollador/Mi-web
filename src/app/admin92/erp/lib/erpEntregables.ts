@@ -18,6 +18,14 @@ export const ENTREGABLE_STATUS_LABEL: Record<EntregableStatus, string> = {
   done: "Hecho",
 };
 
+export type ErpEntregableSubtask = {
+  id: string;
+  title: string;
+  done: boolean;
+  dueOn: string | null;
+  createdAt: string;
+};
+
 export type ErpEntregable = {
   _id: string;
   blockId: string;
@@ -26,6 +34,7 @@ export type ErpEntregable = {
   dueOn: string | null;
   dayPart: EntregableDayPart | null;
   status: EntregableStatus;
+  subtasks: ErpEntregableSubtask[];
   createdAt: string;
   updatedAt: string;
 };
@@ -50,12 +59,15 @@ export type ErpEntregableInput = {
   dueOn: string | null;
   dayPart: EntregableDayPart | null;
   status: EntregableStatus;
+  subtasks: ErpEntregableSubtask[];
 };
 
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+const SUBTASK_ID_PATTERN = /^[a-zA-Z0-9_-]{8,40}$/;
 const NAME_MAX = 80;
 const TITLE_MAX = 200;
 const DESCRIPTION_MAX = 2000;
+const SUBTASK_MAX = 30;
 
 const STATUS_RANK: Record<EntregableStatus, number> = {
   in_progress: 0,
@@ -118,6 +130,55 @@ function parseStatus(value: unknown): EntregableStatus | { error: string } {
     return { error: "El estado no es válido" };
   }
   return status as EntregableStatus;
+}
+
+function parseSubtaskId(value: unknown): string {
+  const id = String(value ?? "").trim();
+  if (SUBTASK_ID_PATTERN.test(id)) return id;
+  return crypto.randomUUID();
+}
+
+function parseSubtaskCreatedAt(value: unknown): string {
+  if (typeof value === "string" && value.trim()) {
+    const date = new Date(value);
+    if (!Number.isNaN(date.getTime())) return date.toISOString();
+  }
+  return new Date().toISOString();
+}
+
+function parseSubtasks(
+  value: unknown,
+  allowMissing: boolean,
+): ErpEntregableSubtask[] | { error: string } {
+  if (value === undefined || value === null) {
+    if (allowMissing) return [];
+    return { error: "Las subtareas no son válidas" };
+  }
+  if (!Array.isArray(value)) return { error: "Las subtareas no son válidas" };
+  if (value.length > SUBTASK_MAX) {
+    return { error: `No podés tener más de ${SUBTASK_MAX} subtareas` };
+  }
+  const used = new Set<string>();
+  const subtasks: ErpEntregableSubtask[] = [];
+  for (const row of value) {
+    if (!isRecord(row)) return { error: "Las subtareas no son válidas" };
+    const title = parseTitle(row.title);
+    if (isError(title)) return { error: title.error };
+    if (typeof row.done !== "boolean") return { error: "El estado de la subtarea no es válido" };
+    const dueOn = parseDueOn(row.dueOn);
+    if (isError(dueOn)) return { error: dueOn.error };
+    let id = parseSubtaskId(row.id);
+    if (used.has(id)) id = crypto.randomUUID();
+    used.add(id);
+    subtasks.push({
+      id,
+      title,
+      done: row.done,
+      dueOn,
+      createdAt: parseSubtaskCreatedAt(row.createdAt),
+    });
+  }
+  return subtasks;
 }
 
 function isError(value: unknown): value is { error: string } {
@@ -190,6 +251,12 @@ export function parseEntregableInput(
       if (isError(status)) return { ok: false, error: status.error };
       value.status = status;
     }
+  }
+
+  if (mode === "create" || has("subtasks")) {
+    const subtasks = parseSubtasks(body.subtasks, mode === "create" && !has("subtasks"));
+    if (isError(subtasks)) return { ok: false, error: subtasks.error };
+    value.subtasks = subtasks;
   }
 
   if (mode === "patch" && Object.keys(value).length === 0) {
