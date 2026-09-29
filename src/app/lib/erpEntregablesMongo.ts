@@ -1,8 +1,12 @@
 import { ObjectId, type Filter, type WithId } from "mongodb";
 import { getMongoClient } from "@/app/lib/mongoClient";
 import {
+  blockArea,
   blockLane,
+  ENTREGABLE_AREAS,
+  ENTREGABLE_LANES,
   sortEntregables,
+  type EntregableArea,
   type EntregableDayPart,
   type EntregableLane,
   type EntregableStatus,
@@ -16,6 +20,7 @@ import {
 type BlockDoc = {
   _id?: ObjectId;
   name: string;
+  area?: EntregableArea;
   lane?: EntregableLane;
   order: number;
   createdAt: Date;
@@ -57,7 +62,7 @@ async function getCollections() {
   const items = db.collection<ItemDoc>(ITEMS);
   if (!indexPromise) {
     indexPromise = Promise.all([
-      blocks.createIndex({ lane: 1, order: 1, createdAt: 1 }),
+      blocks.createIndex({ area: 1, lane: 1, order: 1, createdAt: 1 }),
       items.createIndex({ blockId: 1, status: 1, dueOn: 1 }),
     ]);
   }
@@ -103,10 +108,20 @@ function laneQuery(lane: EntregableLane): Filter<BlockDoc> {
   return { lane: { $ne: "procesos" } };
 }
 
+function areaQuery(area: EntregableArea): Filter<BlockDoc> {
+  if (area === "branding") return { area: "branding" };
+  return { area: { $nin: ["branding"] } };
+}
+
+function groupQuery(area: EntregableArea, lane: EntregableLane): Filter<BlockDoc> {
+  return { ...areaQuery(area), ...laneQuery(lane) };
+}
+
 function toBlock(doc: WithId<BlockDoc>, items: ErpEntregable[]): ErpEntregableBlock {
   return {
     _id: doc._id.toString(),
     name: doc.name,
+    area: blockArea(doc),
     lane: blockLane(doc),
     order: doc.order,
     createdAt: doc.createdAt.toISOString(),
@@ -117,10 +132,14 @@ function toBlock(doc: WithId<BlockDoc>, items: ErpEntregable[]): ErpEntregableBl
 
 export async function listEntregableBlocks(): Promise<ErpEntregableBlock[]> {
   const { blocks, items } = await getCollections();
-  const [entregableDocs, procesoDocs, itemDocs] = await Promise.all([
-    blocks.find(laneQuery("entregables")).sort({ order: 1, createdAt: 1 }).limit(100).toArray(),
-    blocks.find(laneQuery("procesos")).sort({ order: 1, createdAt: 1 }).limit(100).toArray(),
+  const groups = ENTREGABLE_AREAS.flatMap((area) =>
+    ENTREGABLE_LANES.map((lane) => ({ area, lane })),
+  );
+  const [itemDocs, ...blockGroups] = await Promise.all([
     items.find({}).limit(1000).toArray(),
+    ...groups.map(({ area, lane }) =>
+      blocks.find(groupQuery(area, lane)).sort({ order: 1, createdAt: 1 }).limit(100).toArray(),
+    ),
   ]);
   const byBlock = new Map<string, ErpEntregable[]>();
   for (const doc of itemDocs) {
@@ -129,19 +148,24 @@ export async function listEntregableBlocks(): Promise<ErpEntregableBlock[]> {
     list.push(item);
     byBlock.set(item.blockId, list);
   }
-  return [...entregableDocs, ...procesoDocs].map((doc) =>
-    toBlock(doc, byBlock.get(doc._id.toString()) ?? []),
-  );
+  return blockGroups
+    .flat()
+    .map((doc) => toBlock(doc, byBlock.get(doc._id.toString()) ?? []));
 }
 
 export async function insertEntregableBlock(
   input: ErpEntregableBlockInput,
 ): Promise<ErpEntregableBlock> {
   const { blocks } = await getCollections();
-  const last = await blocks.find(laneQuery(input.lane)).sort({ order: -1 }).limit(1).next();
+  const last = await blocks
+    .find(groupQuery(input.area, input.lane))
+    .sort({ order: -1 })
+    .limit(1)
+    .next();
   const now = new Date();
   const doc: BlockDoc = {
     name: input.name,
+    area: input.area,
     lane: input.lane,
     order: (last?.order ?? -1) + 1,
     createdAt: now,
@@ -169,11 +193,15 @@ export async function updateEntregableBlock(
 
 export async function reorderEntregableBlocks(
   ids: string[],
+  area: EntregableArea,
   lane: EntregableLane,
 ): Promise<ErpEntregableBlock[] | null> {
   if (ids.length === 0 || ids.some((id) => !ObjectId.isValid(id))) return null;
   const { blocks } = await getCollections();
-  const existing = await blocks.find(laneQuery(lane), { projection: { _id: 1 } }).limit(100).toArray();
+  const existing = await blocks
+    .find(groupQuery(area, lane), { projection: { _id: 1 } })
+    .limit(100)
+    .toArray();
   if (existing.length !== ids.length) return null;
   const existingIds = new Set(existing.map((doc) => doc._id.toString()));
   if (ids.some((id) => !existingIds.has(id))) return null;
@@ -183,7 +211,7 @@ export async function reorderEntregableBlocks(
     ids.map((id, order) => ({
       updateOne: {
         filter: { _id: new ObjectId(id) },
-        update: { $set: { order, lane, updatedAt: now } },
+        update: { $set: { order, area, lane, updatedAt: now } },
       },
     })),
   );

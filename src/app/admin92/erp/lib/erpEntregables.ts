@@ -43,9 +43,14 @@ export const ENTREGABLE_LANES = ["entregables", "procesos"] as const;
 
 export type EntregableLane = (typeof ENTREGABLE_LANES)[number];
 
+export const ENTREGABLE_AREAS = ["software", "branding"] as const;
+
+export type EntregableArea = (typeof ENTREGABLE_AREAS)[number];
+
 export type ErpEntregableBlock = {
   _id: string;
   name: string;
+  area: EntregableArea;
   lane: EntregableLane;
   order: number;
   createdAt: string;
@@ -55,11 +60,16 @@ export type ErpEntregableBlock = {
 
 export type ErpEntregableBlockInput = {
   name: string;
+  area: EntregableArea;
   lane: EntregableLane;
 };
 
 export function blockLane(value: { lane?: string } | null | undefined): EntregableLane {
   return value?.lane === "procesos" ? "procesos" : "entregables";
+}
+
+export function blockArea(value: { area?: string } | null | undefined): EntregableArea {
+  return value?.area === "branding" ? "branding" : "software";
 }
 
 export type ErpEntregableInput = {
@@ -204,6 +214,14 @@ function parseLane(value: unknown): EntregableLane | { error: string } {
   return lane as EntregableLane;
 }
 
+function parseArea(value: unknown): EntregableArea | { error: string } {
+  const area = String(value ?? "").trim();
+  if (!ENTREGABLE_AREAS.includes(area as EntregableArea)) {
+    return { error: "El área no es válida" };
+  }
+  return area as EntregableArea;
+}
+
 export function parseEntregableBlockInput(
   body: unknown,
   mode: "create" | "patch",
@@ -216,6 +234,12 @@ export function parseEntregableBlockInput(
     const name = parseName(body.name);
     if (isError(name)) return { ok: false, error: name.error };
     value.name = name;
+  }
+
+  if (mode === "create" || has("area")) {
+    const area = parseArea(body.area);
+    if (isError(area)) return { ok: false, error: area.error };
+    value.area = area;
   }
 
   if (mode === "create" || has("lane")) {
@@ -232,10 +256,12 @@ export function parseEntregableBlockInput(
 
 export function parseBlockOrder(
   body: unknown,
-): { ok: true; ids: string[]; lane: EntregableLane } | { ok: false; error: string } {
+): { ok: true; ids: string[]; area: EntregableArea; lane: EntregableLane } | { ok: false; error: string } {
   if (!isRecord(body) || !Array.isArray(body.ids)) {
     return { ok: false, error: "El orden no es válido" };
   }
+  const area = parseArea(body.area);
+  if (isError(area)) return { ok: false, error: area.error };
   const lane = parseLane(body.lane);
   if (isError(lane)) return { ok: false, error: lane.error };
   if (body.ids.length === 0 || body.ids.length > BLOCK_ORDER_MAX) {
@@ -250,7 +276,7 @@ export function parseBlockOrder(
     used.add(value);
     ids.push(value);
   }
-  return { ok: true, ids, lane };
+  return { ok: true, ids, area, lane };
 }
 
 export function parseEntregableInput(

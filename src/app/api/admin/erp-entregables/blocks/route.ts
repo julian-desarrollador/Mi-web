@@ -15,14 +15,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
     const name = parsed.value.name;
+    const area = parsed.value.area;
     const lane = parsed.value.lane;
     if (!name) {
       return NextResponse.json({ error: "El nombre del bloque es requerido" }, { status: 400 });
     }
+    if (!area) {
+      return NextResponse.json({ error: "El área es requerida" }, { status: 400 });
+    }
     if (!lane) {
       return NextResponse.json({ error: "La fila es requerida" }, { status: 400 });
     }
-    const block = await insertEntregableBlock({ name, lane });
+    const block = await insertEntregableBlock({ name, area, lane });
     return NextResponse.json({ ok: true, block });
   } catch (error) {
     console.error("[admin:erp-entregables] create block failed", error);
@@ -40,7 +44,7 @@ export async function PATCH(req: NextRequest) {
     if (!parsed.ok) {
       return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
-    const blocks = await reorderEntregableBlocks(parsed.ids, parsed.lane);
+    const blocks = await reorderEntregableBlocks(parsed.ids, parsed.area, parsed.lane);
     if (!blocks) {
       return NextResponse.json({ error: "El orden de los bloques no coincide" }, { status: 400 });
     }

@@ -20,12 +20,15 @@ import { CSS } from "@dnd-kit/utilities";
 import { Check, ChevronRight, GripVertical, Package, Plus, Trash2, X } from "lucide-react";
 import DatePickerField from "@/app/admin92/contabilidad/components/DatePickerField";
 import {
+  ENTREGABLE_AREAS,
   ENTREGABLE_DAY_PART_LABEL,
   ENTREGABLE_DAY_PARTS,
   ENTREGABLE_STATUS_LABEL,
   ENTREGABLE_STATUSES,
+  blockArea,
   blockLane,
   sortEntregables,
+  type EntregableArea,
   type EntregableDayPart,
   type EntregableLane,
   type EntregableStatus,
@@ -33,6 +36,7 @@ import {
   type ErpEntregableBlock,
   type ErpEntregableSubtask,
 } from "@/app/admin92/erp/lib/erpEntregables";
+import { WORK_CATEGORY_META } from "@/app/admin92/erp/lib/erpTypes";
 
 type TaskDraft = {
   title: string;
@@ -63,6 +67,31 @@ function formatCreatedDay(iso: string): string {
 function emptyDraft(blockId: string): TaskDraft {
   return { title: "", description: "", dueOn: "", dayPart: "", status: "pending", blockId };
 }
+
+function emptyNewBlockNames(): Record<EntregableArea, Record<EntregableLane, string>> {
+  return {
+    software: { entregables: "", procesos: "" },
+    branding: { entregables: "", procesos: "" },
+  };
+}
+
+const AREA_NAV: { area: EntregableArea; label: string }[] = [
+  { area: "software", label: "Software" },
+  { area: "branding", label: "Marketing" },
+];
+
+const LANE_SECTIONS = [
+  {
+    lane: "entregables" as const,
+    title: "Entregables",
+    empty: "Todavía no hay bloques. Agregá el primero, por ejemplo SaaS o Clientes.",
+  },
+  {
+    lane: "procesos" as const,
+    title: "Mejoras/automatizaciones de Procesos",
+    empty: "Todavía no hay bloques. Agregá el primero.",
+  },
+];
 
 function draftFromItem(item: ErpEntregable): TaskDraft {
   return {
@@ -613,6 +642,48 @@ function SortableBlockColumn({
   );
 }
 
+function columnStep(node: HTMLElement): number {
+  const child = node.firstElementChild as HTMLElement | null;
+  if (!child) return node.clientWidth;
+  const styles = getComputedStyle(node);
+  const gap = parseFloat(styles.columnGap || styles.gap) || 16;
+  return child.getBoundingClientRect().width + gap;
+}
+
+function scrollMax(node: HTMLElement): number {
+  return Math.max(0, node.scrollWidth - node.clientWidth);
+}
+
+function atScrollEnd(node: HTMLElement, dir: 1 | -1): boolean {
+  const max = scrollMax(node);
+  if (max <= 0) return true;
+  return dir > 0 ? node.scrollLeft >= max - 1 : node.scrollLeft <= 1;
+}
+
+function scrollByBlock(node: HTMLElement, dir: 1 | -1): boolean {
+  if (atScrollEnd(node, dir)) return false;
+  const max = scrollMax(node);
+  const step = columnStep(node);
+  if (step <= 0) return false;
+  const index = Math.round(node.scrollLeft / step);
+  const next = Math.max(0, Math.min(max, (index + dir) * step));
+  if (Math.abs(next - node.scrollLeft) < 1) return false;
+  node.scrollTo({ left: next, behavior: "smooth" });
+  return true;
+}
+
+function isOverVerticalScrollbar(node: HTMLElement, event: WheelEvent): boolean {
+  const thickness = node.offsetWidth - node.clientWidth;
+  if (thickness <= 0) return false;
+  const rect = node.getBoundingClientRect();
+  return (
+    event.clientX >= rect.right - thickness &&
+    event.clientX <= rect.right &&
+    event.clientY >= rect.top &&
+    event.clientY <= rect.bottom
+  );
+}
+
 function EntregableLaneBoard({
   title,
   className,
@@ -623,6 +694,7 @@ function EntregableLaneBoard({
   onNewBlockName,
   onCreateBlock,
   onDragEnd,
+  keysActive,
   children,
 }: {
   title: string;
@@ -634,9 +706,11 @@ function EntregableLaneBoard({
   onNewBlockName: (value: string) => void;
   onCreateBlock: () => void;
   onDragEnd: (event: DragEndEvent) => void;
+  keysActive?: boolean;
   children: ReactNode;
 }) {
   const scrollRef = useRef<HTMLDivElement | null>(null);
+  const wheelLockUntil = useRef(0);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
   );
@@ -646,16 +720,43 @@ function EntregableLaneBoard({
     if (!node) return;
     const onWheel = (event: WheelEvent) => {
       if (Math.abs(event.deltaX) >= Math.abs(event.deltaY)) return;
-      const max = node.scrollWidth - node.clientWidth;
-      if (max <= 0) return;
-      const next = Math.max(0, Math.min(max, node.scrollLeft + event.deltaY));
-      if (next === node.scrollLeft) return;
       event.preventDefault();
-      node.scrollLeft = next;
+      const dir: 1 | -1 = event.deltaY > 0 ? 1 : -1;
+      const now = Date.now();
+      if (now < wheelLockUntil.current) return;
+      if (!scrollByBlock(node, dir)) return;
+      wheelLockUntil.current = now + 300;
     };
     node.addEventListener("wheel", onWheel, { passive: false });
     return () => node.removeEventListener("wheel", onWheel);
   }, []);
+
+  useEffect(() => {
+    if (!keysActive) return;
+    const node = scrollRef.current;
+    if (!node) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.ctrlKey || event.metaKey || event.altKey) return;
+      const key = event.key.length === 1 ? event.key.toLowerCase() : event.key;
+      if (key !== "a" && key !== "d") return;
+      const target = event.target;
+      if (
+        target instanceof HTMLElement &&
+        (target.closest("input, textarea, select, [contenteditable='true']") ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+      event.preventDefault();
+      const now = Date.now();
+      if (now < wheelLockUntil.current) return;
+      const dir: 1 | -1 = key === "d" ? 1 : -1;
+      if (!scrollByBlock(node, dir)) return;
+      wheelLockUntil.current = now + 300;
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [keysActive]);
 
   return (
     <section className={className}>
@@ -697,14 +798,13 @@ function EntregableLaneBoard({
 
 export default function ErpEntregables() {
   const [open, setOpen] = useState(false);
+  const [selectedArea, setSelectedArea] = useState<EntregableArea>("software");
+  const [selectedLane, setSelectedLane] = useState<EntregableLane>("entregables");
   const [blocks, setBlocks] = useState<ErpEntregableBlock[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [newBlockName, setNewBlockName] = useState<Record<EntregableLane, string>>({
-    entregables: "",
-    procesos: "",
-  });
+  const [newBlockName, setNewBlockName] = useState(emptyNewBlockNames);
   const [nameEditId, setNameEditId] = useState<string | null>(null);
   const [nameDraft, setNameDraft] = useState("");
   const [createDrafts, setCreateDrafts] = useState<Record<string, TaskDraft>>({});
@@ -717,6 +817,9 @@ export default function ErpEntregables() {
   const createDraftsRef = useRef<Record<string, TaskDraft>>({});
   const composerRefs = useRef(new Map<string, HTMLDivElement>());
   const editFormRef = useRef<HTMLLIElement | null>(null);
+  const bodyScrollRef = useRef<HTMLDivElement | null>(null);
+  const selectedLaneRef = useRef<EntregableLane>("entregables");
+  const laneLockUntil = useRef(0);
 
   const updateEditDraft = (patch: Partial<TaskDraft>) => {
     const prev = editDraftRef.current;
@@ -736,10 +839,52 @@ export default function ErpEntregables() {
   useEffect(() => {
     if (!open) return;
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false);
+      if (event.key === "Escape") {
+        setOpen(false);
+        return;
+      }
+      if (event.ctrlKey || event.metaKey || event.altKey) return;
+      const key = event.key.length === 1 ? event.key.toLowerCase() : event.key;
+      if (key !== "w" && key !== "q" && key !== "s" && key !== "e") return;
+      const target = event.target;
+      if (
+        target instanceof HTMLElement &&
+        (target.closest("input, textarea, select, [contenteditable='true']") ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+      event.preventDefault();
+      if (key === "q" || key === "e") {
+        const area = key === "q" ? "software" : "branding";
+        setSelectedArea(area);
+        selectedLaneRef.current = "entregables";
+        setSelectedLane("entregables");
+        return;
+      }
+      const now = Date.now();
+      if (now < laneLockUntil.current) return;
+      const lane = selectedLaneRef.current;
+      if (key === "s" && lane !== "procesos") {
+        selectedLaneRef.current = "procesos";
+        setSelectedLane("procesos");
+        laneLockUntil.current = now + 300;
+      } else if (key === "w" && lane !== "entregables") {
+        selectedLaneRef.current = "entregables";
+        setSelectedLane("entregables");
+        laneLockUntil.current = now + 300;
+      }
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) {
+      setSelectedArea("software");
+      selectedLaneRef.current = "entregables";
+      setSelectedLane("entregables");
+    }
   }, [open]);
 
   useEffect(() => {
@@ -777,6 +922,19 @@ export default function ErpEntregables() {
   useEffect(() => {
     if (!open) return;
     void loadBlocks();
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const node = bodyScrollRef.current;
+    if (!node) return;
+    const onWheel = (event: WheelEvent) => {
+      if (Math.abs(event.deltaX) >= Math.abs(event.deltaY)) return;
+      if (isOverVerticalScrollbar(node, event)) return;
+      event.preventDefault();
+    };
+    node.addEventListener("wheel", onWheel, { passive: false });
+    return () => node.removeEventListener("wheel", onWheel);
   }, [open]);
 
   useEffect(() => {
@@ -827,8 +985,8 @@ export default function ErpEntregables() {
     }
   };
 
-  const createBlock = async (lane: EntregableLane) => {
-    const name = newBlockName[lane].trim();
+  const createBlock = async (area: EntregableArea, lane: EntregableLane) => {
+    const name = newBlockName[area][lane].trim();
     if (!name) {
       setError("El nombre del bloque es requerido.");
       return;
@@ -839,14 +997,17 @@ export default function ErpEntregables() {
       const response = await fetch("/api/admin/erp-entregables/blocks", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, lane }),
+        body: JSON.stringify({ name, area, lane }),
       });
       const data = (await response.json()) as { block?: ErpEntregableBlock; error?: string };
       if (!response.ok || !data.block) {
         throw new Error(data.error || "No se pudo crear el bloque.");
       }
       setBlocks((prev) => [...prev, { ...data.block!, items: data.block!.items ?? [] }]);
-      setNewBlockName((prev) => ({ ...prev, [lane]: "" }));
+      setNewBlockName((prev) => ({
+        ...prev,
+        [area]: { ...prev[area], [lane]: "" },
+      }));
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo crear el bloque.");
     } finally {
@@ -909,6 +1070,7 @@ export default function ErpEntregables() {
   const persistBlockOrder = async (
     nextLane: ErpEntregableBlock[],
     previous: ErpEntregableBlock[],
+    area: EntregableArea,
     lane: EntregableLane,
   ) => {
     setSaving(true);
@@ -917,7 +1079,7 @@ export default function ErpEntregables() {
       const response = await fetch("/api/admin/erp-entregables/blocks", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ids: nextLane.map((block) => block._id), lane }),
+        body: JSON.stringify({ ids: nextLane.map((block) => block._id), area, lane }),
       });
       const data = (await response.json()) as { blocks?: ErpEntregableBlock[]; error?: string };
       if (!response.ok || !data.blocks) {
@@ -932,17 +1094,21 @@ export default function ErpEntregables() {
     }
   };
 
-  const onBlockDragEnd = (lane: EntregableLane, event: DragEndEvent) => {
+  const onBlockDragEnd = (area: EntregableArea, lane: EntregableLane, event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || active.id === over.id || saving) return;
-    const laneBlocks = blocks.filter((block) => blockLane(block) === lane);
+    const laneBlocks = blocks.filter(
+      (block) => blockArea(block) === area && blockLane(block) === lane,
+    );
     const oldIndex = laneBlocks.findIndex((block) => block._id === active.id);
     const newIndex = laneBlocks.findIndex((block) => block._id === over.id);
     if (oldIndex < 0 || newIndex < 0) return;
     const nextLane = arrayMove(laneBlocks, oldIndex, newIndex);
-    const rest = blocks.filter((block) => blockLane(block) !== lane);
-    setBlocks(lane === "entregables" ? [...nextLane, ...rest] : [...rest, ...nextLane]);
-    void persistBlockOrder(nextLane, blocks, lane);
+    const rest = blocks.filter(
+      (block) => !(blockArea(block) === area && blockLane(block) === lane),
+    );
+    setBlocks([...rest, ...nextLane]);
+    void persistBlockOrder(nextLane, blocks, area, lane);
   };
 
   const createItem = async (blockId: string) => {
@@ -1086,12 +1252,40 @@ export default function ErpEntregables() {
             role="dialog"
             aria-modal="true"
             aria-labelledby="erp-entregables-title"
-            className="flex max-h-[min(44rem,90vh)] w-full max-w-6xl flex-col overflow-hidden rounded-2xl border border-[#b7cce4] bg-[#e4eef8] shadow-[0_24px_60px_rgba(15,23,42,0.22)]"
+            className="flex h-[min(44rem,90vh)] w-full max-w-6xl flex-col overflow-hidden rounded-2xl border border-[#b7cce4] bg-[#e4eef8] shadow-[0_24px_60px_rgba(15,23,42,0.22)]"
           >
             <div className="flex items-center justify-between gap-3 border-b border-[#b7cce4] bg-[#d5e4f4] px-5 py-4">
-              <h2 id="erp-entregables-title" className="text-lg font-semibold text-[#0f2744]">
-                Entregables
-              </h2>
+              <div className="flex min-w-0 flex-wrap items-center gap-3">
+                <h2 id="erp-entregables-title" className="text-lg font-semibold text-[#0f2744]">
+                  Entregables
+                </h2>
+                <nav aria-label="Área" className="flex rounded-xl border border-[#b7cce4] bg-[#e4eef8] p-1">
+                  {AREA_NAV.map((item) => {
+                    const active = selectedArea === item.area;
+                    const color =
+                      WORK_CATEGORY_META.find((category) => category.key === item.area)?.color ??
+                      "#2563eb";
+                    return (
+                      <button
+                        key={item.area}
+                        type="button"
+                        aria-current={active ? "page" : undefined}
+                        onClick={() => {
+                          setSelectedArea(item.area);
+                          selectedLaneRef.current = "entregables";
+                          setSelectedLane("entregables");
+                        }}
+                        className={`rounded-lg px-3 py-1.5 text-sm font-medium transition cursor-pointer ${
+                          active ? "text-white" : "text-[#0f2744] hover:bg-[#d5e4f4]"
+                        }`}
+                        style={active ? { backgroundColor: color } : undefined}
+                      >
+                        {item.label}
+                      </button>
+                    );
+                  })}
+                </nav>
+              </div>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
@@ -1102,7 +1296,10 @@ export default function ErpEntregables() {
               </button>
             </div>
 
-            <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-5 py-4">
+            <div
+              ref={bodyScrollRef}
+              className="entregables-modal-scroll flex min-h-0 flex-1 flex-col space-y-4 overflow-y-scroll py-4 pl-5 pr-0"
+            >
               {error ? (
                 <p className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
                   {error}
@@ -1113,37 +1310,50 @@ export default function ErpEntregables() {
                 <p className="text-sm text-[#3d5270]">Cargando…</p>
               ) : null}
 
-              {(
-                [
-                  {
-                    lane: "entregables" as const,
-                    title: "Entregables",
-                    empty: "Todavía no hay bloques. Agregá el primero, por ejemplo SaaS o Clientes.",
-                    className: undefined,
-                  },
-                  {
-                    lane: "procesos" as const,
-                    title: "Mejoras/automatizaciones de Procesos",
-                    empty: "Todavía no hay bloques. Agregá el primero.",
-                    className: "mt-6",
-                  },
-                ] as const
-              ).map((section) => {
-                const laneBlocks = blocks.filter((block) => blockLane(block) === section.lane);
+              {ENTREGABLE_AREAS.filter((area) => area === selectedArea).map((area) => {
+                const meta = WORK_CATEGORY_META.find((category) => category.key === area);
                 return (
+                  <section
+                    key={area}
+                    className="flex min-h-0 flex-1 flex-col rounded-l-2xl rounded-r-none border-2 bg-[#e4eef8] p-4"
+                    style={{ borderColor: meta?.color ?? "#2563eb" }}
+                  >
+                    <h3
+                      className="mb-4 shrink-0 text-base font-semibold"
+                      style={{ color: meta?.color ?? "#2563eb" }}
+                    >
+                      {meta?.name ?? area}
+                    </h3>
+                    <div className="min-h-0 flex-1 overflow-hidden">
+                      <div
+                        className="flex h-[200%] flex-col transition-transform duration-300 ease-out"
+                        style={{
+                          transform:
+                            selectedLane === "procesos" ? "translateY(-50%)" : "translateY(0%)",
+                        }}
+                      >
+                    {LANE_SECTIONS.map((section) => {
+                      const laneBlocks = blocks.filter(
+                        (block) => blockArea(block) === area && blockLane(block) === section.lane,
+                      );
+                      return (
+              <div key={`${area}-${section.lane}`} className="h-1/2 min-h-0 overflow-y-auto">
               <EntregableLaneBoard
-                key={section.lane}
                 title={section.title}
-                className={section.className}
+                className="h-full min-h-0"
                 blocks={laneBlocks}
                 saving={saving}
                 emptyHint={!loading && laneBlocks.length === 0 ? section.empty : undefined}
-                newBlockName={newBlockName[section.lane]}
+                newBlockName={newBlockName[area][section.lane]}
+                keysActive={selectedLane === section.lane}
                 onNewBlockName={(value) =>
-                  setNewBlockName((prev) => ({ ...prev, [section.lane]: value }))
+                  setNewBlockName((prev) => ({
+                    ...prev,
+                    [area]: { ...prev[area], [section.lane]: value },
+                  }))
                 }
-                onCreateBlock={() => void createBlock(section.lane)}
-                onDragEnd={(event) => onBlockDragEnd(section.lane, event)}
+                onCreateBlock={() => void createBlock(area, section.lane)}
+                onDragEnd={(event) => onBlockDragEnd(area, section.lane, event)}
               >
               {laneBlocks.map((block) => {
                 const draft = createDrafts[block._id] ?? emptyDraft(block._id);
@@ -1433,6 +1643,12 @@ export default function ErpEntregables() {
                 );
               })}
               </EntregableLaneBoard>
+              </div>
+                      );
+                    })}
+                      </div>
+                    </div>
+                  </section>
                 );
               })}
             </div>
