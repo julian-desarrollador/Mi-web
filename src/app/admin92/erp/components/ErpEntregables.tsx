@@ -24,8 +24,10 @@ import {
   ENTREGABLE_DAY_PARTS,
   ENTREGABLE_STATUS_LABEL,
   ENTREGABLE_STATUSES,
+  blockLane,
   sortEntregables,
   type EntregableDayPart,
+  type EntregableLane,
   type EntregableStatus,
   type ErpEntregable,
   type ErpEntregableBlock,
@@ -611,13 +613,98 @@ function SortableBlockColumn({
   );
 }
 
+function EntregableLaneBoard({
+  title,
+  className,
+  blocks,
+  saving,
+  emptyHint,
+  newBlockName,
+  onNewBlockName,
+  onCreateBlock,
+  onDragEnd,
+  children,
+}: {
+  title: string;
+  className?: string;
+  blocks: ErpEntregableBlock[];
+  saving: boolean;
+  emptyHint?: string;
+  newBlockName: string;
+  onNewBlockName: (value: string) => void;
+  onCreateBlock: () => void;
+  onDragEnd: (event: DragEndEvent) => void;
+  children: ReactNode;
+}) {
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+  );
+
+  useEffect(() => {
+    const node = scrollRef.current;
+    if (!node) return;
+    const onWheel = (event: WheelEvent) => {
+      if (Math.abs(event.deltaX) >= Math.abs(event.deltaY)) return;
+      const max = node.scrollWidth - node.clientWidth;
+      if (max <= 0) return;
+      const next = Math.max(0, Math.min(max, node.scrollLeft + event.deltaY));
+      if (next === node.scrollLeft) return;
+      event.preventDefault();
+      node.scrollLeft = next;
+    };
+    node.addEventListener("wheel", onWheel, { passive: false });
+    return () => node.removeEventListener("wheel", onWheel);
+  }, []);
+
+  return (
+    <section className={className}>
+      <h3 className="mb-3 text-sm font-semibold text-[#0f2744]">{title}</h3>
+      {emptyHint ? <p className="mb-3 text-sm text-[#3d5270]">{emptyHint}</p> : null}
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+        <SortableContext items={blocks.map((block) => block._id)} strategy={horizontalListSortingStrategy}>
+          <div ref={scrollRef} className="entregables-block-scroll flex items-start gap-4">
+            {children}
+          </div>
+        </SortableContext>
+      </DndContext>
+      <div className="mt-3 flex gap-2">
+        <input
+          value={newBlockName}
+          onChange={(event) => onNewBlockName(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              event.preventDefault();
+              onCreateBlock();
+            }
+          }}
+          placeholder="Nuevo bloque"
+          className="min-w-0 flex-1 rounded-lg border border-[#c5d4e8] bg-white px-3 py-2 text-sm text-[#0f2744]"
+        />
+        <button
+          type="button"
+          disabled={saving || !newBlockName.trim()}
+          onClick={onCreateBlock}
+          className="inline-flex items-center gap-1 rounded-lg bg-[#1d4e89] px-3 py-2 text-sm font-semibold text-white hover:bg-[#163d6b] cursor-pointer disabled:opacity-50"
+        >
+          <Plus className="h-4 w-4" />
+          Bloque
+        </button>
+      </div>
+    </section>
+  );
+}
+
 export default function ErpEntregables() {
   const [open, setOpen] = useState(false);
   const [blocks, setBlocks] = useState<ErpEntregableBlock[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [newBlockName, setNewBlockName] = useState("");
+  const [newBlockName, setNewBlockName] = useState<Record<EntregableLane, string>>({
+    entregables: "",
+    procesos: "",
+  });
   const [nameEditId, setNameEditId] = useState<string | null>(null);
   const [nameDraft, setNameDraft] = useState("");
   const [createDrafts, setCreateDrafts] = useState<Record<string, TaskDraft>>({});
@@ -630,10 +717,6 @@ export default function ErpEntregables() {
   const createDraftsRef = useRef<Record<string, TaskDraft>>({});
   const composerRefs = useRef(new Map<string, HTMLDivElement>());
   const editFormRef = useRef<HTMLLIElement | null>(null);
-  const blocksScrollRef = useRef<HTMLDivElement | null>(null);
-  const blockSensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
-  );
 
   const updateEditDraft = (patch: Partial<TaskDraft>) => {
     const prev = editDraftRef.current;
@@ -657,23 +740,6 @@ export default function ErpEntregables() {
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [open]);
-
-  useEffect(() => {
-    if (!open) return;
-    const node = blocksScrollRef.current;
-    if (!node) return;
-    const onWheel = (event: WheelEvent) => {
-      if (Math.abs(event.deltaX) >= Math.abs(event.deltaY)) return;
-      const max = node.scrollWidth - node.clientWidth;
-      if (max <= 0) return;
-      const next = Math.max(0, Math.min(max, node.scrollLeft + event.deltaY));
-      if (next === node.scrollLeft) return;
-      event.preventDefault();
-      node.scrollLeft = next;
-    };
-    node.addEventListener("wheel", onWheel, { passive: false });
-    return () => node.removeEventListener("wheel", onWheel);
   }, [open]);
 
   useEffect(() => {
@@ -761,8 +827,8 @@ export default function ErpEntregables() {
     }
   };
 
-  const createBlock = async () => {
-    const name = newBlockName.trim();
+  const createBlock = async (lane: EntregableLane) => {
+    const name = newBlockName[lane].trim();
     if (!name) {
       setError("El nombre del bloque es requerido.");
       return;
@@ -773,14 +839,14 @@ export default function ErpEntregables() {
       const response = await fetch("/api/admin/erp-entregables/blocks", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name }),
+        body: JSON.stringify({ name, lane }),
       });
       const data = (await response.json()) as { block?: ErpEntregableBlock; error?: string };
       if (!response.ok || !data.block) {
         throw new Error(data.error || "No se pudo crear el bloque.");
       }
       setBlocks((prev) => [...prev, { ...data.block!, items: data.block!.items ?? [] }]);
-      setNewBlockName("");
+      setNewBlockName((prev) => ({ ...prev, [lane]: "" }));
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo crear el bloque.");
     } finally {
@@ -841,8 +907,9 @@ export default function ErpEntregables() {
   };
 
   const persistBlockOrder = async (
-    next: ErpEntregableBlock[],
+    nextLane: ErpEntregableBlock[],
     previous: ErpEntregableBlock[],
+    lane: EntregableLane,
   ) => {
     setSaving(true);
     setError(null);
@@ -850,7 +917,7 @@ export default function ErpEntregables() {
       const response = await fetch("/api/admin/erp-entregables/blocks", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ids: next.map((block) => block._id) }),
+        body: JSON.stringify({ ids: nextLane.map((block) => block._id), lane }),
       });
       const data = (await response.json()) as { blocks?: ErpEntregableBlock[]; error?: string };
       if (!response.ok || !data.blocks) {
@@ -865,15 +932,17 @@ export default function ErpEntregables() {
     }
   };
 
-  const onBlockDragEnd = (event: DragEndEvent) => {
+  const onBlockDragEnd = (lane: EntregableLane, event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || active.id === over.id || saving) return;
-    const oldIndex = blocks.findIndex((block) => block._id === active.id);
-    const newIndex = blocks.findIndex((block) => block._id === over.id);
+    const laneBlocks = blocks.filter((block) => blockLane(block) === lane);
+    const oldIndex = laneBlocks.findIndex((block) => block._id === active.id);
+    const newIndex = laneBlocks.findIndex((block) => block._id === over.id);
     if (oldIndex < 0 || newIndex < 0) return;
-    const next = arrayMove(blocks, oldIndex, newIndex);
-    setBlocks(next);
-    void persistBlockOrder(next, blocks);
+    const nextLane = arrayMove(laneBlocks, oldIndex, newIndex);
+    const rest = blocks.filter((block) => blockLane(block) !== lane);
+    setBlocks(lane === "entregables" ? [...nextLane, ...rest] : [...rest, ...nextLane]);
+    void persistBlockOrder(nextLane, blocks, lane);
   };
 
   const createItem = async (blockId: string) => {
@@ -1044,23 +1113,39 @@ export default function ErpEntregables() {
                 <p className="text-sm text-[#3d5270]">Cargando…</p>
               ) : null}
 
-              {!loading && blocks.length === 0 ? (
-                <p className="text-sm text-[#3d5270]">
-                  Todavía no hay bloques. Agregá el primero, por ejemplo SaaS o Clientes.
-                </p>
-              ) : null}
-
-              <DndContext
-                sensors={blockSensors}
-                collisionDetection={closestCenter}
-                onDragEnd={onBlockDragEnd}
+              {(
+                [
+                  {
+                    lane: "entregables" as const,
+                    title: "Entregables",
+                    empty: "Todavía no hay bloques. Agregá el primero, por ejemplo SaaS o Clientes.",
+                    className: undefined,
+                  },
+                  {
+                    lane: "procesos" as const,
+                    title: "Mejoras/automatizaciones de Procesos",
+                    empty: "Todavía no hay bloques. Agregá el primero.",
+                    className: "mt-6",
+                  },
+                ] as const
+              ).map((section) => {
+                const laneBlocks = blocks.filter((block) => blockLane(block) === section.lane);
+                return (
+              <EntregableLaneBoard
+                key={section.lane}
+                title={section.title}
+                className={section.className}
+                blocks={laneBlocks}
+                saving={saving}
+                emptyHint={!loading && laneBlocks.length === 0 ? section.empty : undefined}
+                newBlockName={newBlockName[section.lane]}
+                onNewBlockName={(value) =>
+                  setNewBlockName((prev) => ({ ...prev, [section.lane]: value }))
+                }
+                onCreateBlock={() => void createBlock(section.lane)}
+                onDragEnd={(event) => onBlockDragEnd(section.lane, event)}
               >
-              <SortableContext
-                items={blocks.map((block) => block._id)}
-                strategy={horizontalListSortingStrategy}
-              >
-              <div ref={blocksScrollRef} className="entregables-block-scroll flex items-start gap-4">
-              {blocks.map((block) => {
+              {laneBlocks.map((block) => {
                 const draft = createDrafts[block._id] ?? emptyDraft(block._id);
                 const setDraft = (patch: Partial<TaskDraft>) => {
                   const prev = createDraftsRef.current[block._id] ?? emptyDraft(block._id);
@@ -1077,7 +1162,7 @@ export default function ErpEntregables() {
                     key={block._id}
                     id={block._id}
                     name={block.name}
-                    dragDisabled={saving || blocks.length < 2}
+                    dragDisabled={saving || laneBlocks.length < 2}
                     header={
                       <>
                       <input
@@ -1347,33 +1432,9 @@ export default function ErpEntregables() {
                   </SortableBlockColumn>
                 );
               })}
-              </div>
-              </SortableContext>
-              </DndContext>
-            </div>
-
-            <div className="flex gap-2 border-t border-[#b7cce4] bg-[#d5e4f4] px-5 py-4">
-              <input
-                value={newBlockName}
-                onChange={(event) => setNewBlockName(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter") {
-                    event.preventDefault();
-                    void createBlock();
-                  }
-                }}
-                placeholder="Nuevo bloque"
-                className="min-w-0 flex-1 rounded-lg border border-[#c5d4e8] bg-white px-3 py-2 text-sm text-[#0f2744]"
-              />
-              <button
-                type="button"
-                disabled={saving || !newBlockName.trim()}
-                onClick={() => void createBlock()}
-                className="inline-flex items-center gap-1 rounded-lg bg-[#1d4e89] px-3 py-2 text-sm font-semibold text-white hover:bg-[#163d6b] cursor-pointer disabled:opacity-50"
-              >
-                <Plus className="h-4 w-4" />
-                Bloque
-              </button>
+              </EntregableLaneBoard>
+                );
+              })}
             </div>
           </article>
           {taskToDelete ? (

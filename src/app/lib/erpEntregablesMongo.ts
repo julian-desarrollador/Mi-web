@@ -1,8 +1,10 @@
-import { ObjectId, type WithId } from "mongodb";
+import { ObjectId, type Filter, type WithId } from "mongodb";
 import { getMongoClient } from "@/app/lib/mongoClient";
 import {
+  blockLane,
   sortEntregables,
   type EntregableDayPart,
+  type EntregableLane,
   type EntregableStatus,
   type ErpEntregable,
   type ErpEntregableBlock,
@@ -14,6 +16,7 @@ import {
 type BlockDoc = {
   _id?: ObjectId;
   name: string;
+  lane?: EntregableLane;
   order: number;
   createdAt: Date;
   updatedAt: Date;
@@ -54,7 +57,7 @@ async function getCollections() {
   const items = db.collection<ItemDoc>(ITEMS);
   if (!indexPromise) {
     indexPromise = Promise.all([
-      blocks.createIndex({ order: 1, createdAt: 1 }),
+      blocks.createIndex({ lane: 1, order: 1, createdAt: 1 }),
       items.createIndex({ blockId: 1, status: 1, dueOn: 1 }),
     ]);
   }
@@ -95,10 +98,16 @@ function toItem(doc: WithId<ItemDoc>): ErpEntregable {
   };
 }
 
+function laneQuery(lane: EntregableLane): Filter<BlockDoc> {
+  if (lane === "procesos") return { lane: "procesos" };
+  return { lane: { $ne: "procesos" } };
+}
+
 function toBlock(doc: WithId<BlockDoc>, items: ErpEntregable[]): ErpEntregableBlock {
   return {
     _id: doc._id.toString(),
     name: doc.name,
+    lane: blockLane(doc),
     order: doc.order,
     createdAt: doc.createdAt.toISOString(),
     updatedAt: doc.updatedAt.toISOString(),
@@ -108,8 +117,9 @@ function toBlock(doc: WithId<BlockDoc>, items: ErpEntregable[]): ErpEntregableBl
 
 export async function listEntregableBlocks(): Promise<ErpEntregableBlock[]> {
   const { blocks, items } = await getCollections();
-  const [blockDocs, itemDocs] = await Promise.all([
-    blocks.find({}).sort({ order: 1, createdAt: 1 }).limit(100).toArray(),
+  const [entregableDocs, procesoDocs, itemDocs] = await Promise.all([
+    blocks.find(laneQuery("entregables")).sort({ order: 1, createdAt: 1 }).limit(100).toArray(),
+    blocks.find(laneQuery("procesos")).sort({ order: 1, createdAt: 1 }).limit(100).toArray(),
     items.find({}).limit(1000).toArray(),
   ]);
   const byBlock = new Map<string, ErpEntregable[]>();
@@ -119,17 +129,20 @@ export async function listEntregableBlocks(): Promise<ErpEntregableBlock[]> {
     list.push(item);
     byBlock.set(item.blockId, list);
   }
-  return blockDocs.map((doc) => toBlock(doc, byBlock.get(doc._id.toString()) ?? []));
+  return [...entregableDocs, ...procesoDocs].map((doc) =>
+    toBlock(doc, byBlock.get(doc._id.toString()) ?? []),
+  );
 }
 
 export async function insertEntregableBlock(
   input: ErpEntregableBlockInput,
 ): Promise<ErpEntregableBlock> {
   const { blocks } = await getCollections();
-  const last = await blocks.find({}).sort({ order: -1 }).limit(1).next();
+  const last = await blocks.find(laneQuery(input.lane)).sort({ order: -1 }).limit(1).next();
   const now = new Date();
   const doc: BlockDoc = {
     name: input.name,
+    lane: input.lane,
     order: (last?.order ?? -1) + 1,
     createdAt: now,
     updatedAt: now,
@@ -156,10 +169,11 @@ export async function updateEntregableBlock(
 
 export async function reorderEntregableBlocks(
   ids: string[],
+  lane: EntregableLane,
 ): Promise<ErpEntregableBlock[] | null> {
   if (ids.length === 0 || ids.some((id) => !ObjectId.isValid(id))) return null;
   const { blocks } = await getCollections();
-  const existing = await blocks.find({}, { projection: { _id: 1 } }).limit(100).toArray();
+  const existing = await blocks.find(laneQuery(lane), { projection: { _id: 1 } }).limit(100).toArray();
   if (existing.length !== ids.length) return null;
   const existingIds = new Set(existing.map((doc) => doc._id.toString()));
   if (ids.some((id) => !existingIds.has(id))) return null;
@@ -169,7 +183,7 @@ export async function reorderEntregableBlocks(
     ids.map((id, order) => ({
       updateOne: {
         filter: { _id: new ObjectId(id) },
-        update: { $set: { order, updatedAt: now } },
+        update: { $set: { order, lane, updatedAt: now } },
       },
     })),
   );

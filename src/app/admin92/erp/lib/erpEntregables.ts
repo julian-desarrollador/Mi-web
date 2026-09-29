@@ -39,9 +39,14 @@ export type ErpEntregable = {
   updatedAt: string;
 };
 
+export const ENTREGABLE_LANES = ["entregables", "procesos"] as const;
+
+export type EntregableLane = (typeof ENTREGABLE_LANES)[number];
+
 export type ErpEntregableBlock = {
   _id: string;
   name: string;
+  lane: EntregableLane;
   order: number;
   createdAt: string;
   updatedAt: string;
@@ -50,7 +55,12 @@ export type ErpEntregableBlock = {
 
 export type ErpEntregableBlockInput = {
   name: string;
+  lane: EntregableLane;
 };
+
+export function blockLane(value: { lane?: string } | null | undefined): EntregableLane {
+  return value?.lane === "procesos" ? "procesos" : "entregables";
+}
 
 export type ErpEntregableInput = {
   blockId: string;
@@ -186,6 +196,14 @@ function isError(value: unknown): value is { error: string } {
   return typeof value === "object" && value !== null && "error" in value;
 }
 
+function parseLane(value: unknown): EntregableLane | { error: string } {
+  const lane = String(value ?? "").trim();
+  if (!ENTREGABLE_LANES.includes(lane as EntregableLane)) {
+    return { error: "La fila no es válida" };
+  }
+  return lane as EntregableLane;
+}
+
 export function parseEntregableBlockInput(
   body: unknown,
   mode: "create" | "patch",
@@ -200,6 +218,12 @@ export function parseEntregableBlockInput(
     value.name = name;
   }
 
+  if (mode === "create" || has("lane")) {
+    const lane = parseLane(body.lane);
+    if (isError(lane)) return { ok: false, error: lane.error };
+    value.lane = lane;
+  }
+
   if (mode === "patch" && Object.keys(value).length === 0) {
     return { ok: false, error: "Nada que actualizar" };
   }
@@ -208,10 +232,12 @@ export function parseEntregableBlockInput(
 
 export function parseBlockOrder(
   body: unknown,
-): { ok: true; ids: string[] } | { ok: false; error: string } {
+): { ok: true; ids: string[]; lane: EntregableLane } | { ok: false; error: string } {
   if (!isRecord(body) || !Array.isArray(body.ids)) {
     return { ok: false, error: "El orden no es válido" };
   }
+  const lane = parseLane(body.lane);
+  if (isError(lane)) return { ok: false, error: lane.error };
   if (body.ids.length === 0 || body.ids.length > BLOCK_ORDER_MAX) {
     return { ok: false, error: "El orden no es válido" };
   }
@@ -224,7 +250,7 @@ export function parseBlockOrder(
     used.add(value);
     ids.push(value);
   }
-  return { ok: true, ids };
+  return { ok: true, ids, lane };
 }
 
 export function parseEntregableInput(
