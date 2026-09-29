@@ -75,6 +75,41 @@ body.font-loaded {
   display: none;
 }
 
+@layer components {
+  .entregables-block-scroll {
+    overflow-x: auto;
+    padding-bottom: 1rem;
+    scrollbar-width: thin;
+    scrollbar-color: #1d4e89 #c5d4e8;
+  }
+
+  .entregables-block-scroll::-webkit-scrollbar {
+    height: 8px;
+  }
+
+  .entregables-block-scroll::-webkit-scrollbar-button {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+
+  .entregables-block-scroll::-webkit-scrollbar-track {
+    margin-inline: 2px;
+    border-radius: 999px;
+    background: #c5d4e8;
+  }
+
+  .entregables-block-scroll::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    border: 2px solid #c5d4e8;
+    background: #1d4e89;
+  }
+
+  .entregables-block-scroll::-webkit-scrollbar-thumb:hover {
+    background: #163d6b;
+  }
+}
+
 /* Línea de fuego animada */
 .fire-line {
   background: linear-gradient(

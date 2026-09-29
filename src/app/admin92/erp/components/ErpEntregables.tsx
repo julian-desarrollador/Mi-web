@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   closestCenter,
   DndContext,
@@ -11,6 +11,7 @@ import {
 } from "@dnd-kit/core";
 import {
   arrayMove,
+  horizontalListSortingStrategy,
   SortableContext,
   useSortable,
   verticalListSortingStrategy,
@@ -556,6 +557,60 @@ function TaskSubtasks({
   );
 }
 
+function SortableBlockColumn({
+  id,
+  name,
+  dragDisabled,
+  header,
+  children,
+}: {
+  id: string;
+  name: string;
+  dragDisabled: boolean;
+  header: ReactNode;
+  children: ReactNode;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id,
+    disabled: dragDisabled,
+  });
+  const style = {
+    transform: CSS.Transform.toString(transform ? { ...transform, y: 0 } : null),
+    transition,
+    zIndex: isDragging ? 20 : undefined,
+  };
+
+  return (
+    <section
+      ref={setNodeRef}
+      style={style}
+      className={`min-w-[18rem] flex-1 rounded-xl border border-[#c5d4e8] bg-white p-3 ${
+        isDragging ? "relative shadow-lg" : ""
+      }`}
+    >
+      <div className="mb-3 flex items-center gap-2">
+        <button
+          type="button"
+          aria-label={`Reordenar bloque ${name}`}
+          title="Arrastrá para reordenar"
+          disabled={dragDisabled}
+          className={`shrink-0 rounded p-0.5 text-[#3d5270] touch-none select-none ${
+            dragDisabled
+              ? "cursor-not-allowed opacity-40"
+              : "cursor-grab hover:bg-[#e4eef8] hover:text-[#1d4e89] active:cursor-grabbing"
+          }`}
+          {...attributes}
+          {...listeners}
+        >
+          <GripVertical className="h-4 w-4" />
+        </button>
+        {header}
+      </div>
+      {children}
+    </section>
+  );
+}
+
 export default function ErpEntregables() {
   const [open, setOpen] = useState(false);
   const [blocks, setBlocks] = useState<ErpEntregableBlock[]>([]);
@@ -575,6 +630,10 @@ export default function ErpEntregables() {
   const createDraftsRef = useRef<Record<string, TaskDraft>>({});
   const composerRefs = useRef(new Map<string, HTMLDivElement>());
   const editFormRef = useRef<HTMLLIElement | null>(null);
+  const blocksScrollRef = useRef<HTMLDivElement | null>(null);
+  const blockSensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+  );
 
   const updateEditDraft = (patch: Partial<TaskDraft>) => {
     const prev = editDraftRef.current;
@@ -598,6 +657,23 @@ export default function ErpEntregables() {
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const node = blocksScrollRef.current;
+    if (!node) return;
+    const onWheel = (event: WheelEvent) => {
+      if (Math.abs(event.deltaX) >= Math.abs(event.deltaY)) return;
+      const max = node.scrollWidth - node.clientWidth;
+      if (max <= 0) return;
+      const next = Math.max(0, Math.min(max, node.scrollLeft + event.deltaY));
+      if (next === node.scrollLeft) return;
+      event.preventDefault();
+      node.scrollLeft = next;
+    };
+    node.addEventListener("wheel", onWheel, { passive: false });
+    return () => node.removeEventListener("wheel", onWheel);
   }, [open]);
 
   useEffect(() => {
@@ -762,6 +838,42 @@ export default function ErpEntregables() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const persistBlockOrder = async (
+    next: ErpEntregableBlock[],
+    previous: ErpEntregableBlock[],
+  ) => {
+    setSaving(true);
+    setError(null);
+    try {
+      const response = await fetch("/api/admin/erp-entregables/blocks", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: next.map((block) => block._id) }),
+      });
+      const data = (await response.json()) as { blocks?: ErpEntregableBlock[]; error?: string };
+      if (!response.ok || !data.blocks) {
+        throw new Error(data.error || "No se pudo guardar el orden de los bloques.");
+      }
+      setBlocks(data.blocks);
+    } catch (err) {
+      setBlocks(previous);
+      setError(err instanceof Error ? err.message : "No se pudo guardar el orden de los bloques.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const onBlockDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id || saving) return;
+    const oldIndex = blocks.findIndex((block) => block._id === active.id);
+    const newIndex = blocks.findIndex((block) => block._id === over.id);
+    if (oldIndex < 0 || newIndex < 0) return;
+    const next = arrayMove(blocks, oldIndex, newIndex);
+    setBlocks(next);
+    void persistBlockOrder(next, blocks);
   };
 
   const createItem = async (blockId: string) => {
@@ -938,7 +1050,16 @@ export default function ErpEntregables() {
                 </p>
               ) : null}
 
-              <div className="flex items-start gap-4 overflow-x-auto">
+              <DndContext
+                sensors={blockSensors}
+                collisionDetection={closestCenter}
+                onDragEnd={onBlockDragEnd}
+              >
+              <SortableContext
+                items={blocks.map((block) => block._id)}
+                strategy={horizontalListSortingStrategy}
+              >
+              <div ref={blocksScrollRef} className="entregables-block-scroll flex items-start gap-4">
               {blocks.map((block) => {
                 const draft = createDrafts[block._id] ?? emptyDraft(block._id);
                 const setDraft = (patch: Partial<TaskDraft>) => {
@@ -952,11 +1073,13 @@ export default function ErpEntregables() {
                 };
 
                 return (
-                  <section
+                  <SortableBlockColumn
                     key={block._id}
-                    className="min-w-[18rem] flex-1 rounded-xl border border-[#c5d4e8] bg-white p-3"
-                  >
-                    <div className="mb-3 flex items-center gap-2">
+                    id={block._id}
+                    name={block.name}
+                    dragDisabled={saving || blocks.length < 2}
+                    header={
+                      <>
                       <input
                         value={nameEditId === block._id ? nameDraft : block.name}
                         onFocus={() => {
@@ -983,7 +1106,9 @@ export default function ErpEntregables() {
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
-                    </div>
+                      </>
+                    }
+                  >
 
                     {block.items.length === 0 ? (
                       <p className="mb-3 text-xs text-[#3d5270]">Sin tareas.</p>
@@ -1219,10 +1344,12 @@ export default function ErpEntregables() {
                         Nueva tarea
                       </button>
                     )}
-                  </section>
+                  </SortableBlockColumn>
                 );
               })}
               </div>
+              </SortableContext>
+              </DndContext>
             </div>
 
             <div className="flex gap-2 border-t border-[#b7cce4] bg-[#d5e4f4] px-5 py-4">

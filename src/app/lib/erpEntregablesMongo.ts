@@ -154,6 +154,28 @@ export async function updateEntregableBlock(
   return toBlock(result, itemDocs.map(toItem));
 }
 
+export async function reorderEntregableBlocks(
+  ids: string[],
+): Promise<ErpEntregableBlock[] | null> {
+  if (ids.length === 0 || ids.some((id) => !ObjectId.isValid(id))) return null;
+  const { blocks } = await getCollections();
+  const existing = await blocks.find({}, { projection: { _id: 1 } }).limit(100).toArray();
+  if (existing.length !== ids.length) return null;
+  const existingIds = new Set(existing.map((doc) => doc._id.toString()));
+  if (ids.some((id) => !existingIds.has(id))) return null;
+
+  const now = new Date();
+  await blocks.bulkWrite(
+    ids.map((id, order) => ({
+      updateOne: {
+        filter: { _id: new ObjectId(id) },
+        update: { $set: { order, updatedAt: now } },
+      },
+    })),
+  );
+  return listEntregableBlocks();
+}
+
 export async function deleteEntregableBlock(id: string): Promise<boolean> {
   if (!ObjectId.isValid(id)) return false;
   const { blocks, items } = await getCollections();

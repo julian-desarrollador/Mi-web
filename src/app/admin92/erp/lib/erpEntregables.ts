@@ -65,6 +65,7 @@ export type ErpEntregableInput = {
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 const SUBTASK_ID_PATTERN = /^[a-zA-Z0-9_-]{8,40}$/;
 const NAME_MAX = 80;
+const BLOCK_ORDER_MAX = 100;
 const TITLE_MAX = 200;
 const DESCRIPTION_MAX = 2000;
 const SUBTASK_MAX = 30;
@@ -203,6 +204,27 @@ export function parseEntregableBlockInput(
     return { ok: false, error: "Nada que actualizar" };
   }
   return { ok: true, value };
+}
+
+export function parseBlockOrder(
+  body: unknown,
+): { ok: true; ids: string[] } | { ok: false; error: string } {
+  if (!isRecord(body) || !Array.isArray(body.ids)) {
+    return { ok: false, error: "El orden no es válido" };
+  }
+  if (body.ids.length === 0 || body.ids.length > BLOCK_ORDER_MAX) {
+    return { ok: false, error: "El orden no es válido" };
+  }
+  const ids: string[] = [];
+  const used = new Set<string>();
+  for (const id of body.ids) {
+    if (typeof id !== "string") return { ok: false, error: "El orden no es válido" };
+    const value = id.trim();
+    if (!value || used.has(value)) return { ok: false, error: "El orden no es válido" };
+    used.add(value);
+    ids.push(value);
+  }
+  return { ok: true, ids };
 }
 
 export function parseEntregableInput(
