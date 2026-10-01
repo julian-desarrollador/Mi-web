@@ -615,11 +615,11 @@ function SortableBlockColumn({
     <section
       ref={setNodeRef}
       style={style}
-      className={`min-w-[18rem] flex-1 rounded-xl border border-[#c5d4e8] bg-white p-3 ${
+      className={`flex h-full max-h-full min-h-0 min-w-[18rem] flex-1 flex-col overflow-hidden rounded-xl border border-[#c5d4e8] bg-white p-3 ${
         isDragging ? "relative shadow-lg" : ""
       }`}
     >
-      <div className="mb-3 flex items-center gap-2">
+      <div className="mb-3 flex shrink-0 items-start gap-2">
         <button
           type="button"
           aria-label={`Reordenar bloque ${name}`}
@@ -637,7 +637,7 @@ function SortableBlockColumn({
         </button>
         {header}
       </div>
-      {children}
+      <div className="flex min-h-0 flex-1 flex-col">{children}</div>
     </section>
   );
 }
@@ -670,6 +670,20 @@ function scrollByBlock(node: HTMLElement, dir: 1 | -1): boolean {
   if (Math.abs(next - node.scrollLeft) < 1) return false;
   node.scrollTo({ left: next, behavior: "smooth" });
   return true;
+}
+
+function nestedVScrollCanMove(event: WheelEvent, dir: 1 | -1): boolean {
+  const target = event.target;
+  if (!(target instanceof Element)) return false;
+  let node: Element | null = target;
+  while (node) {
+    if (node instanceof HTMLElement && node.hasAttribute("data-entregable-vscroll")) {
+      const max = node.scrollHeight - node.clientHeight;
+      if (max > 1 && (dir > 0 ? node.scrollTop < max - 1 : node.scrollTop > 1)) return true;
+    }
+    node = node.parentElement;
+  }
+  return false;
 }
 
 function isOverVerticalScrollbar(node: HTMLElement, event: WheelEvent): boolean {
@@ -720,8 +734,9 @@ function EntregableLaneBoard({
     if (!node) return;
     const onWheel = (event: WheelEvent) => {
       if (Math.abs(event.deltaX) >= Math.abs(event.deltaY)) return;
-      event.preventDefault();
       const dir: 1 | -1 = event.deltaY > 0 ? 1 : -1;
+      if (nestedVScrollCanMove(event, dir)) return;
+      event.preventDefault();
       const now = Date.now();
       if (now < wheelLockUntil.current) return;
       if (!scrollByBlock(node, dir)) return;
@@ -759,17 +774,19 @@ function EntregableLaneBoard({
   }, [keysActive]);
 
   return (
-    <section className={className}>
-      <h3 className="mb-3 text-sm font-semibold text-[#0f2744]">{title}</h3>
-      {emptyHint ? <p className="mb-3 text-sm text-[#3d5270]">{emptyHint}</p> : null}
+    <section className={`flex h-full min-h-0 flex-col ${className ?? ""}`}>
+      <h3 className="mb-3 shrink-0 text-sm font-semibold text-[#0f2744]">{title}</h3>
+      {emptyHint ? <p className="mb-3 shrink-0 text-sm text-[#3d5270]">{emptyHint}</p> : null}
+      <div className="min-h-0 flex-1">
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
         <SortableContext items={blocks.map((block) => block._id)} strategy={horizontalListSortingStrategy}>
-          <div ref={scrollRef} className="entregables-block-scroll flex items-start gap-4">
+          <div ref={scrollRef} className="entregables-block-scroll flex h-full min-h-0 items-stretch gap-4">
             {children}
           </div>
         </SortableContext>
       </DndContext>
-      <div className="mt-3 flex gap-2">
+      </div>
+      <div className="mt-3 flex shrink-0 gap-2">
         <input
           value={newBlockName}
           onChange={(event) => onNewBlockName(event.target.value)}
@@ -930,6 +947,8 @@ export default function ErpEntregables() {
     if (!node) return;
     const onWheel = (event: WheelEvent) => {
       if (Math.abs(event.deltaX) >= Math.abs(event.deltaY)) return;
+      const dir: 1 | -1 = event.deltaY > 0 ? 1 : -1;
+      if (nestedVScrollCanMove(event, dir)) return;
       if (isOverVerticalScrollbar(node, event)) return;
       event.preventDefault();
     };
@@ -1337,7 +1356,7 @@ export default function ErpEntregables() {
                         (block) => blockArea(block) === area && blockLane(block) === section.lane,
                       );
                       return (
-              <div key={`${area}-${section.lane}`} className="h-1/2 min-h-0 overflow-y-auto">
+              <div key={`${area}-${section.lane}`} className="h-1/2 min-h-0 overflow-hidden">
               <EntregableLaneBoard
                 title={section.title}
                 className="h-full min-h-0"
@@ -1375,8 +1394,9 @@ export default function ErpEntregables() {
                     dragDisabled={saving || laneBlocks.length < 2}
                     header={
                       <>
-                      <input
+                      <textarea
                         value={nameEditId === block._id ? nameDraft : block.name}
+                        rows={1}
                         onFocus={() => {
                           setNameEditId(block._id);
                           setNameDraft(block.name);
@@ -1389,8 +1409,18 @@ export default function ErpEntregables() {
                             event.currentTarget.blur();
                           }
                         }}
+                        onInput={(event) => {
+                          const el = event.currentTarget;
+                          el.style.height = "auto";
+                          el.style.height = `${el.scrollHeight}px`;
+                        }}
+                        ref={(el) => {
+                          if (!el) return;
+                          el.style.height = "auto";
+                          el.style.height = `${el.scrollHeight}px`;
+                        }}
                         aria-label="Nombre del bloque"
-                        className="min-w-0 flex-1 rounded-lg border border-[#c5d4e8] bg-[#f4f8fc] px-2.5 py-1.5 text-sm font-semibold text-[#0f2744] outline-none focus:border-[#1d4e89]"
+                        className="min-w-0 flex-1 resize-none overflow-hidden rounded-lg border border-[#c5d4e8] bg-[#f4f8fc] px-2.5 py-1.5 text-sm font-semibold leading-snug text-[#0f2744] outline-none [field-sizing:content] focus:border-[#1d4e89]"
                       />
                       <button
                         type="button"
@@ -1405,10 +1435,11 @@ export default function ErpEntregables() {
                     }
                   >
 
+                    <div data-entregable-vscroll className="min-h-0 flex-1 overflow-y-auto">
                     {block.items.length === 0 ? (
-                      <p className="mb-3 text-xs text-[#3d5270]">Sin tareas.</p>
+                      <p className="text-xs text-[#3d5270]">Sin tareas.</p>
                     ) : (
-                      <ul className="mb-3 space-y-2">
+                      <ul className="space-y-2">
                         {block.items.map((item) =>
                           editingId === item._id && editDraft ? (
                             <li
@@ -1487,7 +1518,7 @@ export default function ErpEntregables() {
                                   className="min-w-0 flex-1 cursor-pointer text-left"
                                 >
                                   <span
-                                    className={`block whitespace-normal break-words text-sm font-semibold ${
+                                    className={`block whitespace-normal break-words text-sm font-semibold [overflow-wrap:anywhere] ${
                                       item.status === "done"
                                         ? "text-[#3d5270] line-through"
                                         : "text-[#0f2744]"
@@ -1553,6 +1584,7 @@ export default function ErpEntregables() {
                         )}
                       </ul>
                     )}
+                    </div>
 
                     {composerOpen[block._id] ? (
                     <div
@@ -1560,8 +1592,9 @@ export default function ErpEntregables() {
                         if (node) composerRefs.current.set(block._id, node);
                         else composerRefs.current.delete(block._id);
                       }}
-                      className="space-y-2 rounded-lg border border-dashed border-[#c5d4e8] bg-[#f4f8fc] p-3"
+                      className="mt-2 flex max-h-[62%] min-h-0 shrink-0 flex-col overflow-hidden rounded-lg border border-dashed border-[#c5d4e8] bg-[#f4f8fc] p-3"
                     >
+                      <div data-entregable-vscroll className="min-h-0 space-y-2 overflow-y-auto">
                       <input
                         value={draft.title}
                         onChange={(event) => setDraft({ title: event.target.value })}
@@ -1581,8 +1614,7 @@ export default function ErpEntregables() {
                         placeholder="Descripción (opcional)"
                         className="w-full resize-y rounded-lg border border-[#c5d4e8] bg-white px-2.5 py-1.5 text-sm text-[#0f2744]"
                       />
-                      <div className="flex flex-wrap items-end justify-between gap-2">
-                        <div className="space-y-2">
+                      <div className="space-y-2">
                           <div className="flex items-center gap-3">
                             <span className="text-[11px] font-medium text-[#3d5270]">Entrega</span>
                             <DatePickerField
@@ -1599,8 +1631,14 @@ export default function ErpEntregables() {
                             value={draft.dayPart}
                             onChange={(dayPart) => setDraft({ dayPart })}
                           />
-                        </div>
-                        <div className="flex items-center gap-2">
+                      </div>
+                      <StatusButtons
+                        value={draft.status}
+                        disabled={saving}
+                        onChange={(status) => setDraft({ status })}
+                      />
+                      </div>
+                      <div className="mt-2 flex shrink-0 items-center justify-end gap-2">
                           <button
                             type="button"
                             onClick={() =>
@@ -1619,13 +1657,7 @@ export default function ErpEntregables() {
                             <Plus className="h-3.5 w-3.5" />
                             Agregar
                           </button>
-                        </div>
                       </div>
-                      <StatusButtons
-                        value={draft.status}
-                        disabled={saving}
-                        onChange={(status) => setDraft({ status })}
-                      />
                     </div>
                     ) : (
                       <button
@@ -1633,7 +1665,7 @@ export default function ErpEntregables() {
                         onClick={() =>
                           setComposerOpen((prev) => ({ ...prev, [block._id]: true }))
                         }
-                        className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-[#c5d4e8] bg-[#f4f8fc] px-3 py-2 text-sm font-medium text-[#1d4e89] hover:bg-[#e4eef8] cursor-pointer"
+                        className="mt-2 inline-flex w-full shrink-0 items-center justify-center gap-1.5 rounded-lg border border-dashed border-[#c5d4e8] bg-[#f4f8fc] px-3 py-2 text-sm font-medium text-[#1d4e89] hover:bg-[#e4eef8] cursor-pointer"
                       >
                         <Plus className="h-4 w-4" />
                         Nueva tarea
