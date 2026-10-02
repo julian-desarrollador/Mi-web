@@ -5,6 +5,7 @@ const LOCAL_ICON_512 = "/admin92/contabilidad/app-icon/512?v=contabilidad-v1";
 
 export const metadata: Metadata = {
   manifest: "/manifest-contabilidad.webmanifest",
+  appleWebApp: { title: "glomun" },
   icons: {
     icon: [{ url: LOCAL_ICON_192, type: "image/png" }],
     apple: [{ url: LOCAL_ICON_192, type: "image/png" }],

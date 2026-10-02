@@ -1,6 +1,6 @@
 {
-  "name": "Glomun Contabilidad",
-  "short_name": "Contabilidad",
+  "name": "glomun",
+  "short_name": "glomun",
   "description": "Acceso directo al panel de contabilidad de Glomun.",
   "id": "/admin92/contabilidad?app=contabilidad-v1",
   "start_url": "/admin92/contabilidad",
