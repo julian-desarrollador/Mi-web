@@ -24,6 +24,7 @@ type RecordLike = {
 };
 
 type CobroLike = {
+  id: string;
   dueDate: string;
   clientName: string;
   paid: boolean;
@@ -66,7 +67,7 @@ export function buildCalendarMarkers(
     const proyecto = getProyectoForClient(c.clientName, proyectoMap);
     const estado = getCuotaEstado(c);
     const border = getCuotaOperativaBorder(c, proyecto, todayStr);
-    markers[day].cuotas.push({ estado, border });
+    markers[day].cuotas.push({ id: c.id, estado, border });
   }
   return markers;
 }

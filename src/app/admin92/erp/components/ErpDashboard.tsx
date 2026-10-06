@@ -54,12 +54,13 @@ import {
   type PeriodStats,
   type WeekCompareRow,
 } from "@/app/admin92/erp/lib/erpAggregates";
-import { formatHoursAsHm, formatMinutesAsHm, emptyMembershipMonth, emptyDayLog, elapsedActiveSeconds, normalizeActiveWorkTimer, sumWorkHours, type ErpActiveWorkTimer, type ErpDayLog, type ErpMembershipMonth, type ErpMembershipServiceKey, type WorkCategoryKey } from "@/app/admin92/erp/lib/erpTypes";
+import { formatHoursAsHm, formatMinutesAsHm, emptyMembershipMonth, emptyDayLog, elapsedActiveSeconds, normalizeActiveWorkTimer, sumWorkHours, type ErpActiveWorkTimer, type ErpDayLog, type ErpMembershipMonth, type ErpMembershipServiceKey, type ErpTimerDestino, type WorkCategoryKey } from "@/app/admin92/erp/lib/erpTypes";
 import { formatCurrency, formatLocalDate, formatMonthLabel, MONTH_NAMES, todayYmd } from "@/app/admin92/contabilidad/lib/utils";
 import { formatSecondsAsClock } from "@/app/admin92/erp/lib/parseWorkTimersPaste";
 import ErpObservations from "@/app/admin92/erp/components/ErpObservations";
 import WorkCategoriesEditor from "@/app/admin92/erp/components/WorkCategoriesEditor";
 import WorkCategoriesHistory from "@/app/admin92/erp/components/WorkCategoriesHistory";
+import WorkProjectsPanel from "@/app/admin92/erp/components/WorkProjectsPanel";
 
 const MEMBERSHIP_SERVICES: {
   key: ErpMembershipServiceKey;
@@ -128,13 +129,18 @@ type Props = {
   kpis: KpiView[];
   focusLog: ErpDayLog | undefined;
   periodLogs: ErpDayLog[];
+  periodDates: string[];
   workEditLog: ErpDayLog;
   onPersistWorkEditLog: (log: ErpDayLog) => Promise<void>;
   workEditSaving?: boolean;
   activeWorkTimer?: ErpActiveWorkTimer | null;
   /** Si el timer live de hoy cuenta para el período visible */
   countsLiveTimer?: boolean;
-  onStartLiveTimer?: (category: WorkCategoryKey, name: string) => Promise<void>;
+  onStartLiveTimer?: (
+    category: WorkCategoryKey,
+    name: string,
+    destino?: ErpTimerDestino,
+  ) => Promise<void>;
   timerSaving?: boolean;
   loading: boolean;
   hasData: boolean;
@@ -803,6 +809,7 @@ export default function ErpDashboard({
   kpis,
   focusLog,
   periodLogs,
+  periodDates,
   workEditLog,
   onPersistWorkEditLog,
   workEditSaving = false,
@@ -822,7 +829,7 @@ export default function ErpDashboard({
   weekCompare,
 }: Props) {
   const [chartsReady, setChartsReady] = useState(false);
-  const [categoriesTab, setCategoriesTab] = useState<"categories" | "history">(
+  const [categoriesTab, setCategoriesTab] = useState<"categories" | "history" | "projects">(
     "history",
   );
   const [liveNowMs, setLiveNowMs] = useState(() => Date.now());
@@ -982,9 +989,11 @@ export default function ErpDashboard({
               <p className="mt-1 text-xs font-medium text-slate-500">
                 {categoriesTab === "history"
                   ? "Por fecha · más reciente primero"
-                  : categoriesPeriodMode
-                    ? "Desglose del período · expandí una categoría para ver timers"
-                    : "Editá nombres, tiempos e ítems · click en un timer"}
+                  : categoriesTab === "projects"
+                    ? "Horas en cuotas, promesas y conocimiento"
+                    : categoriesPeriodMode
+                      ? "Desglose del período · expandí una categoría para ver timers"
+                      : "Editá nombres, tiempos e ítems · click en un timer"}
               </p>
             </div>
             <span className="erp-categories-total inline-flex items-center gap-1.5">
@@ -1004,6 +1013,7 @@ export default function ErpDashboard({
               [
                 { key: "categories", label: "Categorías" },
                 { key: "history", label: "Historial" },
+                { key: "projects", label: "Para qué" },
               ] as const
             ).map((tab) => (
               <button
@@ -1024,16 +1034,16 @@ export default function ErpDashboard({
           {categoriesTab === "categories" ? (
             <WorkCategoriesEditor
               editLog={categoriesDisplayLog}
+              periodLogs={categoriesPeriodMode ? periodLogs : undefined}
               onPersist={onPersistWorkEditLog}
               persisting={workEditSaving}
-              readOnly={categoriesPeriodMode}
               subtitle={categoriesSubtitle}
               icons={workIcons}
               activeWorkTimer={activeWorkTimer}
               onStartLiveTimer={onStartLiveTimer}
               timerSaving={timerSaving}
             />
-          ) : (
+          ) : categoriesTab === "history" ? (
             <WorkCategoriesHistory
               logs={periodLogs}
               icons={workIcons}
@@ -1042,6 +1052,15 @@ export default function ErpDashboard({
               activeWorkTimer={activeWorkTimer}
               onStartLiveTimer={onStartLiveTimer}
               timerSaving={timerSaving}
+            />
+          ) : (
+            <WorkProjectsPanel
+              period={period}
+              periodLogs={periodLogs}
+              periodDates={periodDates}
+              activeWorkTimer={liveActive}
+              countsLiveTimer={liveTicking}
+              liveNowMs={liveNowMs}
             />
           )}
         </article>

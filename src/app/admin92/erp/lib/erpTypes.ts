@@ -14,10 +14,33 @@ export type ErpWorkTimerItem = {
   done: boolean;
 };
 
+export type ErpTimeKind = "promesa" | "conocimiento";
+
+/** Focus: una cuota, el tramo entero. Repartido: un tramo partido entre varias. */
+export type ErpTimerShare = "focus" | "repartido";
+
+/** Una cuota (focus), un conjunto (repartido), o un tiempo sin cuota. */
+export type ErpTimerDestino = {
+  /** Focus: el tramo entero es de este cliente. */
+  cuotaClient?: string;
+  /** Conjunto: el tramo se parte entre estas cuotas, en este orden. */
+  cuotaClients?: string[];
+  /** Sin marca en timers viejos = focus. */
+  share?: ErpTimerShare;
+  timeKind?: ErpTimeKind;
+};
+
 export type ErpWorkTimer = {
   name: string;
   /** Duración en segundos (desde H:MM:SS del paste o timer live) */
   seconds: number;
+  /** Cliente de la cuota, si este rato es para alguien que ya paga */
+  cuotaClient?: string;
+  /** Conjunto de cuotas cuando el tramo es repartido */
+  cuotaClients?: string[];
+  share?: ErpTimerShare;
+  /** Tiempo sin cuota: promesa de ingresos o conocimiento */
+  timeKind?: ErpTimeKind;
   /** Checklist / ramas bajo este timer (ej. Analia → conectar wpp) */
   items?: ErpWorkTimerItem[];
 };
@@ -26,6 +49,10 @@ export type ErpWorkTimer = {
 export type ErpActiveWorkTimer = {
   category: WorkCategoryKey;
   name: string;
+  cuotaClient?: string;
+  cuotaClients?: string[];
+  share?: ErpTimerShare;
+  timeKind?: ErpTimeKind;
   /** ISO: inicio del tramo actual */
   startedAt: string;
   items: ErpWorkTimerItem[];
@@ -332,9 +359,11 @@ export function normalizeActiveWorkTimer(raw: unknown): ErpActiveWorkTimer | nul
   const name = typeof row.name === "string" ? row.name.trim().slice(0, 200) : "";
   const startedAt = typeof row.startedAt === "string" ? row.startedAt : "";
   if (!startedAt || Number.isNaN(Date.parse(startedAt))) return null;
+  const destino = readTimerDestino(row);
   return {
     category,
     name,
+    ...destino,
     startedAt,
     items: normalizeWorkTimerItems(row.items),
   };
@@ -362,6 +391,85 @@ function mergeWorkTimerItems(
   return [...byId.values()].slice(0, 40);
 }
 
+function uniqueCuotaNames(raw: unknown): string[] {
+  if (!Array.isArray(raw)) return [];
+  const names: string[] = [];
+  const seen = new Set<string>();
+  for (const entry of raw) {
+    if (typeof entry !== "string") continue;
+    const name = entry.trim().slice(0, 120);
+    const key = name.toLowerCase();
+    if (!name || seen.has(key)) continue;
+    seen.add(key);
+    names.push(name);
+    if (names.length >= 20) break;
+  }
+  return names;
+}
+
+/** Partes iguales. El sobrante de segundos queda en las primeras de la lista. */
+export function splitEvenSeconds(total: number, count: number): number[] {
+  const safe = Number.isFinite(total) ? Math.max(0, Math.round(total)) : 0;
+  if (count <= 0) return [];
+  const base = Math.floor(safe / count);
+  let rest = safe - base * count;
+  return Array.from({ length: count }, () => {
+    const extra = rest > 0 ? 1 : 0;
+    if (rest > 0) rest -= 1;
+    return base + extra;
+  });
+}
+
+export function repartidoSecondsForClient(
+  clients: string[] | undefined,
+  totalSeconds: number,
+  clientName: string,
+): number {
+  if (!clients || clients.length < 2) return 0;
+  const index = clients.findIndex(
+    (client) => client.trim().toLowerCase() === clientName.trim().toLowerCase(),
+  );
+  if (index < 0) return 0;
+  return splitEvenSeconds(totalSeconds, clients.length)[index] ?? 0;
+}
+
+export function readTimerDestino(raw: {
+  cuotaClient?: unknown;
+  cuotaClients?: unknown;
+  timeKind?: unknown;
+} | null | undefined): ErpTimerDestino {
+  if (!raw) return {};
+  const clients = uniqueCuotaNames(raw.cuotaClients);
+  const single = typeof raw.cuotaClient === "string" ? raw.cuotaClient.trim().slice(0, 120) : "";
+  if (clients.length >= 2) return { cuotaClients: clients, share: "repartido" };
+  if (clients.length === 1) return { cuotaClient: clients[0], share: "focus" };
+  if (single) return { cuotaClient: single, share: "focus" };
+  if (raw.timeKind === "promesa" || raw.timeKind === "conocimiento") {
+    return { timeKind: raw.timeKind };
+  }
+  return {};
+}
+
+export function timerDestinoKey(destino: ErpTimerDestino | null | undefined): string {
+  if (destino?.share === "repartido" && destino.cuotaClients && destino.cuotaClients.length >= 2) {
+    return `repartido:${destino.cuotaClients.map((client) => client.trim().toLowerCase()).join("|")}`;
+  }
+  if (destino?.cuotaClient) return `cuota:${destino.cuotaClient.trim().toLowerCase()}`;
+  if (destino?.timeKind) return destino.timeKind;
+  return "";
+}
+
+function sameWorkTimerIdentity(
+  timer: ErpTimerDestino & { name: string },
+  name: string,
+  destino: ErpTimerDestino | undefined,
+): boolean {
+  return (
+    timer.name.trim().toLowerCase() === name.trim().toLowerCase() &&
+    timerDestinoKey(timer) === timerDestinoKey(destino)
+  );
+}
+
 /** Nombre por defecto si el timer live se detiene sin título */
 export const UNNAMED_WORK_TIMER = "Sin nombre";
 
@@ -382,8 +490,8 @@ export function stopActiveWorkTimerOnLog(
   const resolvedName = resolveWorkTimerName(active.name);
   const workTimers = normalizeWorkTimers(log.workTimers);
   const list = [...workTimers[active.category]];
-  const idx = list.findIndex(
-    (t) => t.name.trim().toLowerCase() === resolvedName.toLowerCase(),
+  const idx = list.findIndex((t) =>
+    sameWorkTimerIdentity(t, resolvedName, active),
   );
   if (idx >= 0) {
     const prev = list[idx];
@@ -391,12 +499,14 @@ export function stopActiveWorkTimerOnLog(
     list.push({
       name: prev.name,
       seconds: prev.seconds + elapsed,
+      ...readTimerDestino(prev),
       items: mergeWorkTimerItems(prev.items, active.items),
     });
   } else {
     list.push({
       name: resolvedName,
       seconds: elapsed,
+      ...readTimerDestino(active),
       items: active.items,
     });
   }
@@ -418,12 +528,14 @@ export function startActiveWorkTimerOnLog(
   category: WorkCategoryKey,
   name: string,
   nowMs: number = Date.now(),
+  destino?: ErpTimerDestino,
 ): ErpDayLog {
   const trimmed = name.trim().slice(0, 200);
+  const cleanDestino = readTimerDestino(destino);
   let next = log.activeWorkTimer ? stopActiveWorkTimerOnLog(log, nowMs) : log;
   const existing = trimmed
-    ? normalizeWorkTimers(next.workTimers)[category].find(
-        (t) => t.name.trim().toLowerCase() === trimmed.toLowerCase(),
+    ? normalizeWorkTimers(next.workTimers)[category].find((t) =>
+        sameWorkTimerIdentity(t, trimmed, cleanDestino),
       )
     : undefined;
   next = {
@@ -431,6 +543,7 @@ export function startActiveWorkTimerOnLog(
     activeWorkTimer: {
       category,
       name: existing?.name ?? trimmed,
+      ...cleanDestino,
       startedAt: new Date(nowMs).toISOString(),
       items: existing?.items ? [...existing.items] : [],
     },
@@ -453,9 +566,11 @@ export function normalizeWorkTimers(raw: unknown): ErpWorkTimers {
       const seconds = Number(entry.seconds);
       if (!name || !Number.isFinite(seconds) || seconds < 0) continue;
       const items = normalizeWorkTimerItems(entry.items);
+      const destino = readTimerDestino(entry);
       timers.push({
         name,
         seconds: Math.round(seconds),
+        ...destino,
         ...(items.length > 0 ? { items } : {}),
       });
     }
@@ -791,9 +906,30 @@ export function validateErpDayLog(
         if (entry.items !== undefined && !Array.isArray(entry.items)) {
           return { ok: false, error: `Los ítems de un timer en ${key} son inválidos` };
         }
+        if (entry.cuotaClient !== undefined && entry.cuotaClient !== null && typeof entry.cuotaClient !== "string") {
+          return { ok: false, error: `La cuota de un timer en ${key} es inválida` };
+        }
+        if (
+          entry.cuotaClients !== undefined &&
+          entry.cuotaClients !== null &&
+          (!Array.isArray(entry.cuotaClients) ||
+            entry.cuotaClients.some((client) => typeof client !== "string"))
+        ) {
+          return { ok: false, error: `El conjunto de cuotas de un timer en ${key} es inválido` };
+        }
+        if (
+          entry.timeKind !== undefined &&
+          entry.timeKind !== null &&
+          entry.timeKind !== "promesa" &&
+          entry.timeKind !== "conocimiento"
+        ) {
+          return { ok: false, error: `El destino de un timer en ${key} es inválido` };
+        }
+        const destino = readTimerDestino(entry);
         timers.push({
           name: entry.name.trim().slice(0, 200),
           seconds: Math.round(seconds),
+          ...destino,
           ...(items.length > 0 ? { items } : {}),
         });
       }

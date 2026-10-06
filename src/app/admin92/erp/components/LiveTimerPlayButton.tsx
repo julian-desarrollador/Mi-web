@@ -1,22 +1,30 @@
 "use client";
 
 import { Play, Square } from "lucide-react";
-import type { ErpActiveWorkTimer, WorkCategoryKey } from "@/app/admin92/erp/lib/erpTypes";
+import {
+  timerDestinoKey,
+  type ErpActiveWorkTimer,
+  type ErpTimerDestino,
+  type WorkCategoryKey,
+} from "@/app/admin92/erp/lib/erpTypes";
 
 export function isMatchingLiveTimer(
   active: ErpActiveWorkTimer | null | undefined,
   category: WorkCategoryKey,
   name: string,
+  destino?: ErpTimerDestino,
 ): boolean {
   if (!active || active.category !== category) return false;
-  return active.name.trim().toLowerCase() === name.trim().toLowerCase();
+  if (active.name.trim().toLowerCase() !== name.trim().toLowerCase()) return false;
+  return timerDestinoKey(active) === timerDestinoKey(destino);
 }
 
 type Props = {
   category: WorkCategoryKey;
   name?: string;
+  destino?: ErpTimerDestino;
   activeWorkTimer?: ErpActiveWorkTimer | null;
-  onToggle: (category: WorkCategoryKey, name: string) => Promise<void> | void;
+  onToggle: (category: WorkCategoryKey, name: string, destino?: ErpTimerDestino) => Promise<void> | void;
   disabled?: boolean;
   /** Accesible label override */
   label?: string;
@@ -25,12 +33,13 @@ type Props = {
 export default function LiveTimerPlayButton({
   category,
   name = "",
+  destino,
   activeWorkTimer = null,
   onToggle,
   disabled = false,
   label,
 }: Props) {
-  const running = isMatchingLiveTimer(activeWorkTimer, category, name);
+  const running = isMatchingLiveTimer(activeWorkTimer, category, name, destino);
 
   return (
     <button
@@ -47,7 +56,7 @@ export default function LiveTimerPlayButton({
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
-        void onToggle(category, name);
+        void onToggle(category, name, destino);
       }}
       className={`inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border transition cursor-pointer disabled:opacity-50 ${
         running

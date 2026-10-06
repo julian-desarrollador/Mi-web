@@ -25,6 +25,8 @@ export type CobroDoc = {
   requiereEstadisticas?: boolean;
   /** ID del ingreso auto-generado al marcar pagado */
   accountingRecordId?: string;
+  /** Cuota de chamba: no entra en los totales de negocio salvo que se active el botón */
+  chamba?: boolean;
   /** Prioridad manual para cola de cambios (0 = más urgente) */
   prioridad?: number;
   /** Cambio pendiente de esta cuota (ciclo mensual) */
@@ -156,6 +158,16 @@ export async function listCobrosByClientNames(
     const id = d._id?.toString() ?? "";
     return { ...d, _id: id, id, createdAt: d.createdAt };
   });
+}
+
+export async function setCobrosChambaByAccountingRecordId(
+  accountingRecordId: string,
+  chamba: boolean,
+): Promise<void> {
+  const client = await getMongoClient();
+  const db = client.db(getDbName());
+  const col = db.collection(COLLECTION);
+  await col.updateMany({ accountingRecordId }, { $set: { chamba } });
 }
 
 export async function updateCobro(

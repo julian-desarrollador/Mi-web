@@ -9,6 +9,7 @@ import {
   WORK_CATEGORY_META,
   type ErpActiveWorkTimer,
   type ErpDayLog,
+  type ErpTimerDestino,
   type WorkCategoryKey,
 } from "@/app/admin92/erp/lib/erpTypes";
 import { formatLocalDate } from "@/app/admin92/contabilidad/lib/utils";
@@ -20,7 +21,11 @@ type Props = {
   onPersist: (log: ErpDayLog) => Promise<void>;
   persisting?: boolean;
   activeWorkTimer?: ErpActiveWorkTimer | null;
-  onStartLiveTimer?: (category: WorkCategoryKey, name: string) => Promise<void>;
+  onStartLiveTimer?: (
+    category: WorkCategoryKey,
+    name: string,
+    destino?: ErpTimerDestino,
+  ) => Promise<void>;
   timerSaving?: boolean;
 };
 

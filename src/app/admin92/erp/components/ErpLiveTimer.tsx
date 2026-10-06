@@ -17,12 +17,15 @@ import {
   newWorkTimerItemId,
   normalizeActiveWorkTimer,
   normalizeWorkTimers,
+  readTimerDestino,
   startActiveWorkTimerOnLog,
   stopActiveWorkTimerOnLog,
   UNNAMED_WORK_TIMER,
   WORK_CATEGORY_META,
   type ErpActiveWorkTimer,
   type ErpDayLog,
+  type ErpTimeKind,
+  type ErpTimerDestino,
   type WorkCategoryKey,
 } from "@/app/admin92/erp/lib/erpTypes";
 import { formatSecondsAsClock } from "@/app/admin92/erp/lib/parseWorkTimersPaste";
@@ -156,6 +159,10 @@ export default function ErpLiveTimer({
 
   const [category, setCategory] = useState<WorkCategoryKey | null>("software");
   const [name, setName] = useState("");
+  const [destino, setDestino] = useState<"" | "cuota" | ErpTimeKind>("");
+  const [pickedCuotas, setPickedCuotas] = useState<string[]>([]);
+  const [cuotasOpen, setCuotasOpen] = useState(false);
+  const [cuotaClients, setCuotaClients] = useState<string[]>([]);
   const [nowMs, setNowMs] = useState(() => Date.now());
   const [itemDraft, setItemDraft] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -234,6 +241,41 @@ export default function ErpLiveTimer({
     if (!active) return;
     setName(active.name);
   }, [active?.startedAt, active?.name]);
+
+  useEffect(() => {
+    let cancelled = false;
+    void fetch("/api/admin/cobros")
+      .then((res) => res.json())
+      .then((data: { cobros?: { clientName?: string }[] }) => {
+        if (cancelled || !Array.isArray(data.cobros)) return;
+        const names = new Set<string>();
+        for (const cobro of data.cobros) {
+          const client = cobro.clientName?.trim();
+          if (client) names.add(client);
+        }
+        setCuotaClients([...names].sort((a, b) => a.localeCompare(b, "es")));
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!active) return;
+    if (active.share === "repartido" && active.cuotaClients && active.cuotaClients.length >= 2) {
+      setDestino("cuota");
+      setPickedCuotas(active.cuotaClients);
+      return;
+    }
+    if (active.cuotaClient) {
+      setDestino("cuota");
+      setPickedCuotas([active.cuotaClient]);
+      return;
+    }
+    setPickedCuotas([]);
+    setDestino(active.timeKind ?? "");
+  }, [active?.startedAt, active?.cuotaClient, active?.cuotaClients, active?.share, active?.timeKind]);
 
   useEffect(() => {
     if (!pickerOpen) return;
@@ -333,7 +375,13 @@ export default function ErpLiveTimer({
       setError("Elegí una categoría o un nombre de la lista");
       return;
     }
-    const next = startActiveWorkTimerOnLog(todayLog, nextCategory, nextName);
+    const next = startActiveWorkTimerOnLog(
+      todayLog,
+      nextCategory,
+      nextName,
+      Date.now(),
+      currentDestino(),
+    );
     setCategory(nextCategory);
     setName(nextName.trim());
     setPickerOpen(false);
@@ -352,6 +400,44 @@ export default function ErpLiveTimer({
     await persist({
       ...todayLog,
       activeWorkTimer: { ...active, ...patch },
+    });
+  };
+
+  const currentDestino = (): ErpTimerDestino => {
+    if (destino === "cuota") return readTimerDestino({ cuotaClients: pickedCuotas });
+    if (destino === "promesa" || destino === "conocimiento") return { timeKind: destino };
+    return {};
+  };
+
+  const togglePickedCuota = (client: string) => {
+    const exists = pickedCuotas.some((name) => name.trim().toLowerCase() === client.trim().toLowerCase());
+    const nextNames = exists
+      ? pickedCuotas.filter((name) => name.trim().toLowerCase() !== client.trim().toLowerCase())
+      : [...pickedCuotas, client];
+    const ordered = cuotaClients.filter((name) =>
+      nextNames.some((picked) => picked.trim().toLowerCase() === name.trim().toLowerCase()),
+    );
+    for (const name of nextNames) {
+      if (!ordered.some((picked) => picked.trim().toLowerCase() === name.trim().toLowerCase())) {
+        ordered.push(name);
+      }
+    }
+    setPickedCuotas(ordered);
+    if (active) void writeActiveDestino(readTimerDestino({ cuotaClients: ordered }));
+  };
+
+  const writeActiveDestino = async (next: ErpTimerDestino) => {
+    if (!active) return;
+    const clean = readTimerDestino(next);
+    await persist({
+      ...todayLog,
+      activeWorkTimer: {
+        category: active.category,
+        name: active.name,
+        startedAt: active.startedAt,
+        items: active.items,
+        ...clean,
+      },
     });
   };
 
@@ -645,6 +731,86 @@ export default function ErpLiveTimer({
               </ul>
             </div>
           )}
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <label className="block text-xs font-semibold text-slate-800">
+            Destino
+            <select
+              value={destino}
+              onChange={(e) => {
+                const next = e.target.value as "" | "cuota" | ErpTimeKind;
+                setDestino(next);
+                if (next === "cuota") setCuotasOpen(true);
+                else {
+                  setPickedCuotas([]);
+                  setCuotasOpen(false);
+                }
+                if (!active) return;
+                if (next === "promesa" || next === "conocimiento") {
+                  void writeActiveDestino({ timeKind: next });
+                } else if (next === "") {
+                  void writeActiveDestino({});
+                } else if (pickedCuotas.length > 0) {
+                  void writeActiveDestino({ cuotaClients: pickedCuotas });
+                }
+              }}
+              className="mt-1 block w-full cursor-pointer rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-950"
+            >
+              <option value="">Sin marcar</option>
+              <option value="cuota">Cuota</option>
+              <option value="promesa">Promesa</option>
+              <option value="conocimiento">Conocimiento</option>
+            </select>
+          </label>
+          {destino === "cuota" ? (
+            <div className="mt-2">
+              <button
+                type="button"
+                aria-expanded={cuotasOpen}
+                onClick={() => setCuotasOpen((open) => !open)}
+                className="flex w-full cursor-pointer items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-left text-xs font-semibold text-slate-900"
+              >
+                <ChevronDown
+                  className={`h-3.5 w-3.5 shrink-0 text-slate-900 transition ${cuotasOpen ? "" : "-rotate-90"}`}
+                  aria-hidden
+                />
+                <span className="min-w-0 flex-1">
+                  <span className="block">
+                    Cuotas
+                    {pickedCuotas.length >= 2
+                      ? ` · repartido entre ${pickedCuotas.length}`
+                      : " · una es focus"}
+                  </span>
+                  <span className="block truncate font-medium">
+                    {pickedCuotas.length === 0 ? "Ninguna" : pickedCuotas.join(", ")}
+                  </span>
+                </span>
+              </button>
+              {cuotasOpen ? (
+              <ul className="mt-1 max-h-40 overflow-y-auto rounded-xl border border-slate-200 bg-white p-1">
+                {cuotaClients.map((client) => {
+                  const checked = pickedCuotas.some(
+                    (name) => name.trim().toLowerCase() === client.trim().toLowerCase(),
+                  );
+                  return (
+                    <li key={client}>
+                      <label className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium text-slate-900 hover:bg-slate-50">
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={() => togglePickedCuota(client)}
+                          className="h-4 w-4 accent-[#1d4ed8]"
+                        />
+                        <span className="min-w-0 truncate">{client}</span>
+                      </label>
+                    </li>
+                  );
+                })}
+              </ul>
+              ) : null}
+            </div>
+          ) : null}
         </div>
 
         <div className="relative min-w-0 flex-[1.5]" ref={pickerRootRef}>

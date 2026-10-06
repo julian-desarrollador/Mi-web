@@ -26,6 +26,7 @@ export type ProyectoOperativo = {
 export type CuotaOperativaBorder = "none" | "cambio" | "stats" | "both";
 
 export type CuotaDotMarker = {
+  id: string;
   estado: CuotaEstado;
   border: CuotaOperativaBorder;
 };

@@ -7,12 +7,16 @@ import {
   normalizeWork,
   normalizeWorkTimers,
   parseDurationToHours,
+  readTimerDestino,
   sumWorkHours,
   sumWorkTimerSeconds,
+  timerDestinoKey,
   UNNAMED_WORK_TIMER,
   WORK_CATEGORY_META,
   type ErpActiveWorkTimer,
   type ErpDayLog,
+  type ErpTimeKind,
+  type ErpTimerDestino,
   type ErpWorkTimer,
   type WorkCategoryKey,
 } from "@/app/admin92/erp/lib/erpTypes";
@@ -27,7 +31,9 @@ type Props = {
   editLog: ErpDayLog;
   onPersist: (log: ErpDayLog) => Promise<void>;
   persisting?: boolean;
-  /** Vista agregada (semana/mes): solo lectura */
+  /** Semana o mes: cada fila es un timer de un día y se guarda en ese día. */
+  periodLogs?: ErpDayLog[];
+  /** Vista de solo lectura */
   readOnly?: boolean;
   /** Texto bajo el título; por defecto la fecha del log. String vacío oculta el renglón. */
   subtitle?: string;
@@ -37,7 +43,11 @@ type Props = {
   timerOrder?: "duration" | "newest";
   icons: Record<WorkCategoryKey, ComponentType<{ className?: string }>>;
   activeWorkTimer?: ErpActiveWorkTimer | null;
-  onStartLiveTimer?: (category: WorkCategoryKey, name: string) => Promise<void>;
+  onStartLiveTimer?: (
+    category: WorkCategoryKey,
+    name: string,
+    destino?: ErpTimerDestino,
+  ) => Promise<void>;
   timerSaving?: boolean;
 };
 
@@ -62,18 +72,65 @@ function parseDurationToSeconds(raw: string, fallback: number): number {
   return fallback;
 }
 
+type DraftDestino = "" | "cuota" | ErpTimeKind;
+
+function destinoFromDraft(kind: DraftDestino, clients: string[]): ErpTimerDestino {
+  if (kind === "cuota") return readTimerDestino({ cuotaClients: clients });
+  if (kind === "promesa" || kind === "conocimiento") return { timeKind: kind };
+  return {};
+}
+
+function destinoCaption(timer: ErpTimerDestino): string | null {
+  if (timer.share === "repartido" && timer.cuotaClients && timer.cuotaClients.length >= 2) {
+    return `Repartido · ${timer.cuotaClients.join(", ")}`;
+  }
+  if (timer.cuotaClient) return timer.cuotaClient;
+  if (timer.timeKind === "promesa") return "Promesa";
+  if (timer.timeKind === "conocimiento") return "Conocimiento";
+  return null;
+}
+
+let cuotaClientsCache: Promise<string[]> | null = null;
+
+function loadCuotaClientNames(): Promise<string[]> {
+  if (!cuotaClientsCache) {
+    cuotaClientsCache = fetch("/api/admin/cobros")
+      .then((res) => res.json())
+      .then((data: { cobros?: { clientName?: string }[] }) => {
+        const names = new Set<string>();
+        if (Array.isArray(data.cobros)) {
+          for (const cobro of data.cobros) {
+            const client = cobro.clientName?.trim();
+            if (client) names.add(client);
+          }
+        }
+        return [...names].sort((a, b) => a.localeCompare(b, "es"));
+      })
+      .catch((err: unknown) => {
+        cuotaClientsCache = null;
+        throw err;
+      });
+  }
+  return cuotaClientsCache;
+}
+
 type EditingTarget =
-  | { kind: "timer"; category: WorkCategoryKey; index: number }
-  | { kind: "orphan"; category: WorkCategoryKey };
+  | { kind: "timer"; category: WorkCategoryKey; index: number; date?: string }
+  | { kind: "orphan"; category: WorkCategoryKey; date?: string };
 
 type DeleteConfirm =
-  | { kind: "timer"; category: WorkCategoryKey; index: number; name: string }
-  | { kind: "orphan"; category: WorkCategoryKey };
+  | { kind: "timer"; category: WorkCategoryKey; index: number; name: string; date?: string }
+  | { kind: "orphan"; category: WorkCategoryKey; date?: string };
+
+type CategoryRow =
+  | { kind: "timer"; timer: ErpWorkTimer; index: number; date?: string }
+  | { kind: "orphan"; seconds: number; date?: string };
 
 export default function WorkCategoriesEditor({
   editLog,
   onPersist,
   persisting = false,
+  periodLogs,
   readOnly = false,
   subtitle,
   hideEmptyCategories = false,
@@ -90,6 +147,10 @@ export default function WorkCategoriesEditor({
   const [draftName, setDraftName] = useState("");
   const [draftTime, setDraftTime] = useState("");
   const [draftItems, setDraftItems] = useState<Record<string, string>>({});
+  const [draftDestino, setDraftDestino] = useState<DraftDestino>("");
+  const [draftCuotaClients, setDraftCuotaClients] = useState<string[]>([]);
+  const [draftCuotasOpen, setDraftCuotasOpen] = useState(true);
+  const [cuotaClients, setCuotaClients] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<DeleteConfirm | null>(null);
   const editingRef = useRef<HTMLLIElement | null>(null);
@@ -101,7 +162,47 @@ export default function WorkCategoriesEditor({
   const work = useMemo(() => normalizeWork(editLog.work), [editLog.work]);
   const workTotal = sumWorkHours(work);
 
+  const periodRows = useMemo(() => {
+    if (!periodLogs) return null;
+    const sorted = [...periodLogs].sort((a, b) => b.date.localeCompare(a.date));
+    const byCategory = new Map<WorkCategoryKey, CategoryRow[]>();
+    for (const meta of WORK_CATEGORY_META) {
+      const rows: CategoryRow[] = [];
+      for (const log of sorted) {
+        const dayTimers = normalizeWorkTimers(log.workTimers)[meta.key] ?? [];
+        const hours = normalizeWork(log.work)[meta.key] ?? 0;
+        if (dayTimers.length > 0) {
+          const listed: CategoryRow[] = dayTimers.map((timer, index) => ({
+            kind: "timer",
+            timer,
+            index,
+            date: log.date,
+          }));
+          listed.sort((a, b) => {
+            if (a.kind !== "timer" || b.kind !== "timer") return 0;
+            return (
+              b.timer.seconds - a.timer.seconds ||
+              a.timer.name.localeCompare(b.timer.name, "es")
+            );
+          });
+          rows.push(...listed);
+        } else if (hours > 0) {
+          rows.push({ kind: "orphan", seconds: Math.round(hours * 3600), date: log.date });
+        }
+      }
+      byCategory.set(meta.key, rows);
+    }
+    return byCategory;
+  }, [periodLogs]);
+
   const categories = WORK_CATEGORY_META.map((c) => {
+    if (periodRows) {
+      return {
+        ...c,
+        hours: work[c.key] ?? 0,
+        rows: periodRows.get(c.key) ?? [],
+      };
+    }
     const withIndex = (workTimers[c.key] ?? []).map((timer, index) => ({
       timer,
       index,
@@ -114,19 +215,38 @@ export default function WorkCategoriesEditor({
               b.timer.seconds - a.timer.seconds ||
               a.timer.name.localeCompare(b.timer.name),
           );
+    const hours = work[c.key] ?? 0;
+    const rows: CategoryRow[] =
+      timers.length > 0
+        ? timers.map(({ timer, index }) => ({ kind: "timer", timer, index }))
+        : hours > 0
+          ? [{ kind: "orphan", seconds: Math.round(hours * 3600) }]
+          : [];
     return {
       ...c,
-      hours: work[c.key] ?? 0,
-      timers,
+      hours,
+      rows,
     };
-  }).filter((c) => !hideEmptyCategories || c.hours > 0 || c.timers.length > 0);
+  }).filter((c) => !hideEmptyCategories || c.hours > 0 || c.rows.length > 0);
 
-  const timerKey = (category: WorkCategoryKey, index: number) => `${category}:${index}`;
-  const orphanKey = (category: WorkCategoryKey) => `${category}:orphan`;
+  const timerKey = (category: WorkCategoryKey, index: number, date?: string) =>
+    date ? `${date}:${category}:${index}` : `${category}:${index}`;
+  const orphanKey = (category: WorkCategoryKey, date?: string) =>
+    date ? `${date}:${category}:orphan` : `${category}:orphan`;
 
   const parseEditingKey = (key: string | null): EditingTarget | null => {
     if (!key) return null;
-    const [category, indexRaw] = key.split(":");
+    const parts = key.split(":");
+    let date: string | undefined;
+    let category: string;
+    let indexRaw: string;
+    if (parts.length === 3) {
+      [date, category, indexRaw] = parts;
+    } else if (parts.length === 2) {
+      [category, indexRaw] = parts;
+    } else {
+      return null;
+    }
     if (
       category !== "software" &&
       category !== "saas" &&
@@ -137,10 +257,24 @@ export default function WorkCategoriesEditor({
     ) {
       return null;
     }
-    if (indexRaw === "orphan") return { kind: "orphan", category };
+    if (indexRaw === "orphan") return { kind: "orphan", category, date };
     const index = Number(indexRaw);
     if (!Number.isInteger(index) || index < 0) return null;
-    return { kind: "timer", category, index };
+    return { kind: "timer", category, index, date };
+  };
+
+  const bundleFor = (date?: string) => {
+    if (date) {
+      const log = periodLogs?.find((item) => item.date === date);
+      if (!log) return null;
+      return {
+        log,
+        timers: normalizeWorkTimers(log.workTimers),
+        work: normalizeWork(log.work),
+      };
+    }
+    if (periodLogs) return null;
+    return { log: editLog, timers: workTimers, work };
   };
 
   useEffect(() => {
@@ -149,16 +283,39 @@ export default function WorkCategoriesEditor({
   }, [editLog.date, readOnly]);
 
   useEffect(() => {
+    if (readOnly) return;
+    let cancelled = false;
+    void loadCuotaClientNames()
+      .then((names) => {
+        if (!cancelled) setCuotaClients(names);
+      })
+      .catch(() => {
+        if (!cancelled) setCuotaClients([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [readOnly]);
+
+  useEffect(() => {
     const parsed = parseEditingKey(editingKey);
     if (!parsed) return;
+    const source = bundleFor(parsed.date);
+    if (!source) {
+      setEditingKey(null);
+      return;
+    }
     if (parsed.kind === "orphan") {
-      const seconds = Math.round((work[parsed.category] ?? 0) * 3600);
+      const seconds = Math.round((source.work[parsed.category] ?? 0) * 3600);
       setDraftName(UNNAMED_WORK_TIMER);
       setDraftTime(formatSecondsAsClock(seconds));
       setDraftItems({});
+      setDraftDestino("");
+      setDraftCuotaClients([]);
+      setDraftCuotasOpen(true);
       return;
     }
-    const timer = workTimers[parsed.category]?.[parsed.index];
+    const timer = source.timers[parsed.category]?.[parsed.index];
     if (!timer) {
       setEditingKey(null);
       return;
@@ -168,7 +325,18 @@ export default function WorkCategoriesEditor({
     const items: Record<string, string> = {};
     for (const item of timer.items ?? []) items[item.id] = item.text;
     setDraftItems(items);
-  }, [editingKey, workTimers, work]);
+    setDraftCuotasOpen(true);
+    if (timer.share === "repartido" && timer.cuotaClients && timer.cuotaClients.length >= 2) {
+      setDraftDestino("cuota");
+      setDraftCuotaClients(timer.cuotaClients);
+    } else if (timer.cuotaClient) {
+      setDraftDestino("cuota");
+      setDraftCuotaClients([timer.cuotaClient]);
+    } else {
+      setDraftDestino(timer.timeKind ?? "");
+      setDraftCuotaClients([]);
+    }
+  }, [editingKey, workTimers, work, periodLogs]);
 
   useEffect(() => {
     if (!deleteConfirm) return;
@@ -193,7 +361,7 @@ export default function WorkCategoriesEditor({
       document.removeEventListener("touchstart", onPointerDown);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- cerrar al click afuera del timer en edición
-  }, [editingKey, deleteConfirm, draftName, draftTime, draftItems, workTimers, work, editLog]);
+  }, [editingKey, deleteConfirm, draftName, draftTime, draftItems, draftDestino, draftCuotaClients, workTimers, work, editLog, periodLogs]);
 
   const persist = async (next: ErpDayLog) => {
     setError(null);
@@ -207,43 +375,57 @@ export default function WorkCategoriesEditor({
   const updateTimers = async (
     category: WorkCategoryKey,
     updater: (list: ErpWorkTimer[]) => ErpWorkTimer[],
+    date?: string,
   ) => {
-    const list = updater([...(workTimers[category] ?? [])]);
-    const nextWork = { ...work };
+    const source = bundleFor(date);
+    if (!source) return;
+    const list = updater([...(source.timers[category] ?? [])]);
+    const nextWork = { ...source.work };
     if (list.length === 0) nextWork[category] = 0;
     await persist({
-      ...editLog,
+      ...source.log,
       work: nextWork,
-      workTimers: { ...workTimers, [category]: list },
+      workTimers: { ...source.timers, [category]: list },
     });
   };
 
   const commitCurrentEdits = async () => {
     const parsed = parseEditingKey(editingKey);
     if (!parsed) return;
+    const source = bundleFor(parsed.date);
+    if (!source) return;
 
     let nextName = draftName.trim().slice(0, 200);
     if (!nextName) nextName = UNNAMED_WORK_TIMER;
     const nextSeconds = parseDurationToSeconds(
       draftTime,
       parsed.kind === "orphan"
-        ? Math.round((work[parsed.category] ?? 0) * 3600)
-        : (workTimers[parsed.category]?.[parsed.index]?.seconds ?? 0),
+        ? Math.round((source.work[parsed.category] ?? 0) * 3600)
+        : (source.timers[parsed.category]?.[parsed.index]?.seconds ?? 0),
     );
 
+    const destino = destinoFromDraft(draftDestino, draftCuotaClients);
+
     if (parsed.kind === "orphan") {
-      const prevSeconds = Math.round((work[parsed.category] ?? 0) * 3600);
-      if (nextName === UNNAMED_WORK_TIMER && nextSeconds === prevSeconds) return;
+      const prevSeconds = Math.round((source.work[parsed.category] ?? 0) * 3600);
+      if (
+        nextName === UNNAMED_WORK_TIMER &&
+        nextSeconds === prevSeconds &&
+        timerDestinoKey(destino) === ""
+      ) {
+        return;
+      }
       await persist({
-        ...editLog,
-        work: { ...work, [parsed.category]: nextSeconds / 3600 },
+        ...source.log,
+        work: { ...source.work, [parsed.category]: nextSeconds / 3600 },
         workTimers: {
-          ...workTimers,
+          ...source.timers,
           [parsed.category]: [
             {
               name: nextName,
               seconds: nextSeconds,
               items: [],
+              ...destino,
             },
           ],
         },
@@ -252,7 +434,7 @@ export default function WorkCategoriesEditor({
     }
 
     const { category, index } = parsed;
-    const current = workTimers[category]?.[index];
+    const current = source.timers[category]?.[index];
     if (!current) return;
 
     const nextItems = (current.items ?? []).map((item) => {
@@ -266,20 +448,25 @@ export default function WorkCategoriesEditor({
       const draft = (draftItems[item.id] ?? item.text).trim();
       return draft !== item.text;
     });
+    const destinoChanged = timerDestinoKey(current) !== timerDestinoKey(destino);
 
-    if (!nameChanged && !timeChanged && !itemsChanged) return;
+    if (!nameChanged && !timeChanged && !itemsChanged && !destinoChanged) return;
 
-    await updateTimers(category, (list) =>
-      list.map((t, i) =>
-        i === index
-          ? {
-              ...t,
-              name: nextName,
-              seconds: nextSeconds,
-              items: nextItems.length > 0 ? nextItems : t.items,
-            }
-          : t,
-      ),
+    const keptItems = nextItems.length > 0 ? nextItems : current.items;
+    await updateTimers(
+      category,
+      (list) =>
+        list.map((t, i) =>
+          i === index
+            ? {
+                name: nextName,
+                seconds: nextSeconds,
+                ...(keptItems && keptItems.length > 0 ? { items: keptItems } : {}),
+                ...destino,
+              }
+            : t,
+        ),
+      parsed.date,
     );
   };
 
@@ -297,19 +484,21 @@ export default function WorkCategoriesEditor({
     setEditingKey(key);
   };
 
-  const deleteTimer = (category: WorkCategoryKey, index: number) => {
-    const current = workTimers[category][index];
+  const deleteTimer = (category: WorkCategoryKey, index: number, date?: string) => {
+    const source = bundleFor(date);
+    const current = source?.timers[category]?.[index];
     if (!current) return;
     setDeleteConfirm({
       kind: "timer",
       category,
       index,
       name: current.name,
+      date,
     });
   };
 
-  const deleteOrphan = (category: WorkCategoryKey) => {
-    setDeleteConfirm({ kind: "orphan", category });
+  const deleteOrphan = (category: WorkCategoryKey, date?: string) => {
+    setDeleteConfirm({ kind: "orphan", category, date });
   };
 
   const confirmDelete = async () => {
@@ -318,15 +507,19 @@ export default function WorkCategoriesEditor({
     setDeleteConfirm(null);
     setEditingKey(null);
     if (pending.kind === "timer") {
-      await updateTimers(pending.category, (list) =>
-        list.filter((_, i) => i !== pending.index),
+      await updateTimers(
+        pending.category,
+        (list) => list.filter((_, i) => i !== pending.index),
+        pending.date,
       );
       return;
     }
+    const source = bundleFor(pending.date);
+    if (!source) return;
     await persist({
-      ...editLog,
-      work: { ...work, [pending.category]: 0 },
-      workTimers: { ...workTimers, [pending.category]: [] },
+      ...source.log,
+      work: { ...source.work, [pending.category]: 0 },
+      workTimers: { ...source.timers, [pending.category]: [] },
     });
   };
 
@@ -334,21 +527,46 @@ export default function WorkCategoriesEditor({
     category: WorkCategoryKey,
     timerIndex: number,
     itemId: string,
+    date?: string,
   ) => {
     setDraftItems((prev) => {
       const next = { ...prev };
       delete next[itemId];
       return next;
     });
-    await updateTimers(category, (list) =>
-      list.map((t, i) => {
-        if (i !== timerIndex) return t;
-        return {
-          ...t,
-          items: (t.items ?? []).filter((it) => it.id !== itemId),
-        };
-      }),
+    await updateTimers(
+      category,
+      (list) =>
+        list.map((t, i) => {
+          if (i !== timerIndex) return t;
+          return {
+            ...t,
+            items: (t.items ?? []).filter((it) => it.id !== itemId),
+          };
+        }),
+      date,
     );
+  };
+
+  const clientOptions = (() => {
+    const names = new Set(cuotaClients);
+    for (const client of draftCuotaClients) {
+      const trimmed = client.trim();
+      if (trimmed) names.add(trimmed);
+    }
+    return [...names].sort((a, b) => a.localeCompare(b, "es"));
+  })();
+
+  const toggleDraftCuota = (client: string) => {
+    setDraftCuotaClients((prev) => {
+      const exists = prev.some((name) => name.trim().toLowerCase() === client.trim().toLowerCase());
+      const next = exists
+        ? prev.filter((name) => name.trim().toLowerCase() !== client.trim().toLowerCase())
+        : [...prev, client];
+      return clientOptions.filter((name) =>
+        next.some((picked) => picked.trim().toLowerCase() === name.trim().toLowerCase()),
+      );
+    });
   };
 
   const renderEditorRow = (
@@ -411,6 +629,84 @@ export default function WorkCategoriesEditor({
           <Trash2 className="h-3.5 w-3.5" />
         </button>
       </div>
+      <div className="grid gap-1.5 sm:grid-cols-2">
+        <label className="block text-[11px] font-semibold text-slate-800">
+          Destino
+          <select
+            value={draftDestino}
+            disabled={persisting}
+            onChange={(e) => {
+              const next = e.target.value as DraftDestino;
+              setDraftDestino(next);
+              if (next === "cuota") setDraftCuotasOpen(true);
+              else setDraftCuotaClients([]);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                void exitEdit(true);
+              }
+              if (e.key === "Escape") {
+                e.preventDefault();
+                void exitEdit(false);
+              }
+            }}
+            className="mt-1 block w-full cursor-pointer rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs font-semibold text-slate-950"
+          >
+            <option value="">Sin marcar</option>
+            <option value="cuota">Cuota</option>
+            <option value="promesa">Promesa</option>
+            <option value="conocimiento">Conocimiento</option>
+          </select>
+        </label>
+        {draftDestino === "cuota" ? (
+          <div>
+            <button
+              type="button"
+              aria-expanded={draftCuotasOpen}
+              onClick={() => setDraftCuotasOpen((open) => !open)}
+              className="flex w-full cursor-pointer items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-left text-[11px] font-semibold text-slate-900"
+            >
+              <ChevronDown
+                className={`h-3.5 w-3.5 shrink-0 text-slate-900 transition ${draftCuotasOpen ? "" : "-rotate-90"}`}
+                aria-hidden
+              />
+              <span className="min-w-0 flex-1">
+                <span className="block">
+                  Cuotas
+                  {draftCuotaClients.length >= 2 ? " · repartido" : " · una es focus"}
+                </span>
+                <span className="block truncate font-medium">
+                  {draftCuotaClients.length === 0 ? "Ninguna" : draftCuotaClients.join(", ")}
+                </span>
+              </span>
+            </button>
+            {draftCuotasOpen ? (
+            <ul className="mt-1 max-h-32 overflow-y-auto rounded-lg border border-slate-300 bg-white p-1">
+              {clientOptions.map((client) => {
+                const checked = draftCuotaClients.some(
+                  (name) => name.trim().toLowerCase() === client.trim().toLowerCase(),
+                );
+                return (
+                  <li key={client}>
+                    <label className="flex cursor-pointer items-center gap-2 rounded px-1.5 py-1 text-xs font-medium text-slate-900">
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        disabled={persisting}
+                        onChange={() => toggleDraftCuota(client)}
+                        className="h-3.5 w-3.5 accent-[#1d4ed8]"
+                      />
+                      <span className="min-w-0 truncate">{client}</span>
+                    </label>
+                  </li>
+                );
+              })}
+            </ul>
+            ) : null}
+          </div>
+        ) : null}
+      </div>
       {(items ?? []).length > 0 && (
         <ul className="space-y-1 pl-1">
           {(items ?? []).map((item) => (
@@ -446,7 +742,7 @@ export default function WorkCategoriesEditor({
                 onClick={() => {
                   const parsed = parseEditingKey(key);
                   if (parsed?.kind === "timer") {
-                    void deleteItem(parsed.category, parsed.index, item.id);
+                    void deleteItem(parsed.category, parsed.index, item.id, parsed.date);
                   }
                 }}
                 disabled={persisting}
@@ -537,128 +833,62 @@ export default function WorkCategoriesEditor({
             >
               <div className="overflow-hidden">
                 <ul className="mt-2 space-y-1.5 border-l-2 border-slate-100 pl-3 ml-2">
-                  {cat.timers.length === 0 ? (
-                    (() => {
-                      const orphanSeconds = Math.round(cat.hours * 3600);
-                      if (orphanSeconds <= 0) {
-                        return (
-                          <li className="text-xs font-medium text-slate-500">
-                            Sin desglose de timers
-                          </li>
-                        );
-                      }
-                      const key = orphanKey(cat.key);
-                      if (editingKey === key) {
-                        return renderEditorRow(
-                          key,
-                          () => void deleteOrphan(cat.key),
-                          "Eliminar horas sin desglose",
-                        );
-                      }
-                      return (
-                        <li key={key}>
-                          <div className="flex items-start gap-1.5">
-                            {onStartLiveTimer && (
-                              <LiveTimerPlayButton
-                                category={cat.key}
-                                name=""
-                                activeWorkTimer={activeWorkTimer}
-                                onToggle={onStartLiveTimer}
-                                disabled={timerSaving}
-                                label={`Iniciar ${cat.name} sin nombre`}
-                              />
-                            )}
-                            {readOnly ? (
-                              <div className="min-w-0 flex-1 rounded-lg px-1.5 py-1">
-                                <div className="flex items-center justify-between gap-3">
-                                  <span className="min-w-0 truncate text-xs font-semibold text-amber-800">
-                                    Horas sin desglose
-                                  </span>
-                                  <span className="shrink-0 font-mono text-xs font-semibold text-slate-950">
-                                    {formatSecondsAsClock(orphanSeconds)}
-                                  </span>
-                                </div>
-                              </div>
-                            ) : (
-                              <button
-                                type="button"
-                                onClick={() => startEdit(key)}
-                                className="min-w-0 flex-1 cursor-pointer rounded-lg px-1.5 py-1 text-left transition hover:bg-slate-50"
-                              >
-                                <div className="flex items-center justify-between gap-3">
-                                  <span className="min-w-0 truncate text-xs font-semibold text-amber-800">
-                                    Horas sin desglose
-                                  </span>
-                                  <span className="shrink-0 font-mono text-xs font-semibold text-slate-950">
-                                    {formatSecondsAsClock(orphanSeconds)}
-                                  </span>
-                                </div>
-                                <p className="mt-0.5 text-[11px] font-medium text-slate-500">
-                                  Click para nombrar o editar este tiempo
-                                </p>
-                              </button>
-                            )}
-                          </div>
-                        </li>
-                      );
-                    })()
+                  {cat.rows.length === 0 ? (
+                    <li className="text-xs font-medium text-slate-500">Sin desglose de timers</li>
                   ) : (
-                    cat.timers.map(({ timer, index }) => {
-                      const key = timerKey(cat.key, index);
-                      const isEditing = editingKey === key;
-
-                      if (!isEditing) {
-                        const timerBody = (
+                    cat.rows.map((row) => {
+                      if (row.kind === "orphan") {
+                        const key = orphanKey(cat.key, row.date);
+                        if (editingKey === key) {
+                          return renderEditorRow(
+                            key,
+                            () => void deleteOrphan(cat.key, row.date),
+                            "Eliminar horas sin desglose",
+                          );
+                        }
+                        const orphanBody = (
                           <>
                             <div className="flex items-center justify-between gap-3">
-                              <span className="min-w-0 truncate text-xs font-semibold text-slate-800">
-                                {timer.name}
+                              <span className="min-w-0 truncate text-xs font-semibold text-amber-800">
+                                Horas sin desglose
                               </span>
                               <span className="shrink-0 font-mono text-xs font-semibold text-slate-950">
-                                {formatSecondsAsClock(timer.seconds)}
+                                {formatSecondsAsClock(row.seconds)}
                               </span>
                             </div>
-                            {(timer.items ?? []).length > 0 && (
-                              <ul className="mt-1 space-y-0.5 pl-2">
-                                {(timer.items ?? []).map((item) => (
-                                  <li
-                                    key={item.id}
-                                    className={`truncate text-[11px] ${
-                                      item.done
-                                        ? "text-slate-400 line-through"
-                                        : "text-slate-600"
-                                    }`}
-                                  >
-                                    · {item.text}
-                                  </li>
-                                ))}
-                              </ul>
+                            {row.date ? (
+                              <p className="mt-0.5 text-[11px] font-medium text-slate-600">
+                                {formatLocalDate(row.date)}
+                              </p>
+                            ) : (
+                              <p className="mt-0.5 text-[11px] font-medium text-slate-500">
+                                Click para nombrar o editar este tiempo
+                              </p>
                             )}
                           </>
                         );
                         return (
-                          <li key={`${cat.key}-${index}-${timer.name}`}>
+                          <li key={key}>
                             <div className="flex items-start gap-1.5">
                               {onStartLiveTimer && (
                                 <LiveTimerPlayButton
                                   category={cat.key}
-                                  name={timer.name}
+                                  name=""
                                   activeWorkTimer={activeWorkTimer}
                                   onToggle={onStartLiveTimer}
                                   disabled={timerSaving}
+                                  label={`Iniciar ${cat.name} sin nombre`}
                                 />
                               )}
                               {readOnly ? (
-                                <div className="min-w-0 flex-1 rounded-lg px-1.5 py-1">
-                                  {timerBody}
-                                </div>
+                                <div className="min-w-0 flex-1 rounded-lg px-1.5 py-1">{orphanBody}</div>
                               ) : (
                                 <button
                                   type="button"
                                   onClick={() => startEdit(key)}
                                   className="min-w-0 flex-1 cursor-pointer rounded-lg px-1.5 py-1 text-left transition hover:bg-slate-50"
                                 >
-                                  {timerBody}
+                                  {orphanBody}
                                 </button>
                               )}
                             </div>
@@ -666,11 +896,83 @@ export default function WorkCategoriesEditor({
                         );
                       }
 
-                      return renderEditorRow(
-                        key,
-                        () => void deleteTimer(cat.key, index),
-                        `Eliminar ${timer.name}`,
-                        timer.items,
+                      const { timer, index, date } = row;
+                      const key = timerKey(cat.key, index, date);
+                      if (editingKey === key) {
+                        return renderEditorRow(
+                          key,
+                          () => void deleteTimer(cat.key, index, date),
+                          `Eliminar ${timer.name}`,
+                          timer.items,
+                        );
+                      }
+                      const caption = destinoCaption(timer);
+                      const timerBody = (
+                        <>
+                          <div className="flex items-center justify-between gap-3">
+                            <span className="min-w-0 truncate text-xs font-semibold text-slate-800">
+                              {timer.name}
+                            </span>
+                            <span className="shrink-0 font-mono text-xs font-semibold text-slate-950">
+                              {formatSecondsAsClock(timer.seconds)}
+                            </span>
+                          </div>
+                          {date ? (
+                            <p className="mt-0.5 text-[11px] font-medium text-slate-600">
+                              {formatLocalDate(date)}
+                            </p>
+                          ) : null}
+                          {caption ? (
+                            <p className="mt-0.5 text-[11px] font-medium text-slate-600">{caption}</p>
+                          ) : null}
+                          {(timer.items ?? []).length > 0 && (
+                            <ul className="mt-1 space-y-0.5 pl-2">
+                              {(timer.items ?? []).map((item) => (
+                                <li
+                                  key={item.id}
+                                  className={`truncate text-[11px] ${
+                                    item.done ? "text-slate-400 line-through" : "text-slate-600"
+                                  }`}
+                                >
+                                  · {item.text}
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </>
+                      );
+                      return (
+                        <li key={key}>
+                          <div className="flex items-start gap-1.5">
+                            {onStartLiveTimer && (
+                              <LiveTimerPlayButton
+                                category={cat.key}
+                                name={timer.name}
+                                destino={
+                                  timer.cuotaClient ||
+                                  (timer.cuotaClients && timer.cuotaClients.length >= 2) ||
+                                  timer.timeKind
+                                    ? readTimerDestino(timer)
+                                    : undefined
+                                }
+                                activeWorkTimer={activeWorkTimer}
+                                onToggle={onStartLiveTimer}
+                                disabled={timerSaving}
+                              />
+                            )}
+                            {readOnly ? (
+                              <div className="min-w-0 flex-1 rounded-lg px-1.5 py-1">{timerBody}</div>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => startEdit(key)}
+                                className="min-w-0 flex-1 cursor-pointer rounded-lg px-1.5 py-1 text-left transition hover:bg-slate-50"
+                              >
+                                {timerBody}
+                              </button>
+                            )}
+                          </div>
+                        </li>
                       );
                     })
                   )}

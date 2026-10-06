@@ -11,6 +11,8 @@ export type AccountingDoc = {
   category?: string;
   date: Date;
   createdAt: Date;
+  /** Ingreso de chamba: no entra en los totales de negocio salvo que se active el botón */
+  chamba?: boolean;
 };
 
 function getDbName() {

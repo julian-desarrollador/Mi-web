@@ -4,10 +4,11 @@ import { Fragment, Suspense, useEffect, useMemo, useRef, useState } from "react"
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { Pencil, Trash2, Check, BarChart3, Calendar, FolderKanban, Copy, FileText } from "lucide-react";
+import { Pencil, Trash2, Check, BarChart3, Calendar, FolderKanban, Copy, FileText, Briefcase, Wrench, Smile } from "lucide-react";
 import { getRemindersToday, getRemindersWeekBefore, getStatsOverdue, getStatsToday } from "@/app/lib/cobrosWorkflow";
 import { formatRecordatorioMensaje, MENSAJE_ESTADISTICAS, MENSAJE_RECORDATORIO_PAGO } from "@/app/lib/cobrosMensajes";
 import HerramientasPanel from "@/app/admin92/contabilidad/components/HerramientasPanel";
+import StackModal from "@/app/admin92/contabilidad/components/StackModal";
 import CuotaNotaEditor from "@/app/admin92/contabilidad/components/CuotaNotaEditor";
 import CuotaOperativaPanel from "@/app/admin92/contabilidad/components/CuotaOperativaPanel";
 import Desarrollo50TasksBlock from "@/app/admin92/contabilidad/components/Desarrollo50TasksBlock";
@@ -29,6 +30,11 @@ import {
   type CambiosSortMode,
 } from "@/app/admin92/contabilidad/lib/cambiosPendientes";
 import { buildCalendarMarkers } from "@/app/admin92/contabilidad/lib/calendarMarkers";
+import {
+  buildCuotaTimerRows,
+  cuotaTimersFetchRange,
+} from "@/app/admin92/contabilidad/lib/cuotaTimers";
+import type { ErpDayLog } from "@/app/admin92/erp/lib/erpTypes";
 import {
   buildProyectoByClientMap,
   getCuotaOperativaBorder,
@@ -81,6 +87,23 @@ type WebhookEvent = {
 
 type AccountingType = "ingreso" | "gasto" | "inversion";
 
+const GASTO_CATEGORIAS = ["Herramientas", "Placer"] as const;
+
+function isGastoPlacer(category?: string): boolean {
+  return (category || "").trim().toLowerCase() === "placer";
+}
+
+function isGastoHerramientas(category?: string): boolean {
+  return (category || "").trim().toLowerCase() === "herramientas";
+}
+
+function gastoCategoryOptions(current: string): string[] {
+  const trimmed = current.trim();
+  const known = GASTO_CATEGORIAS.some((item) => item.toLowerCase() === trimmed.toLowerCase());
+  if (trimmed && !known) return [trimmed, ...GASTO_CATEGORIAS];
+  return [...GASTO_CATEGORIAS];
+}
+
 type AccountingRecord = {
   _id?: string;
   type: AccountingType;
@@ -89,6 +112,7 @@ type AccountingRecord = {
   category?: string;
   date: string;
   createdAt: string;
+  chamba?: boolean;
 };
 
 /** Cuota del Cuaderno de cobros */
@@ -111,6 +135,8 @@ type Cobro = {
   /** Si esta cuota requiere estadísticas (independiente por mes) */
   requiereEstadisticas?: boolean;
   accountingRecordId?: string;
+  /** Cuota de chamba: queda fuera de los totales de negocio hasta activar el botón */
+  chamba?: boolean;
   /** Prioridad manual en cola de cambios (0 = más urgente) */
   prioridad?: number;
   /** Cambio pendiente de esta cuota (ciclo mensual) */
@@ -152,6 +178,39 @@ type SubscriptionAdmin = {
   createdAt?: string;
   ga4PropertyId: string | null;
 };
+
+function ChambaToggle({
+  pressed,
+  onClick,
+  disabled,
+  icon = false,
+}: {
+  pressed: boolean;
+  onClick: () => void;
+  disabled?: boolean;
+  icon?: boolean;
+}) {
+  const label = pressed ? "Quitar chamba" : "Marcar como chamba";
+  return (
+    <button
+      type="button"
+      aria-pressed={pressed}
+      aria-label={icon ? label : undefined}
+      title={icon ? label : undefined}
+      disabled={disabled}
+      onClick={onClick}
+      className={`rounded-lg border cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 ${
+        icon ? "p-2" : "px-2.5 py-1 text-xs font-semibold"
+      } ${
+        pressed
+          ? "border-[#9a3412] bg-[#c2410c] text-white"
+          : "border-slate-300 bg-white text-slate-700"
+      }`}
+    >
+      {icon ? <Briefcase className="h-4 w-4" /> : "Chamba"}
+    </button>
+  );
+}
 
 function Admin92PageContent() {
   const pathname = usePathname();
@@ -207,6 +266,7 @@ function Admin92PageContent() {
   const [contabilidadToolPanel, setContabilidadToolPanel] = useState<
     null | "objetivos" | "mantenimientos" | "buscar-clientes"
   >(null);
+  const [stackOpen, setStackOpen] = useState(false);
   const [pendingPaidCobro, setPendingPaidCobro] = useState<Cobro | null>(null);
   const [paidFechaIngreso, setPaidFechaIngreso] = useState("");
   const [confirmingPaid, setConfirmingPaid] = useState(false);
@@ -218,6 +278,11 @@ function Admin92PageContent() {
   const [cobroError, setCobroError] = useState("");
   const [desarrollos50, setDesarrollos50] = useState<Desarrollo50Item[]>([]);
   const [desarrollosRefreshKey, setDesarrollosRefreshKey] = useState(0);
+  const [cuotaTimersOpen, setCuotaTimersOpen] = useState(false);
+  const [cuotaTimerLogs, setCuotaTimerLogs] = useState<ErpDayLog[]>([]);
+  const [cuotaTimersLoading, setCuotaTimersLoading] = useState(false);
+  const [cuotaTimersError, setCuotaTimersError] = useState("");
+  const [cuotaTimersNow, setCuotaTimersNow] = useState(() => Date.now());
   const [cobroSubmitting, setCobroSubmitting] = useState(false);
   const [cobroFormMode, setCobroFormMode] = useState<"single" | "recurrent" | "actions">("single");
   const [showSingleCobroForm, setShowSingleCobroForm] = useState(false);
@@ -235,6 +300,9 @@ function Admin92PageContent() {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
   });
   const [cobroMonthsToGenerate, setCobroMonthsToGenerate] = useState("12");
+  const [copyRow, setCopyRow] = useState<{ id: string; month: string } | null>(null);
+  const [cobroChamba, setCobroChamba] = useState(false);
+  const [includeChamba, setIncludeChamba] = useState(false);
   const [editingCobro, setEditingCobro] = useState<Cobro | null>(null);
   const [editCobroAmount, setEditCobroAmount] = useState("");
   const [editCobroServicio, setEditCobroServicio] = useState("");
@@ -497,6 +565,10 @@ function Admin92PageContent() {
       setAccError("La descripción es requerida.");
       return;
     }
+    if (formType === "gasto" && !formCategory.trim()) {
+      setAccError("Elegí Herramientas o Placer.");
+      return;
+    }
     setSubmitting(true);
     setAccError("");
     try {
@@ -594,6 +666,56 @@ function Admin92PageContent() {
     () => cobros.filter((c) => getMonthKeySafe(c.dueDate) === contabilidadMonth),
     [cobros, contabilidadMonth],
   );
+
+  const cuotaTimerRange = useMemo(
+    () => cuotaTimersFetchRange(cobrosEnMes.map((c) => c.dueDate)),
+    [cobrosEnMes],
+  );
+
+  useEffect(() => {
+    if (!cuotaTimersOpen || !cuotaTimerRange) {
+      setCuotaTimerLogs([]);
+      setCuotaTimersError("");
+      setCuotaTimersLoading(false);
+      return;
+    }
+    const controller = new AbortController();
+    setCuotaTimersLoading(true);
+    setCuotaTimersError("");
+    void fetch(`/api/admin/erp-logs?from=${cuotaTimerRange.from}&to=${cuotaTimerRange.to}`, {
+      signal: controller.signal,
+      cache: "no-store",
+    })
+      .then(async (response) => {
+        const data = (await response.json()) as { logs?: ErpDayLog[]; error?: string };
+        if (!response.ok) {
+          throw new Error(data.error || "No se pudieron cargar las horas.");
+        }
+        setCuotaTimerLogs(data.logs ?? []);
+        setCuotaTimersNow(Date.now());
+      })
+      .catch((error: unknown) => {
+        if (error instanceof DOMException && error.name === "AbortError") return;
+        setCuotaTimerLogs([]);
+        setCuotaTimersError(
+          error instanceof Error ? error.message : "No se pudieron cargar las horas.",
+        );
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setCuotaTimersLoading(false);
+      });
+    return () => controller.abort();
+  }, [cuotaTimersOpen, cuotaTimerRange]);
+
+  const cuotaTimerRows = useMemo(() => {
+    if (!cuotaTimersOpen) return [];
+    return buildCuotaTimerRows(
+      cobrosEnMes.map((c) => ({ id: c.id, clientName: c.clientName, dueDate: c.dueDate })),
+      cuotaTimerLogs,
+      cuotaTimersNow,
+      todayYmd(),
+    );
+  }, [cobrosEnMes, cuotaTimerLogs, cuotaTimersNow, cuotaTimersOpen]);
 
   const proyectoByClient = useMemo(
     () => buildProyectoByClientMap(proyectos),
@@ -705,11 +827,14 @@ function Admin92PageContent() {
   );
 
   const cobranzaKpis = useMemo(() => {
-    const inMonth = cobros.filter((c) => getMonthKeySafe(c.dueDate) === contabilidadMonth);
+    const inMonth = cobros.filter(
+      (c) => getMonthKeySafe(c.dueDate) === contabilidadMonth && (includeChamba || c.chamba !== true),
+    );
     const esperado = inMonth.reduce((sum, c) => sum + c.amount, 0);
     const pendiente = inMonth.filter((c) => !c.paid).reduce((sum, c) => sum + c.amount, 0);
     const cobrado = cobros
       .filter((c) => {
+        if (!includeChamba && c.chamba === true) return false;
         if (!c.paid) return false;
         if (c.accountingRecordId) {
           const rec = recordsById.get(c.accountingRecordId);
@@ -720,11 +845,13 @@ function Admin92PageContent() {
       })
       .reduce((sum, c) => sum + c.amount, 0);
     return { esperado, cobrado, pendiente };
-  }, [cobros, contabilidadMonth, recordsById]);
+  }, [cobros, contabilidadMonth, recordsById, includeChamba]);
 
   /** Ganado vs restante del mes, según fecha contable de cobros y corte (hoy o día seleccionado). */
   const cobranzaProgreso = useMemo(() => {
-    const inMonth = cobros.filter((c) => getMonthKeySafe(c.dueDate) === contabilidadMonth);
+    const inMonth = cobros.filter(
+      (c) => getMonthKeySafe(c.dueDate) === contabilidadMonth && (includeChamba || c.chamba !== true),
+    );
     const esperadoTotal = inMonth.reduce((sum, c) => sum + c.amount, 0);
     const hoy = todayYmd();
     const mesActual = getMonthKey(hoy);
@@ -741,6 +868,7 @@ function Admin92PageContent() {
 
     const ganadoHasta = cobros
       .filter((c) => {
+        if (!includeChamba && c.chamba === true) return false;
         if (!c.paid) return false;
         let fechaContable: string;
         if (c.accountingRecordId) {
@@ -757,7 +885,7 @@ function Admin92PageContent() {
 
     const esperadoRestante = Math.max(0, esperadoTotal - ganadoHasta);
     return { esperadoTotal, ganadoHasta, esperadoRestante, asOfDate };
-  }, [cobros, contabilidadMonth, recordsById, selectedDate]);
+  }, [cobros, contabilidadMonth, recordsById, selectedDate, includeChamba]);
 
   // Meses para formulario de cuotas recurrentes (desde hace 12 meses hasta +24)
   const cobroMonthOptions = useMemo(() => {
@@ -832,6 +960,7 @@ function Admin92PageContent() {
           servicio: cobroServicio || undefined,
           origen: cobroOrigen,
           paid: false,
+          ...(cobroChamba ? { chamba: true } : {}),
         }),
       });
       const data = await res.json();
@@ -844,6 +973,7 @@ function Admin92PageContent() {
       setCobroAmount("");
       setCobroServicio("");
       setCobroOrigen("manual");
+      setCobroChamba(false);
       setCobroDueDate(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`);
       fetchCobros();
     } catch (e: any) {
@@ -866,6 +996,7 @@ function Admin92PageContent() {
       dueDate: string;
       servicio?: string;
       origen: "manual" | "suscripcion_mp";
+      chamba?: boolean;
     }[] = [];
     for (let i = 0; i < months; i++) {
       const d = new Date(y, m - 1 + i, Math.min(day, new Date(y, m + i, 0).getDate()));
@@ -878,6 +1009,7 @@ function Admin92PageContent() {
           dueDate,
           servicio: cobroServicio || undefined,
           origen: cobroOrigen,
+          ...(cobroChamba ? { chamba: true } : {}),
         });
       }
     }
@@ -902,6 +1034,7 @@ function Admin92PageContent() {
       setCobroAmount("");
       setCobroServicio("");
       setCobroOrigen("manual");
+      setCobroChamba(false);
       setCobroDayOfMonth("1");
       const now = new Date();
       setCobroFromMonth(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`);
@@ -911,6 +1044,95 @@ function Admin92PageContent() {
       setCobroError(e?.message || "Error al guardar.");
     } finally {
       setCobroSubmitting(false);
+    }
+  };
+
+  const dueDateInMonth = (dueDate: string, targetYm: string) => {
+    const day = Number(dueDate.slice(8, 10));
+    const [y, m] = targetYm.split("-").map(Number);
+    const last = new Date(y, m, 0).getDate();
+    return `${targetYm}-${String(Math.min(day, last)).padStart(2, "0")}`;
+  };
+
+  const handleCopyCobroToMonth = async (c: Cobro, targetYm: string) => {
+    const dueDate = dueDateInMonth(c.dueDate, targetYm);
+    if (cobros.some((row) => row.clientName === c.clientName && row.dueDate === dueDate)) {
+      setCobroError("Esa cuota ya existe en ese mes.");
+      return;
+    }
+    setCobroSubmitting(true);
+    setCobroError("");
+    try {
+      const res = await fetch("/api/admin/cobros", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          cobros: [
+            {
+              clientName: c.clientName,
+              amount: c.amount,
+              dueDate,
+              servicio: c.servicio || undefined,
+              origen: c.origen === "suscripcion_mp" ? "suscripcion_mp" : "manual",
+              ...(c.chamba ? { chamba: true } : {}),
+            },
+          ],
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setCobroError(data?.error || "No se pudo copiar la cuota.");
+        return;
+      }
+      setCopyRow(null);
+      fetchCobros();
+    } catch (e: unknown) {
+      setCobroError(e instanceof Error ? e.message : "Error al copiar.");
+    } finally {
+      setCobroSubmitting(false);
+    }
+  };
+
+  const handleToggleCobroChamba = async (c: Cobro) => {
+    const next = c.chamba !== true;
+    setCobroError("");
+    try {
+      const res = await fetch(`/api/admin/cobros/${c.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ chamba: next }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setCobroError(data?.error || "No se pudo marcar la cuota.");
+        return;
+      }
+      fetchCobros();
+      if (c.accountingRecordId) fetchRecords();
+    } catch (e: unknown) {
+      setCobroError(e instanceof Error ? e.message : "Error al marcar la cuota.");
+    }
+  };
+
+  const handleToggleRecordChamba = async (r: AccountingRecord) => {
+    if (r.type !== "ingreso" || !r._id) return;
+    const next = r.chamba !== true;
+    setAccError("");
+    try {
+      const res = await fetch(`/api/admin/accounting/${r._id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ chamba: next }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setAccError(data?.error || "No se pudo marcar el ingreso.");
+        return;
+      }
+      fetchRecords();
+      fetchCobros();
+    } catch (e: unknown) {
+      setAccError(e instanceof Error ? e.message : "Error al marcar el ingreso.");
     }
   };
 
@@ -1321,15 +1543,23 @@ function Admin92PageContent() {
   };
 
   const totalIngresos = filteredRecords
-    .filter((r) => r.type === "ingreso")
+    .filter((r) => r.type === "ingreso" && (includeChamba || r.chamba !== true))
     .reduce((sum, r) => sum + r.amount, 0);
-  const totalGastos = filteredRecords
-    .filter((r) => r.type === "gasto")
+  const gastosDelMes = filteredRecords.filter((r) => r.type === "gasto");
+  const totalGastos = gastosDelMes.reduce((sum, r) => sum + r.amount, 0);
+  const totalHerramientas = gastosDelMes
+    .filter((r) => isGastoHerramientas(r.category))
+    .reduce((sum, r) => sum + r.amount, 0);
+  const totalPlacer = gastosDelMes
+    .filter((r) => isGastoPlacer(r.category))
     .reduce((sum, r) => sum + r.amount, 0);
   const totalInversion = filteredRecords
     .filter((r) => r.type === "inversion")
     .reduce((sum, r) => sum + r.amount, 0);
-  const resultado = totalIngresos - totalGastos - totalInversion;
+  const resultado =
+    totalIngresos -
+    gastosDelMes.filter((r) => !isGastoPlacer(r.category)).reduce((sum, r) => sum + r.amount, 0) -
+    totalInversion;
 
   const formatCurrency = (n: number) =>
     `$${n.toLocaleString("es-AR")} ARS`;
@@ -1634,7 +1864,14 @@ function Admin92PageContent() {
             {/* Resumen contable */}
             <div>
               <div className="mb-2 flex items-center justify-between gap-3">
-                <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Real contable</p>
+                <div className="flex flex-wrap items-center gap-3">
+                  <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Real contable</p>
+                  <ChambaToggle
+                    icon
+                    pressed={includeChamba}
+                    onClick={() => setIncludeChamba((v) => !v)}
+                  />
+                </div>
                 <Link
                   href="/admin92/contabilidad/cartera"
                   className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700 transition-colors hover:border-blue-300 hover:bg-blue-100"
@@ -1642,7 +1879,7 @@ function Admin92PageContent() {
                   Cartera de inversiones
                 </Link>
               </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 min-[520px]:grid-cols-2 min-[1000px]:grid-cols-4 gap-4 items-start">
               <div className="rounded-xl border border-slate-200 bg-green-50/50 p-4">
                 <p className="text-xs font-medium text-slate-600 mb-1">Ingresos</p>
                 <p className="text-xl font-bold text-green-700">{formatCurrency(totalIngresos)}</p>
@@ -1650,6 +1887,22 @@ function Admin92PageContent() {
               <div className="rounded-xl border border-slate-200 bg-red-50/50 p-4">
                 <p className="text-xs font-medium text-slate-600 mb-1">Gastos</p>
                 <p className="text-xl font-bold text-red-700">{formatCurrency(totalGastos)}</p>
+                <div className="mt-1 grid grid-cols-2 gap-2">
+                  <div className="min-w-0">
+                    <p className="flex items-center gap-1 text-xs font-medium text-slate-900">
+                      <Wrench className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                      <span className="min-w-0">Herramientas</span>
+                    </p>
+                    <p className="text-xs font-medium text-slate-900">{formatCurrency(totalHerramientas)}</p>
+                  </div>
+                  <div className="min-w-0">
+                    <p className="flex items-center gap-1 text-xs font-medium text-slate-900">
+                      <Smile className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                      <span className="min-w-0">Placer</span>
+                    </p>
+                    <p className="text-xs font-medium text-slate-900">{formatCurrency(totalPlacer)}</p>
+                  </div>
+                </div>
               </div>
               <div className="rounded-xl border border-slate-200 bg-blue-50/50 p-4">
                 <p className="text-xs font-medium text-slate-600 mb-1">Inversión</p>
@@ -1722,11 +1975,11 @@ function Admin92PageContent() {
                     <select
                       value={formType}
                       onChange={(e) => setFormType(e.target.value as AccountingType)}
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-[#84b9ed] focus:border-transparent"
+                      className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 cursor-pointer focus:ring-2 focus:ring-[#84b9ed] focus:border-transparent"
                     >
-                      <option value="ingreso">Ingreso</option>
-                      <option value="gasto">Gasto</option>
-                      <option value="inversion">Inversión</option>
+                      <option value="ingreso" className="bg-white text-slate-900">Ingreso</option>
+                      <option value="gasto" className="bg-white text-slate-900">Gasto</option>
+                      <option value="inversion" className="bg-white text-slate-900">Inversión</option>
                     </select>
                   </div>
                   <div>
@@ -1760,14 +2013,31 @@ function Admin92PageContent() {
                     />
                   </div>
                   <div className="sm:col-span-2">
-                    <label className="block text-sm font-medium text-slate-700 mb-1">Categoría (opcional)</label>
-                    <input
-                      type="text"
-                      value={formCategory}
-                      onChange={(e) => setFormCategory(e.target.value)}
-                      placeholder="Web, App, hosting…"
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-[#84b9ed] focus:border-transparent"
-                    />
+                    <label className="block text-sm font-medium text-slate-700 mb-1">
+                      {formType === "gasto" ? "Categoría" : "Categoría (opcional)"}
+                    </label>
+                    {formType === "gasto" ? (
+                      <select
+                        value={formCategory}
+                        onChange={(e) => setFormCategory(e.target.value)}
+                        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 cursor-pointer"
+                      >
+                        <option value="">Elegí</option>
+                        {gastoCategoryOptions(formCategory).map((item) => (
+                          <option key={item} value={item}>
+                            {item}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        type="text"
+                        value={formCategory}
+                        onChange={(e) => setFormCategory(e.target.value)}
+                        placeholder="Web, App, hosting…"
+                        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:ring-2 focus:ring-[#84b9ed] focus:border-transparent"
+                      />
+                    )}
                   </div>
                   <div className="flex items-end gap-2">
                     <button
@@ -1796,7 +2066,7 @@ function Admin92PageContent() {
             {/* Herramientas del calendario */}
             <div>
               <p className="text-xs font-medium text-slate-500 mb-2 uppercase tracking-wide">Herramientas</p>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap items-start gap-2">
                 {(
                   [
                     { id: "objetivos", label: "Objetivos" },
@@ -1826,7 +2096,15 @@ function Admin92PageContent() {
                 >
                   ERP
                 </Link>
+                <button
+                  type="button"
+                  onClick={() => setStackOpen(true)}
+                  className="ml-auto inline-block translate-y-3 cursor-pointer rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
+                >
+                  Stack
+                </button>
               </div>
+              {stackOpen && <StackModal onClose={() => setStackOpen(false)} />}
               {contabilidadToolPanel === "objetivos" && (
                 <HerramientasPanel
                   section="objetivos"
@@ -1882,6 +2160,16 @@ function Admin92PageContent() {
                   setFocusedCobroId(null);
                   setFocusedDesarrolloId(null);
                 }}
+                cuotaTimersOpen={cuotaTimersOpen}
+                onToggleCuotaTimers={() =>
+                  setCuotaTimersOpen((open) => {
+                    if (!open) setCuotaTimersLoading(true);
+                    return !open;
+                  })
+                }
+                cuotaTimerRows={cuotaTimerRows}
+                cuotaTimersLoading={cuotaTimersLoading}
+                cuotaTimersError={cuotaTimersError}
               />
               <CambiosPendientesSidebar
                 className="hidden lg:block"
@@ -2389,6 +2677,13 @@ function Admin92PageContent() {
                               </td>
                               <td className="py-3 px-2 text-right">
                                 <div className="flex items-center justify-end gap-1">
+                                  {r.type === "ingreso" && r._id ? (
+                                    <ChambaToggle
+                                      icon
+                                      pressed={r.chamba === true}
+                                      onClick={() => void handleToggleRecordChamba(r)}
+                                    />
+                                  ) : null}
                                   <button
                                     type="button"
                                     onClick={() => handleEdit(r)}
@@ -2461,6 +2756,13 @@ function Admin92PageContent() {
                           </div>
 
                           <div className="mt-2 flex flex-wrap items-center justify-end gap-2">
+                            {r.type === "ingreso" && r._id ? (
+                              <ChambaToggle
+                                icon
+                                pressed={r.chamba === true}
+                                onClick={() => void handleToggleRecordChamba(r)}
+                              />
+                            ) : null}
                             <button
                               type="button"
                               onClick={() => handleEdit(r)}
@@ -2772,7 +3074,12 @@ function Admin92PageContent() {
                           className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
                         />
                       </div>
-                      <div className="flex items-end">
+                      <div className="flex items-end gap-2">
+                        <ChambaToggle
+                          pressed={cobroChamba}
+                          onClick={() => setCobroChamba((v) => !v)}
+                          disabled={cobroSubmitting}
+                        />
                         <button
                           type="submit"
                           disabled={cobroSubmitting}
@@ -2870,7 +3177,12 @@ function Admin92PageContent() {
                       className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-[#84b9ed] focus:border-transparent"
                     />
                   </div>
-                  <div className="flex items-end">
+                  <div className="flex items-end gap-2">
+                    <ChambaToggle
+                      pressed={cobroChamba}
+                      onClick={() => setCobroChamba((v) => !v)}
+                      disabled={cobroSubmitting}
+                    />
                     <button
                       type="submit"
                       disabled={cobroSubmitting}
@@ -3112,6 +3424,54 @@ function Admin92PageContent() {
                           </td>
                           <td className="py-3 px-2 text-right">
                             <div className="flex items-center justify-end gap-1">
+                              <ChambaToggle
+                                icon
+                                pressed={c.chamba === true}
+                                onClick={() => void handleToggleCobroChamba(c)}
+                              />
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setCopyRow((prev) =>
+                                    prev?.id === c.id
+                                      ? null
+                                      : { id: c.id, month: shiftMonth(getMonthKeySafe(c.dueDate), 1) },
+                                  )
+                                }
+                                title="Copiar a otro mes"
+                                aria-label="Copiar a otro mes"
+                                className="p-2 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-[#84b9ed] transition-colors cursor-pointer"
+                              >
+                                <Copy className="w-4 h-4" />
+                              </button>
+                              {copyRow?.id === c.id ? (
+                                <span className="inline-flex items-center gap-1">
+                                  <select
+                                    value={copyRow.month}
+                                    onChange={(e) =>
+                                      setCopyRow({ id: c.id, month: e.target.value })
+                                    }
+                                    aria-label="Mes destino"
+                                    className="rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs text-slate-800 cursor-pointer"
+                                  >
+                                    {cobroMonthOptions
+                                      .filter((ym) => ym !== getMonthKeySafe(c.dueDate))
+                                      .map((ym) => (
+                                        <option key={ym} value={ym}>
+                                          {formatMonthLabel(ym)}
+                                        </option>
+                                      ))}
+                                  </select>
+                                  <button
+                                    type="button"
+                                    disabled={cobroSubmitting}
+                                    onClick={() => void handleCopyCobroToMonth(c, copyRow.month)}
+                                    className="rounded-lg bg-[#84b9ed] px-2 py-1 text-xs font-semibold text-white hover:bg-[#6ba3d9] cursor-pointer disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500"
+                                  >
+                                    Pegar
+                                  </button>
+                                </span>
+                              ) : null}
                               <button
                                 type="button"
                                 onClick={() => handleEditCobro(c)}

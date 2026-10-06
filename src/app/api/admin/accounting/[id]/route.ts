@@ -4,6 +4,7 @@ import {
   deleteAccountingRecord,
   type AccountingType,
 } from "@/app/lib/accountingMongo";
+import { setCobrosChambaByAccountingRecordId } from "@/app/lib/cobrosMongo";
 
 export const runtime = "nodejs";
 
@@ -25,7 +26,7 @@ export async function PATCH(
     }
 
     const body = await req.json();
-    const { type, amount, description, category, date } = body;
+    const { type, amount, description, category, date, chamba } = body;
 
     const updates: Record<string, unknown> = {};
 
@@ -67,12 +68,18 @@ export async function PATCH(
         : new Date();
       updates.date = recordDate;
     }
+    if (chamba !== undefined) {
+      updates.chamba = chamba === true;
+    }
 
     if (Object.keys(updates).length === 0) {
       return NextResponse.json({ error: "Nada que actualizar" }, { status: 400 });
     }
 
-    const ok = await updateAccountingRecord(id, updates);
+    const ok = await updateAccountingRecord(id, updates as Parameters<typeof updateAccountingRecord>[1]);
+    if (chamba !== undefined) {
+      await setCobrosChambaByAccountingRecordId(id, chamba === true);
+    }
     return NextResponse.json({ ok });
   } catch (e) {
     console.error("[admin:accounting] update failed", e);

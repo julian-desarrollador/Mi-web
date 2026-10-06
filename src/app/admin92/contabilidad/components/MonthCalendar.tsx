@@ -1,8 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { ChevronDown, ChevronLeft, ChevronRight, Settings } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, Settings, Timer } from "lucide-react";
 import { formatMonthLabel, todayYmd } from "@/app/admin92/contabilidad/lib/utils";
+import type { CuotaTimerRow } from "@/app/admin92/contabilidad/lib/cuotaTimers";
 import type { CalendarMarkers } from "@/app/admin92/contabilidad/lib/calendarMarkers";
 import {
   CALENDAR_BORDER_LEGEND,
@@ -38,6 +39,11 @@ type Props = {
   onSelectDate: (date: string) => void;
   onPrevMonth: () => void;
   onNextMonth: () => void;
+  cuotaTimersOpen?: boolean;
+  onToggleCuotaTimers?: () => void;
+  cuotaTimerRows?: CuotaTimerRow[];
+  cuotaTimersLoading?: boolean;
+  cuotaTimersError?: string;
 };
 
 function getDaysInMonth(ym: string): { date: string; inMonth: boolean }[] {
@@ -89,6 +95,11 @@ export default function MonthCalendar({
   onSelectDate,
   onPrevMonth,
   onNextMonth,
+  cuotaTimersOpen = false,
+  onToggleCuotaTimers,
+  cuotaTimerRows = [],
+  cuotaTimersLoading = false,
+  cuotaTimersError = "",
 }: Props) {
   const [clientToday, setClientToday] = useState<string | null>(null);
   const [showLegend, setShowLegend] = useState(false);
@@ -98,6 +109,7 @@ export default function MonthCalendar({
   const [desarrolloDots, setDesarrolloDots] = useState<
     { date: string; cambioPendiente: boolean }[]
   >([]);
+  const hoursById = new Map(cuotaTimerRows.map((row) => [row.id, row]));
 
   useEffect(() => {
     setClientToday(todayYmd());
@@ -198,15 +210,33 @@ export default function MonthCalendar({
             >
               <span>{parseInt(date.slice(8, 10), 10)}</span>
               {showDots && (
-                <span className="mt-0.5 flex max-w-full flex-wrap items-center justify-center gap-0.5 px-0.5">
+                <span className="mt-0.5 flex max-w-full flex-wrap items-start justify-center gap-x-1 gap-y-0.5 px-0.5">
                   {dayMarkers?.inversion && (
                     <span
-                      className="h-1 w-1 shrink-0 rounded-full"
+                      className="mt-0.5 h-1 w-1 shrink-0 rounded-full"
                       style={{ backgroundColor: MARKER_COLORS.inversion }}
                     />
                   )}
-                  {dayMarkers?.cuotas.map((dot, idx) => (
-                    <CuotaCalendarDot key={idx} estado={dot.estado} border={dot.border} />
+                  {dayMarkers?.cuotas.map((dot) => (
+                    <span key={dot.id} className="flex flex-col items-center">
+                      <CuotaCalendarDot estado={dot.estado} border={dot.border} />
+                      {cuotaTimersOpen && (
+                        <span className="flex flex-col items-center gap-0.5">
+                          <span className="text-[10px] font-semibold leading-none text-slate-900">
+                            {cuotaTimersLoading || cuotaTimersError
+                              ? "…"
+                              : (hoursById.get(dot.id)?.hoursLabel ?? "0:00 hs")}
+                          </span>
+                          {!cuotaTimersLoading &&
+                          !cuotaTimersError &&
+                          hoursById.get(dot.id)?.repartidoLabel ? (
+                            <span className="text-[10px] font-semibold leading-none text-slate-900">
+                              {hoursById.get(dot.id)?.repartidoLabel}
+                            </span>
+                          ) : null}
+                        </span>
+                      )}
+                    </span>
                   ))}
                   {desarrollosDelDia.map((d, idx) => (
                     <CuotaCalendarDot
@@ -278,8 +308,26 @@ export default function MonthCalendar({
             >
               <Settings className="h-4 w-4" />
             </button>
+            <button
+              type="button"
+              onClick={onToggleCuotaTimers}
+              aria-label={cuotaTimersOpen ? "Ocultar horas de las cuotas" : "Ver horas de las cuotas"}
+              aria-pressed={cuotaTimersOpen}
+              title={cuotaTimersOpen ? "Ocultar horas de las cuotas" : "Ver horas de las cuotas"}
+              className={`rounded-lg border p-2 transition-colors cursor-pointer ${
+                cuotaTimersOpen
+                  ? "border-[#1d4ed8] bg-[#1d4ed8] text-white"
+                  : "border-slate-300 bg-white text-slate-800 hover:bg-slate-50"
+              }`}
+            >
+              <Timer className="h-4 w-4" />
+            </button>
           </div>
         </div>
+
+        {cuotaTimersOpen && cuotaTimersError && (
+          <p className="text-sm font-medium text-slate-900">{cuotaTimersError}</p>
+        )}
 
         {desarrollosOpen && (
           <div className="rounded-lg border border-sky-200 bg-sky-50/50 p-2.5">

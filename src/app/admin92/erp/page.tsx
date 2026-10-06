@@ -30,8 +30,10 @@ import {
   normalizeActiveWorkTimer,
   startActiveWorkTimerOnLog,
   stopActiveWorkTimerOnLog,
+  timerDestinoKey,
   type ErpDayLog,
   type ErpMembershipMonth,
+  type ErpTimerDestino,
   type WorkCategoryKey,
 } from "@/app/admin92/erp/lib/erpTypes";
 import {
@@ -377,15 +379,17 @@ export default function ErpPage() {
   const handleStartLiveTimer = async (
     category: WorkCategoryKey,
     name: string,
+    destino?: ErpTimerDestino,
   ): Promise<void> => {
     const active = normalizeActiveWorkTimer(todayLog.activeWorkTimer ?? null);
     const same =
       active &&
       active.category === category &&
-      active.name.trim().toLowerCase() === name.trim().toLowerCase();
+      active.name.trim().toLowerCase() === name.trim().toLowerCase() &&
+      timerDestinoKey(active) === timerDestinoKey(destino);
     const next = same
       ? stopActiveWorkTimerOnLog(todayLog)
-      : startActiveWorkTimerOnLog(todayLog, category, name);
+      : startActiveWorkTimerOnLog(todayLog, category, name, Date.now(), destino);
     await handlePersistLiveTimer(next);
   };
 
@@ -550,6 +554,7 @@ export default function ErpPage() {
               kpis={kpis}
               focusLog={focusLog}
               periodLogs={currentLogs}
+              periodDates={dates}
               workEditLog={workEditLog}
               onPersistWorkEditLog={handlePersistWorkEditLog}
               workEditSaving={workEditSaving}

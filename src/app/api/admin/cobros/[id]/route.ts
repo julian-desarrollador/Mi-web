@@ -76,6 +76,7 @@ export async function PATCH(
       solicitudTasks,
       descripcionCuota,
       requiereEstadisticas,
+      chamba,
     } = body;
 
     const updates: Record<string, unknown> = {};
@@ -167,6 +168,13 @@ export async function PATCH(
     if (requiereEstadisticas !== undefined) {
       updates.requiereEstadisticas = Boolean(requiereEstadisticas);
     }
+    if (chamba !== undefined) {
+      const nextChamba = chamba === true;
+      updates.chamba = nextChamba;
+      if (existing.accountingRecordId) {
+        await updateAccountingRecord(existing.accountingRecordId, { chamba: nextChamba });
+      }
+    }
     if (solicitudTasks !== undefined) {
       if (!Array.isArray(solicitudTasks)) {
         return NextResponse.json(
@@ -242,12 +250,14 @@ export async function PATCH(
       });
       const servicioLabel = existing.servicio || (updates.servicio as string | undefined);
 
+      const esChamba = (updates.chamba as boolean | undefined) ?? existing.chamba === true;
       const insertedId = await insertAccountingRecord({
         type: "ingreso",
         amount: monto,
         description,
         category: servicioLabel || "Cuota cliente",
         date: new Date(`${fechaStr}T12:00:00.000Z`),
+        ...(esChamba ? { chamba: true } : {}),
       });
       updates.accountingRecordId = insertedId.toString();
     }

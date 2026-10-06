@@ -59,6 +59,7 @@ export async function POST(req: NextRequest) {
           servicio: c.servicio ? String(c.servicio).trim() : undefined,
           notes: c.notes ? String(c.notes).trim() : undefined,
           origen,
+          ...(c.chamba === true ? { chamba: true } : {}),
         };
       });
       const ids = await insertCobrosBulk(docs);
@@ -66,7 +67,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Single: { clientName, amount, dueDate, servicio?, paid?, paidAt?, origen? }
-    const { clientName, amount, dueDate, servicio, paid, paidAt, origen } = body;
+    const { clientName, amount, dueDate, servicio, paid, paidAt, origen, chamba } = body;
     const client = String(clientName || "").trim();
     if (!client) {
       return NextResponse.json(
@@ -102,6 +103,7 @@ export async function POST(req: NextRequest) {
       servicio: servicio ? String(servicio).trim() : undefined,
       notes: undefined,
       origen: cobroOrigen,
+      ...(chamba === true ? { chamba: true } : {}),
     };
 
     const id = await insertCobro(doc);
