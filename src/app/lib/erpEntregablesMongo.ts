@@ -77,12 +77,16 @@ function toSubtasks(value: unknown): ErpEntregableSubtask[] {
     if (!row || typeof row !== "object") continue;
     const doc = row as Partial<ErpEntregableSubtask>;
     if (typeof doc.id !== "string" || typeof doc.title !== "string") continue;
+    const note = typeof doc.note === "string" ? doc.note.trim() : "";
+    const description = typeof doc.description === "string" ? doc.description.trim() : "";
     rows.push({
       id: doc.id,
       title: doc.title,
       done: doc.done === true,
       dueOn: typeof doc.dueOn === "string" && doc.dueOn ? doc.dueOn : null,
       createdAt: typeof doc.createdAt === "string" ? doc.createdAt : "",
+      note: note ? note.slice(0, 200) : null,
+      description: description ? description.slice(0, 2000) : null,
     });
   }
   return rows;

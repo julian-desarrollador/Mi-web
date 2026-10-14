@@ -24,6 +24,10 @@ export type ErpEntregableSubtask = {
   done: boolean;
   dueOn: string | null;
   createdAt: string;
+  /** Texto opcional, por ejemplo el dominio al marcar la subtarea hecha. */
+  note: string | null;
+  /** Explicación opcional de qué trata la subtarea. */
+  description: string | null;
 };
 
 export type ErpEntregable = {
@@ -88,6 +92,7 @@ const NAME_MAX = 80;
 const BLOCK_ORDER_MAX = 100;
 const TITLE_MAX = 200;
 const DESCRIPTION_MAX = 2000;
+const NOTE_MAX = 200;
 const SUBTASK_MAX = 30;
 
 const STATUS_RANK: Record<EntregableStatus, number> = {
@@ -126,6 +131,17 @@ function parseDescription(value: unknown): string | null | { error: string } {
     return { error: `La descripción no puede superar ${DESCRIPTION_MAX} caracteres` };
   }
   return description;
+}
+
+function parseNote(value: unknown): string | null | { error: string } {
+  if (value === null || value === undefined || value === "") return null;
+  if (typeof value !== "string") return { error: "La nota de la subtarea no es válida" };
+  const note = value.trim();
+  if (!note) return null;
+  if (note.length > NOTE_MAX) {
+    return { error: `La nota no puede superar ${NOTE_MAX} caracteres` };
+  }
+  return note;
 }
 
 function parseDueOn(value: unknown): string | null | { error: string } {
@@ -188,6 +204,17 @@ function parseSubtasks(
     if (typeof row.done !== "boolean") return { error: "El estado de la subtarea no es válido" };
     const dueOn = parseDueOn(row.dueOn);
     if (isError(dueOn)) return { error: dueOn.error };
+    const note = parseNote(row.note);
+    if (isError(note)) return { error: note.error };
+    if (
+      row.description !== undefined &&
+      row.description !== null &&
+      typeof row.description !== "string"
+    ) {
+      return { error: "La descripción de la subtarea no es válida" };
+    }
+    const description = parseDescription(row.description);
+    if (isError(description)) return { error: description.error };
     let id = parseSubtaskId(row.id);
     if (used.has(id)) id = crypto.randomUUID();
     used.add(id);
@@ -197,6 +224,8 @@ function parseSubtasks(
       done: row.done,
       dueOn,
       createdAt: parseSubtaskCreatedAt(row.createdAt),
+      note,
+      description,
     });
   }
   return subtasks;

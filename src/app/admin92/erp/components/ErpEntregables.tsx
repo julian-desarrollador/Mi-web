@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import {
   closestCenter,
   DndContext,
@@ -256,29 +257,32 @@ function SortableSubtaskRow({
   row,
   disabled,
   dragDisabled,
-  editing,
-  editingTitle,
+  noting,
+  noteDraft,
   onToggle,
-  onStartEdit,
-  onEditingTitle,
-  onCommitTitle,
-  onCancelEdit,
+  onOpenDetail,
   onDueChange,
   onRemove,
+  onNoteDraft,
+  onStartNote,
+  onCommitNote,
+  onCancelNote,
 }: {
   row: ErpEntregableSubtask;
   disabled: boolean;
   dragDisabled: boolean;
-  editing: boolean;
-  editingTitle: string;
+  noting: boolean;
+  noteDraft: string;
   onToggle: () => void;
-  onStartEdit: () => void;
-  onEditingTitle: (title: string) => void;
-  onCommitTitle: () => void;
-  onCancelEdit: () => void;
+  onOpenDetail: () => void;
   onDueChange: (dueOn: string) => void;
   onRemove: () => void;
+  onNoteDraft: (note: string) => void;
+  onStartNote: () => void;
+  onCommitNote: (note: string) => void;
+  onCancelNote: () => void;
 }) {
+  const skipNoteBlur = useRef(false);
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: row.id,
     disabled: dragDisabled,
@@ -292,95 +296,234 @@ function SortableSubtaskRow({
     <li
       ref={setNodeRef}
       style={style}
-      className={`flex items-start gap-2 ${isDragging ? "relative z-10 rounded-md bg-white" : ""}`}
+      className={isDragging ? "relative z-10 rounded-md bg-white" : undefined}
     >
-      <button
-        type="button"
-        aria-label={`Reordenar ${row.title}`}
-        title="Arrastrá para reordenar"
-        disabled={dragDisabled}
-        className={`mt-0.5 shrink-0 rounded p-0.5 text-[#3d5270] touch-none select-none ${
-          dragDisabled
-            ? "cursor-not-allowed opacity-40"
-            : "cursor-grab hover:bg-[#e4eef8] hover:text-[#1d4e89] active:cursor-grabbing"
-        }`}
-        {...attributes}
-        {...listeners}
-      >
-        <GripVertical className="h-3.5 w-3.5" />
-      </button>
-      <button
-        type="button"
-        role="checkbox"
-        aria-checked={row.done}
-        aria-label={row.done ? `Marcar pendiente ${row.title}` : `Marcar hecha ${row.title}`}
-        disabled={disabled}
-        onClick={onToggle}
-        className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border cursor-pointer disabled:opacity-50 ${
-          row.done
-            ? "border-green-700 bg-green-700 text-white"
-            : "border-[#1d4e89] bg-white text-[#1d4e89]"
-        }`}
-      >
-        {row.done ? <Check className="h-3 w-3" strokeWidth={3} /> : null}
-      </button>
-      <div className="min-w-0 flex-1">
-        {editing ? (
-          <input
-            value={editingTitle}
-            autoFocus
-            aria-label={`Título de ${row.title}`}
-            onChange={(event) => onEditingTitle(event.target.value)}
-            onBlur={onCommitTitle}
-            onKeyDown={(event) => {
-              if (event.key === "Enter") {
-                event.preventDefault();
-                event.currentTarget.blur();
-              }
-              if (event.key === "Escape") {
-                event.preventDefault();
-                event.stopPropagation();
-                onCancelEdit();
-              }
-            }}
-            className="w-full rounded-md border border-[#c5d4e8] bg-white px-2 py-0.5 text-sm text-[#0f2744]"
-          />
-        ) : (
+      <div className="flex items-start gap-2">
+        <button
+          type="button"
+          aria-label={`Reordenar ${row.title}`}
+          title="Arrastrá para reordenar"
+          disabled={dragDisabled}
+          className={`mt-0.5 shrink-0 rounded p-0.5 text-[#3d5270] touch-none select-none ${
+            dragDisabled
+              ? "cursor-not-allowed opacity-40"
+              : "cursor-grab hover:bg-[#e4eef8] hover:text-[#1d4e89] active:cursor-grabbing"
+          }`}
+          {...attributes}
+          {...listeners}
+        >
+          <GripVertical className="h-3.5 w-3.5" />
+        </button>
+        <button
+          type="button"
+          role="checkbox"
+          aria-checked={row.done}
+          aria-label={row.done ? `Marcar pendiente ${row.title}` : `Marcar hecha ${row.title}`}
+          disabled={disabled}
+          onClick={onToggle}
+          className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border cursor-pointer disabled:opacity-50 ${
+            row.done
+              ? "border-green-700 bg-green-700 text-white"
+              : "border-[#1d4e89] bg-white text-[#1d4e89]"
+          }`}
+        >
+          {row.done ? <Check className="h-3 w-3" strokeWidth={3} /> : null}
+        </button>
+        <div className="min-w-0 flex-1">
           <button
             type="button"
-            onClick={onStartEdit}
-            className={`block w-full cursor-pointer whitespace-normal break-words text-left text-sm ${
+            onClick={onOpenDetail}
+            className={`block w-full cursor-pointer whitespace-normal text-left text-sm ${
               row.done ? "text-[#3d5270] line-through" : "text-[#0f2744]"
             }`}
           >
             {row.title}
           </button>
-        )}
-        <p className="text-[11px] text-[#3d5270]">Cargada {formatCreatedDay(row.createdAt)}</p>
-      </div>
-      <div className="flex shrink-0 flex-col items-end gap-1.5">
-        <span className="text-[11px] font-medium text-[#3d5270]">Entrega</span>
-        <DatePickerField
-          value={row.dueOn ?? ""}
-          onChange={onDueChange}
+          {row.description ? (
+            <button
+              type="button"
+              onClick={onOpenDetail}
+              className="mt-0.5 block w-full cursor-pointer truncate text-left text-xs font-medium text-[#3d5270]"
+            >
+              {row.description}
+            </button>
+          ) : null}
+          {row.done ? (
+            noting ? (
+              <input
+                value={noteDraft}
+                autoFocus
+                maxLength={200}
+                placeholder="Nota (opcional)"
+                aria-label={`Nota de ${row.title}`}
+                onChange={(event) => onNoteDraft(event.target.value)}
+                onBlur={(event) => {
+                  if (skipNoteBlur.current) {
+                    skipNoteBlur.current = false;
+                    return;
+                  }
+                  onCommitNote(event.currentTarget.value);
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    event.preventDefault();
+                    event.currentTarget.blur();
+                  }
+                  if (event.key === "Escape") {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    skipNoteBlur.current = true;
+                    onCancelNote();
+                    event.currentTarget.blur();
+                  }
+                }}
+                className="mt-1 w-full rounded-md border border-[#c5d4e8] bg-white px-2 py-0.5 text-xs font-medium text-[#0f2744] placeholder:text-[#3d5270]"
+              />
+            ) : row.note ? (
+              <button
+                type="button"
+                onClick={onStartNote}
+                className="mt-0.5 block w-full cursor-pointer whitespace-normal text-left text-xs font-medium text-[#0f2744]"
+              >
+                {row.note}
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={onStartNote}
+                className="mt-0.5 cursor-pointer text-left text-xs font-medium text-[#1d4e89]"
+              >
+                Nota
+              </button>
+            )
+          ) : null}
+          <div className="mt-1 flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+            <p className="text-[11px] text-[#3d5270]">Cargada {formatCreatedDay(row.createdAt)}</p>
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] font-medium text-[#3d5270]">Entrega</span>
+              <DatePickerField
+                value={row.dueOn ?? ""}
+                onChange={onDueChange}
+                disabled={disabled}
+                allowClear
+                placeholder="Sin fecha"
+                aria-label={`Entrega de ${row.title}`}
+                placement="center"
+                className="rounded-md border border-[#c5d4e8] bg-white px-1.5 py-0.5 text-xs font-semibold text-[#1d4e89]"
+              />
+            </div>
+          </div>
+        </div>
+        <button
+          type="button"
           disabled={disabled}
-          allowClear
-          placeholder="Sin fecha"
-          aria-label={`Entrega de ${row.title}`}
-          placement="center"
-          className="rounded-md border border-[#c5d4e8] bg-white px-1.5 py-0.5 text-xs font-semibold text-[#1d4e89]"
-        />
+          aria-label={`Quitar ${row.title}`}
+          onClick={onRemove}
+          className="rounded-md p-1 text-[#3d5270] hover:text-rose-600 cursor-pointer disabled:opacity-50"
+        >
+          <Trash2 className="h-3.5 w-3.5" />
+        </button>
       </div>
-      <button
-        type="button"
-        disabled={disabled}
-        aria-label={`Quitar ${row.title}`}
-        onClick={onRemove}
-        className="rounded-md p-1 text-[#3d5270] hover:text-rose-600 cursor-pointer disabled:opacity-50"
-      >
-        <Trash2 className="h-3.5 w-3.5" />
-      </button>
     </li>
+  );
+}
+
+function SubtaskDetailModal({
+  title,
+  description,
+  busy,
+  onCancel,
+  onSave,
+}: {
+  title: string;
+  description: string;
+  busy?: boolean;
+  onCancel: () => void;
+  onSave: (title: string, description: string) => void;
+}) {
+  const [draftTitle, setDraftTitle] = useState(title);
+  const [draftDescription, setDraftDescription] = useState(description);
+
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      event.stopPropagation();
+      onCancel();
+    };
+    document.addEventListener("keydown", onKey, true);
+    return () => document.removeEventListener("keydown", onKey, true);
+  }, [onCancel]);
+
+  return createPortal(
+    <div
+      data-subtask-detail=""
+      className="fixed inset-0 z-[80] flex items-center justify-center bg-neutral-950/45 p-4"
+      role="presentation"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onCancel();
+      }}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={`Descripción de ${title}`}
+        className="w-full max-w-md rounded-2xl border border-[#c5d4e8] bg-white p-5 shadow-[0_24px_60px_rgba(15,23,42,0.22)]"
+        onMouseDown={(event) => event.stopPropagation()}
+      >
+        <div className="flex items-start justify-between gap-3">
+          <h3 className="text-base font-semibold text-[#0f2744]">Subtarea</h3>
+          <button
+            type="button"
+            onClick={onCancel}
+            aria-label="Cerrar"
+            className="rounded-md p-1 text-[#3d5270] hover:bg-[#e4eef8] hover:text-[#0f2744] cursor-pointer"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+        <label className="mt-4 block text-xs font-semibold text-[#0f2744]">
+          Título
+          <input
+            value={draftTitle}
+            autoFocus
+            disabled={busy}
+            onChange={(event) => setDraftTitle(event.target.value)}
+            className="mt-1 w-full rounded-lg border border-[#c5d4e8] bg-white px-2.5 py-1.5 text-sm font-medium text-[#0f2744]"
+          />
+        </label>
+        <label className="mt-3 block text-xs font-semibold text-[#0f2744]">
+          Descripción (opcional)
+          <textarea
+            value={draftDescription}
+            disabled={busy}
+            maxLength={2000}
+            rows={5}
+            onChange={(event) => setDraftDescription(event.target.value)}
+            placeholder="De qué se trata"
+            className="mt-1 w-full resize-y rounded-lg border border-[#c5d4e8] bg-white px-2.5 py-1.5 text-sm font-medium text-[#0f2744] placeholder:text-[#3d5270]"
+          />
+        </label>
+        <div className="mt-4 flex justify-end gap-2">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="rounded-lg px-2.5 py-1.5 text-xs font-medium text-[#3d5270] hover:bg-[#e4eef8] cursor-pointer"
+          >
+            Cerrar
+          </button>
+          <button
+            type="button"
+            disabled={busy || !draftTitle.trim()}
+            onClick={() => onSave(draftTitle, draftDescription)}
+            className="rounded-lg bg-[#1d4e89] px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-[#163d6b] cursor-pointer disabled:opacity-50"
+          >
+            Guardar
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body,
   );
 }
 
@@ -396,8 +539,9 @@ function TaskSubtasks({
   const subtasks = item.subtasks ?? [];
   const [draftTitle, setDraftTitle] = useState("");
   const [draftDue, setDraftDue] = useState("");
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editingTitle, setEditingTitle] = useState("");
+  const [detailId, setDetailId] = useState<string | null>(null);
+  const [notingId, setNotingId] = useState<string | null>(null);
+  const [noteDraft, setNoteDraft] = useState("");
   const [expanded, setExpanded] = useState(false);
   const [pending, setPending] = useState<ErpEntregableSubtask[] | null>(null);
   const [subtaskToDelete, setSubtaskToDelete] = useState<ErpEntregableSubtask | null>(null);
@@ -405,6 +549,14 @@ function TaskSubtasks({
   const doneCount = list.filter((row) => row.done).length;
   const busy = useRef(false);
   const rootRef = useRef<HTMLDivElement>(null);
+  const noteLive = useRef({
+    notingId: null as string | null,
+    noteDraft: "",
+    list: [] as ErpEntregableSubtask[],
+  });
+  const saveRef = useRef<
+    (next: ErpEntregableSubtask[]) => Promise<ErpEntregable | null>
+  >(async () => null);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
   );
@@ -419,7 +571,20 @@ function TaskSubtasks({
       const target = event.target;
       if (!(target instanceof Node)) return;
       if (target instanceof Element && target.closest('[aria-label="Elegir fecha"]')) return;
+      if (target instanceof Element && target.closest("[data-subtask-detail]")) return;
+      if (target instanceof Element && target.closest('[role="dialog"]')) return;
       if (rootRef.current?.contains(target)) return;
+      const live = noteLive.current;
+      if (live.notingId) {
+        const note = live.noteDraft.trim().slice(0, 200) || null;
+        const current = live.list.find((row) => row.id === live.notingId);
+        if (current && (current.note ?? null) !== note) {
+          void saveRef.current(
+            live.list.map((row) => (row.id === live.notingId ? { ...row, note } : row)),
+          );
+        }
+        setNotingId(null);
+      }
       setExpanded(false);
     };
     document.addEventListener("mousedown", onMouseDown);
@@ -435,6 +600,8 @@ function TaskSubtasks({
       busy.current = false;
     }
   };
+  saveRef.current = save;
+  noteLive.current = { notingId, noteDraft, list };
 
   const addSubtask = async () => {
     const title = draftTitle.trim();
@@ -447,6 +614,8 @@ function TaskSubtasks({
         done: false,
         dueOn: draftDue || null,
         createdAt: new Date().toISOString(),
+        note: null,
+        description: null,
       },
     ]);
     if (saved) {
@@ -455,13 +624,22 @@ function TaskSubtasks({
     }
   };
 
-  const commitTitle = (id: string) => {
-    const title = editingTitle.trim();
-    setEditingId(null);
+  const commitDetail = (id: string, rawTitle: string, rawDescription: string) => {
+    const title = rawTitle.trim().slice(0, 200);
     if (!title) return;
+    const description = rawDescription.trim().slice(0, 2000) || null;
+    setDetailId(null);
     const current = list.find((row) => row.id === id);
-    if (!current || current.title === title) return;
-    void save(list.map((row) => (row.id === id ? { ...row, title } : row)));
+    if (!current || (current.title === title && (current.description ?? null) === description)) return;
+    void save(list.map((row) => (row.id === id ? { ...row, title, description } : row)));
+  };
+
+  const commitNote = (id: string, raw: string) => {
+    const note = raw.trim().slice(0, 200) || null;
+    setNotingId(null);
+    const current = list.find((row) => row.id === id);
+    if (!current || (current.note ?? null) === note) return;
+    void save(list.map((row) => (row.id === id ? { ...row, note } : row)));
   };
 
   const onDragEnd = (event: DragEndEvent) => {
@@ -504,22 +682,25 @@ function TaskSubtasks({
                 row={row}
                 disabled={Boolean(disabled)}
                 dragDisabled={Boolean(disabled) || list.length < 2}
-                editing={editingId === row.id}
-                editingTitle={editingTitle}
+                noting={notingId === row.id}
+                noteDraft={noteDraft}
                 onToggle={() => {
+                  const nextDone = !row.done;
                   void save(
                     list.map((entry) =>
-                      entry.id === row.id ? { ...entry, done: !entry.done } : entry,
+                      entry.id === row.id ? { ...entry, done: nextDone } : entry,
                     ),
-                  );
+                  ).then((saved) => {
+                    if (!saved) return;
+                    if (nextDone) {
+                      setNotingId(row.id);
+                      setNoteDraft(row.note ?? "");
+                      return;
+                    }
+                    if (notingId === row.id) setNotingId(null);
+                  });
                 }}
-                onStartEdit={() => {
-                  setEditingId(row.id);
-                  setEditingTitle(row.title);
-                }}
-                onEditingTitle={setEditingTitle}
-                onCommitTitle={() => commitTitle(row.id)}
-                onCancelEdit={() => setEditingId(null)}
+                onOpenDetail={() => setDetailId(row.id)}
                 onDueChange={(dueOn) => {
                   void save(
                     list.map((entry) =>
@@ -528,6 +709,13 @@ function TaskSubtasks({
                   );
                 }}
                 onRemove={() => setSubtaskToDelete(row)}
+                onNoteDraft={setNoteDraft}
+                onStartNote={() => {
+                  setNotingId(row.id);
+                  setNoteDraft(row.note ?? "");
+                }}
+                onCommitNote={(note) => commitNote(row.id, note)}
+                onCancelNote={() => setNotingId(null)}
               />
             ))}
           </ul>
@@ -582,6 +770,16 @@ function TaskSubtasks({
               if (saved) setSubtaskToDelete(null);
             });
           }}
+        />
+      ) : null}
+      {detailId ? (
+        <SubtaskDetailModal
+          key={detailId}
+          title={list.find((row) => row.id === detailId)?.title ?? ""}
+          description={list.find((row) => row.id === detailId)?.description ?? ""}
+          busy={disabled}
+          onCancel={() => setDetailId(null)}
+          onSave={(title, description) => commitDetail(detailId, title, description)}
         />
       ) : null}
     </div>
@@ -728,23 +926,6 @@ function EntregableLaneBoard({
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
   );
-
-  useEffect(() => {
-    const node = scrollRef.current;
-    if (!node) return;
-    const onWheel = (event: WheelEvent) => {
-      if (Math.abs(event.deltaX) >= Math.abs(event.deltaY)) return;
-      const dir: 1 | -1 = event.deltaY > 0 ? 1 : -1;
-      if (nestedVScrollCanMove(event, dir)) return;
-      event.preventDefault();
-      const now = Date.now();
-      if (now < wheelLockUntil.current) return;
-      if (!scrollByBlock(node, dir)) return;
-      wheelLockUntil.current = now + 300;
-    };
-    node.addEventListener("wheel", onWheel, { passive: false });
-    return () => node.removeEventListener("wheel", onWheel);
-  }, []);
 
   useEffect(() => {
     if (!keysActive) return;
