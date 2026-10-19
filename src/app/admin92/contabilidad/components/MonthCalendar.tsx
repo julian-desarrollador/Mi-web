@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { ChevronDown, ChevronLeft, ChevronRight, Settings, Timer } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, Settings, Star, Timer } from "lucide-react";
 import { formatMonthLabel, todayYmd } from "@/app/admin92/contabilidad/lib/utils";
 import type { CuotaTimerRow } from "@/app/admin92/contabilidad/lib/cuotaTimers";
 import type { CalendarMarkers } from "@/app/admin92/contabilidad/lib/calendarMarkers";
@@ -44,6 +44,7 @@ type Props = {
   cuotaTimerRows?: CuotaTimerRow[];
   cuotaTimersLoading?: boolean;
   cuotaTimersError?: string;
+  dayNotes?: Record<string, string>;
 };
 
 function getDaysInMonth(ym: string): { date: string; inMonth: boolean }[] {
@@ -100,6 +101,7 @@ export default function MonthCalendar({
   cuotaTimerRows = [],
   cuotaTimersLoading = false,
   cuotaTimersError = "",
+  dayNotes = {},
 }: Props) {
   const [clientToday, setClientToday] = useState<string | null>(null);
   const [showLegend, setShowLegend] = useState(false);
@@ -192,13 +194,19 @@ export default function MonthCalendar({
           const hasDesarrollos = desarrollosDelDia.length > 0;
           const showDots =
             Boolean(dayMarkers?.inversion) || hasCuotas || hasDesarrollos;
+          const hasNote = Boolean(dayNotes[date]?.trim());
 
           return (
             <button
               key={date}
               type="button"
               onClick={() => onSelectDate(date)}
-              className={`flex min-h-[44px] sm:min-h-[52px] flex-col items-center justify-center rounded-lg border text-sm transition-colors cursor-pointer ${
+              aria-label={
+                hasNote
+                  ? `${parseInt(date.slice(8, 10), 10)}, con recordatorio`
+                  : undefined
+              }
+              className={`flex min-h-[44px] sm:min-h-[52px] w-full flex-col items-center justify-center overflow-hidden rounded-lg border text-sm transition-colors cursor-pointer ${
                 isSelected
                   ? "border-[#84b9ed] bg-[#84b9ed]/10 font-semibold text-slate-900"
                   : isToday
@@ -209,6 +217,12 @@ export default function MonthCalendar({
               }`}
             >
               <span>{parseInt(date.slice(8, 10), 10)}</span>
+              {hasNote ? (
+                <Star
+                  aria-hidden
+                  className="mt-0.5 h-2.5 w-2.5 shrink-0 fill-[#c9a227] text-[#c9a227]"
+                />
+              ) : null}
               {showDots && (
                 <span className="mt-0.5 flex max-w-full flex-wrap items-start justify-center gap-x-1 gap-y-0.5 px-0.5">
                   {dayMarkers?.inversion && (

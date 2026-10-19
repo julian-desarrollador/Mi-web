@@ -10,6 +10,7 @@ import { formatRecordatorioMensaje, MENSAJE_ESTADISTICAS, MENSAJE_RECORDATORIO_P
 import HerramientasPanel from "@/app/admin92/contabilidad/components/HerramientasPanel";
 import StackModal from "@/app/admin92/contabilidad/components/StackModal";
 import CuotaNotaEditor from "@/app/admin92/contabilidad/components/CuotaNotaEditor";
+import CalendarioDiaNota from "@/app/admin92/contabilidad/components/CalendarioDiaNota";
 import CuotaOperativaPanel from "@/app/admin92/contabilidad/components/CuotaOperativaPanel";
 import Desarrollo50TasksBlock from "@/app/admin92/contabilidad/components/Desarrollo50TasksBlock";
 import CambiosPendientesSidebar from "@/app/admin92/contabilidad/components/CambiosPendientesSidebar";
@@ -259,6 +260,7 @@ function Admin92PageContent() {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
   });
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [dayNotes, setDayNotes] = useState<Record<string, string>>({});
   /** Cuota enfocada desde el panel de cambios (scroll + resaltado) */
   const [focusedCobroId, setFocusedCobroId] = useState<string | null>(null);
   const [focusedDesarrolloId, setFocusedDesarrolloId] = useState<string | null>(null);
@@ -472,6 +474,28 @@ function Admin92PageContent() {
     }
   };
 
+  const fetchDayNotes = async (month: string) => {
+    try {
+      const res = await fetch(
+        `/api/admin/calendario-notas?month=${encodeURIComponent(month)}`,
+      );
+      const data = await res.json();
+      if (!res.ok) return;
+      const raw = data?.notes;
+      if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
+        setDayNotes({});
+        return;
+      }
+      const next: Record<string, string> = {};
+      for (const [date, text] of Object.entries(raw as Record<string, unknown>)) {
+        if (typeof text === "string" && text.trim()) next[date] = text;
+      }
+      setDayNotes(next);
+    } catch {
+      /* silencioso */
+    }
+  };
+
   const fetchProyectos = async () => {
     try {
       const res = await fetch("/api/admin/proyectos", { method: "GET" });
@@ -505,6 +529,11 @@ function Admin92PageContent() {
       fetchProyectos();
     }
   }, [activeTab]);
+
+  useEffect(() => {
+    if (activeTab !== "contabilidad") return;
+    void fetchDayNotes(contabilidadMonth);
+  }, [activeTab, contabilidadMonth]);
 
   /** Flechas del teclado cambian el día seleccionado (← → ±1 día, ↑ ↓ ±1 semana) */
   useEffect(() => {
@@ -2170,6 +2199,7 @@ function Admin92PageContent() {
                 cuotaTimerRows={cuotaTimerRows}
                 cuotaTimersLoading={cuotaTimersLoading}
                 cuotaTimersError={cuotaTimersError}
+                dayNotes={dayNotes}
               />
               <CambiosPendientesSidebar
                 className="hidden lg:block"
@@ -2269,6 +2299,7 @@ function Admin92PageContent() {
                     fetchRecords();
                     fetchCobros();
                     fetchProyectos();
+                    void fetchDayNotes(contabilidadMonth);
                   }}
                   disabled={accLoading}
                   className="text-sm font-medium text-[#84b9ed] hover:text-[#6ba3d9] disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
@@ -2276,6 +2307,22 @@ function Admin92PageContent() {
                   {accLoading ? "Cargando..." : "Actualizar"}
                 </button>
               </div>
+
+              {selectedDate ? (
+                <CalendarioDiaNota
+                  key={selectedDate}
+                  date={selectedDate}
+                  text={dayNotes[selectedDate] ?? ""}
+                  onSaved={(date, saved) => {
+                    setDayNotes((prev) => {
+                      const next = { ...prev };
+                      if (saved) next[date] = saved;
+                      else delete next[date];
+                      return next;
+                    });
+                  }}
+                />
+              ) : null}
 
               {pendingPaidCobro && (
                 <div ref={confirmPagoRef}>
