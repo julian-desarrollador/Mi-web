@@ -4,7 +4,7 @@ import { Fragment, Suspense, useEffect, useMemo, useRef, useState } from "react"
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { Pencil, Trash2, Check, BarChart3, Calendar, FolderKanban, Copy, FileText, Briefcase, Wrench, Smile } from "lucide-react";
+import { Pencil, Trash2, Check, BarChart3, Calendar, FolderKanban, Copy, FileText, Briefcase, Wrench, Smile, Handshake } from "lucide-react";
 import { getRemindersToday, getRemindersWeekBefore, getStatsOverdue, getStatsToday } from "@/app/lib/cobrosWorkflow";
 import { formatRecordatorioMensaje, MENSAJE_ESTADISTICAS, MENSAJE_RECORDATORIO_PAGO } from "@/app/lib/cobrosMensajes";
 import HerramientasPanel from "@/app/admin92/contabilidad/components/HerramientasPanel";
@@ -88,7 +88,7 @@ type WebhookEvent = {
 
 type AccountingType = "ingreso" | "gasto" | "inversion";
 
-const GASTO_CATEGORIAS = ["Herramientas", "Placer"] as const;
+const GASTO_CATEGORIAS = ["Herramientas", "Placer", "Servicio"] as const;
 
 function isGastoPlacer(category?: string): boolean {
   return (category || "").trim().toLowerCase() === "placer";
@@ -96,6 +96,10 @@ function isGastoPlacer(category?: string): boolean {
 
 function isGastoHerramientas(category?: string): boolean {
   return (category || "").trim().toLowerCase() === "herramientas";
+}
+
+function isGastoServicio(category?: string): boolean {
+  return (category || "").trim().toLowerCase() === "servicio";
 }
 
 function gastoCategoryOptions(current: string): string[] {
@@ -595,7 +599,7 @@ function Admin92PageContent() {
       return;
     }
     if (formType === "gasto" && !formCategory.trim()) {
-      setAccError("Elegí Herramientas o Placer.");
+      setAccError("Elegí Herramientas, Placer o Servicio.");
       return;
     }
     setSubmitting(true);
@@ -1582,6 +1586,9 @@ function Admin92PageContent() {
   const totalPlacer = gastosDelMes
     .filter((r) => isGastoPlacer(r.category))
     .reduce((sum, r) => sum + r.amount, 0);
+  const totalServicio = gastosDelMes
+    .filter((r) => isGastoServicio(r.category))
+    .reduce((sum, r) => sum + r.amount, 0);
   const totalInversion = filteredRecords
     .filter((r) => r.type === "inversion")
     .reduce((sum, r) => sum + r.amount, 0);
@@ -1908,7 +1915,7 @@ function Admin92PageContent() {
                   Cartera de inversiones
                 </Link>
               </div>
-              <div className="grid grid-cols-1 min-[520px]:grid-cols-2 min-[1000px]:grid-cols-4 gap-4 items-start">
+              <div className="grid grid-cols-1 min-[520px]:grid-cols-2 min-[1000px]:grid-cols-3 gap-4 items-start">
               <div className="rounded-xl border border-slate-200 bg-green-50/50 p-4">
                 <p className="text-xs font-medium text-slate-600 mb-1">Ingresos</p>
                 <p className="text-xl font-bold text-green-700">{formatCurrency(totalIngresos)}</p>
@@ -1916,32 +1923,39 @@ function Admin92PageContent() {
               <div className="rounded-xl border border-slate-200 bg-red-50/50 p-4">
                 <p className="text-xs font-medium text-slate-600 mb-1">Gastos</p>
                 <p className="text-xl font-bold text-red-700">{formatCurrency(totalGastos)}</p>
-                <div className="mt-1 grid grid-cols-2 gap-2">
+                <div className="mt-1 grid grid-cols-3 gap-2">
                   <div className="min-w-0">
                     <p className="flex items-center gap-1 text-xs font-medium text-slate-900">
                       <Wrench className="h-3.5 w-3.5 shrink-0" aria-hidden />
-                      <span className="min-w-0">Herramientas</span>
+                      <span className="whitespace-nowrap">Herramientas</span>
                     </p>
                     <p className="text-xs font-medium text-slate-900">{formatCurrency(totalHerramientas)}</p>
                   </div>
                   <div className="min-w-0">
                     <p className="flex items-center gap-1 text-xs font-medium text-slate-900">
                       <Smile className="h-3.5 w-3.5 shrink-0" aria-hidden />
-                      <span className="min-w-0">Placer</span>
+                      <span className="whitespace-nowrap">Placer</span>
                     </p>
                     <p className="text-xs font-medium text-slate-900">{formatCurrency(totalPlacer)}</p>
                   </div>
+                  <div className="min-w-0">
+                    <p className="flex items-center gap-1 text-xs font-medium text-slate-900">
+                      <Handshake className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                      <span className="whitespace-nowrap">Servicio</span>
+                    </p>
+                    <p className="text-xs font-medium text-slate-900">{formatCurrency(totalServicio)}</p>
+                  </div>
                 </div>
-              </div>
-              <div className="rounded-xl border border-slate-200 bg-blue-50/50 p-4">
-                <p className="text-xs font-medium text-slate-600 mb-1">Inversión</p>
-                <p className="text-xl font-bold text-blue-700">{formatCurrency(totalInversion)}</p>
               </div>
               <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
                 <p className="text-xs font-medium text-slate-600 mb-1">Resultado</p>
                 <p className={`text-xl font-bold ${resultado >= 0 ? "text-green-700" : "text-red-700"}`}>
                   {formatCurrency(resultado)}
                 </p>
+              </div>
+              <div className="rounded-xl border border-slate-200 bg-blue-50/50 p-4">
+                <p className="text-xs font-medium text-slate-600 mb-1">Inversión</p>
+                <p className="text-xl font-bold text-blue-700">{formatCurrency(totalInversion)}</p>
               </div>
               </div>
             </div>
