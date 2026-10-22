@@ -12,12 +12,14 @@ type Props = {
 
 export default function CalendarioDiaNota({ date, text, onSaved }: Props) {
   const [draft, setDraft] = useState(text);
+  const [open, setOpen] = useState(() => Boolean(text.trim()));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
     setDraft(text);
     setError("");
+    setOpen(Boolean(text.trim()));
   }, [date, text]);
 
   const persist = async (next: string) => {
@@ -43,6 +45,29 @@ export default function CalendarioDiaNota({ date, text, onSaved }: Props) {
       setSaving(false);
     }
   };
+
+  const cancel = () => {
+    setDraft(text);
+    setError("");
+    setOpen(false);
+  };
+
+  if (!open) {
+    return (
+      <button
+        type="button"
+        onClick={() => {
+          setDraft(text);
+          setError("");
+          setOpen(true);
+        }}
+        className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-[#1d4e89] hover:text-[#163d6b] cursor-pointer"
+      >
+        <StickyNote className="h-3.5 w-3.5" aria-hidden />
+        Agregar recordatorio
+      </button>
+    );
+  }
 
   const unchanged = draft.trim() === text.trim();
 
@@ -73,14 +98,25 @@ export default function CalendarioDiaNota({ date, text, onSaved }: Props) {
         >
           {saving ? "Guardando…" : "Guardar"}
         </button>
-        <button
-          type="button"
-          disabled={saving || !text.trim()}
-          onClick={() => void persist("")}
-          className="rounded-lg border border-[#c5d4e8] bg-white px-2.5 py-1.5 text-xs font-medium text-slate-900 hover:bg-[#e4eef8] cursor-pointer disabled:opacity-50"
-        >
-          Quitar
-        </button>
+        {text.trim() ? (
+          <button
+            type="button"
+            disabled={saving}
+            onClick={() => void persist("")}
+            className="rounded-lg border border-[#c5d4e8] bg-white px-2.5 py-1.5 text-xs font-medium text-slate-900 hover:bg-[#e4eef8] cursor-pointer disabled:opacity-50"
+          >
+            Quitar
+          </button>
+        ) : (
+          <button
+            type="button"
+            disabled={saving}
+            onClick={cancel}
+            className="rounded-lg border border-[#c5d4e8] bg-white px-2.5 py-1.5 text-xs font-medium text-slate-900 hover:bg-[#e4eef8] cursor-pointer disabled:opacity-50"
+          >
+            Cancelar
+          </button>
+        )}
       </div>
     </div>
   );
