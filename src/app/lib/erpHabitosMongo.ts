@@ -4,12 +4,15 @@ import {
   HABITOS_INICIALES,
   type CuatroHorasMark,
   type ErpHabito,
+  type ErpMood,
 } from "@/app/admin92/erp/lib/erpHabitos";
 
 const COLLECTION = "erp_habitos";
 const MARKS_COLLECTION = "erp_habito_4hs";
+const MOODS_COLLECTION = "erp_moods";
 let indexPromise: Promise<string> | null = null;
 let marksIndexPromise: Promise<string> | null = null;
+let moodsIndexPromise: Promise<string> | null = null;
 
 function getDbName() {
   const uri = process.env.MONGODB_URI || "";
@@ -135,8 +138,11 @@ async function getMarksCollection() {
 }
 
 function toMark(doc: WithId<Document>): CuatroHorasMark | null {
-  if (typeof doc.date !== "string" || typeof doc.fulfilled !== "boolean") return null;
-  return { date: doc.date, fulfilled: doc.fulfilled };
+  if (typeof doc.date !== "string") return null;
+  const fulfilled = typeof doc.fulfilled === "boolean" ? doc.fulfilled : null;
+  const note = typeof doc.note === "string" ? doc.note : "";
+  if (fulfilled === null && !note.trim()) return null;
+  return { date: doc.date, fulfilled, note };
 }
 
 export async function listCuatroHorasMarks(): Promise<CuatroHorasMark[]> {
@@ -150,15 +156,112 @@ export async function listCuatroHorasMarks(): Promise<CuatroHorasMark[]> {
 
 export async function upsertCuatroHorasMark(mark: CuatroHorasMark): Promise<CuatroHorasMark> {
   const collection = await getMarksCollection();
+  const note = mark.note.trim();
+  const saved: CuatroHorasMark = { date: mark.date, fulfilled: mark.fulfilled, note };
+  if (saved.fulfilled === null && !note) {
+    await collection.deleteOne({ date: mark.date });
+    return saved;
+  }
   await collection.updateOne(
     { date: mark.date },
-    { $set: { date: mark.date, fulfilled: mark.fulfilled, updatedAt: new Date() } },
+    { $set: { date: mark.date, fulfilled: saved.fulfilled, note, updatedAt: new Date() } },
     { upsert: true },
   );
-  return mark;
+  return saved;
 }
 
 export async function deleteCuatroHorasMark(date: string): Promise<void> {
   const collection = await getMarksCollection();
   await collection.deleteOne({ date });
+}
+
+function clockMinutes(value: string): number {
+  const [hour, minute] = value.split(":").map(Number);
+  return hour * 60 + minute;
+}
+
+async function getMoodsCollection() {
+  const client = await getMongoClient();
+  const collection = client.db(getDbName()).collection<Document>(MOODS_COLLECTION);
+  if (!moodsIndexPromise) {
+    moodsIndexPromise = collection.createIndex({ date: -1, startedAt: 1 });
+  }
+  await moodsIndexPromise;
+  return collection;
+}
+
+function toMood(doc: WithId<Document>): ErpMood | null {
+  if (!(doc._id instanceof ObjectId)) return null;
+  if (typeof doc.date !== "string" || typeof doc.mood !== "string" || typeof doc.startedAt !== "string") {
+    return null;
+  }
+  return {
+    _id: doc._id.toString(),
+    date: doc.date,
+    mood: doc.mood,
+    startedAt: doc.startedAt,
+    endedAt: typeof doc.endedAt === "string" ? doc.endedAt : null,
+  };
+}
+
+export async function listErpMoods(): Promise<ErpMood[]> {
+  const collection = await getMoodsCollection();
+  const docs = await collection.find({}).limit(400).toArray();
+  return docs
+    .flatMap((doc) => {
+      const mood = toMood(doc);
+      return mood ? [mood] : [];
+    })
+    .sort((a, b) => {
+      if (a.date !== b.date) return a.date < b.date ? 1 : -1;
+      return clockMinutes(a.startedAt) - clockMinutes(b.startedAt);
+    });
+}
+
+export async function findOpenErpMood(date: string): Promise<ErpMood | null> {
+  const collection = await getMoodsCollection();
+  const doc = await collection.findOne({ date, endedAt: null });
+  return doc ? toMood(doc) : null;
+}
+
+export async function insertErpMood(input: {
+  date: string;
+  mood: string;
+  startedAt: string;
+}): Promise<ErpMood> {
+  const collection = await getMoodsCollection();
+  const now = new Date();
+  const result = await collection.insertOne({
+    date: input.date,
+    mood: input.mood,
+    startedAt: input.startedAt,
+    endedAt: null,
+    createdAt: now,
+    updatedAt: now,
+  });
+  return {
+    _id: result.insertedId.toString(),
+    date: input.date,
+    mood: input.mood,
+    startedAt: input.startedAt,
+    endedAt: null,
+  };
+}
+
+export async function pauseErpMood(id: string, endedAt: string): Promise<ErpMood | null> {
+  if (!ObjectId.isValid(id)) return null;
+  const collection = await getMoodsCollection();
+  const result = await collection.findOneAndUpdate(
+    { _id: new ObjectId(id), endedAt: null },
+    { $set: { endedAt, updatedAt: new Date() } },
+    { returnDocument: "after" },
+  );
+  return result ? toMood(result) : null;
+}
+
+export async function deleteErpMood(id: string): Promise<boolean> {
+  if (!ObjectId.isValid(id)) return false;
+  const collection = await getMoodsCollection();
+  const result = await collection.deleteOne({ _id: new ObjectId(id) });
+  return result.deletedCount > 0;
 }

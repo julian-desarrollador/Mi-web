@@ -550,6 +550,7 @@ export default function ErpPage() {
 
             <ErpDashboard
               period={period}
+              anchorDate={selectedDate}
               rangeLabel={rangeLabel}
               current={currentStats}
               previous={previousStats}

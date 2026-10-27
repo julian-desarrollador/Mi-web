@@ -7,6 +7,7 @@ import {
   ArrowUpRight,
   BookOpen,
   BriefcaseBusiness,
+  Calendar,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
@@ -58,6 +59,7 @@ import { formatHoursAsHm, formatMinutesAsHm, emptyMembershipMonth, emptyDayLog, 
 import { formatCurrency, formatLocalDate, formatMonthLabel, MONTH_NAMES, todayYmd } from "@/app/admin92/contabilidad/lib/utils";
 import { formatSecondsAsClock } from "@/app/admin92/erp/lib/parseWorkTimersPaste";
 import ErpObservations from "@/app/admin92/erp/components/ErpObservations";
+import ErpTrainingFoodCalendar from "@/app/admin92/erp/components/ErpTrainingFoodCalendar";
 import WorkCategoriesEditor from "@/app/admin92/erp/components/WorkCategoriesEditor";
 import WorkCategoriesHistory from "@/app/admin92/erp/components/WorkCategoriesHistory";
 import WorkProjectsPanel from "@/app/admin92/erp/components/WorkProjectsPanel";
@@ -123,6 +125,7 @@ type WeekCompareProps = {
 
 type Props = {
   period: ErpPeriod;
+  anchorDate: string;
   rangeLabel: string;
   current: PeriodStats;
   previous: PeriodStats | null;
@@ -415,6 +418,7 @@ function paidDayLabel(paidOn: string | null): string {
 function TrainingKpiCard({
   item,
   compareLabel,
+  anchorDate,
   trainingBreakdown,
   membershipMonth,
   membershipMonths,
@@ -426,6 +430,7 @@ function TrainingKpiCard({
 }: {
   item: KpiView;
   compareLabel: string;
+  anchorDate: string;
   trainingBreakdown: {
     key: "gimnasio" | "natacion" | "casa";
     name: string;
@@ -442,6 +447,7 @@ function TrainingKpiCard({
   onMembershipChange: (next: ErpMembershipMonth) => void;
 }) {
   const [open, setOpen] = useState(false);
+  const [calendarOpen, setCalendarOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const Icon = kpiIcons[item.kind];
   const change = item.change;
@@ -517,6 +523,18 @@ function TrainingKpiCard({
               {Math.abs(change)}%
             </span>
           )}
+          <button
+            type="button"
+            onClick={() => {
+              setOpen(false);
+              setCalendarOpen(true);
+            }}
+            aria-label="Calendario de entrenamiento y comidas"
+            title="Entrenamiento y comidas"
+            className="absolute top-[calc(100%+0.35rem)] right-9 inline-flex h-7 w-7 items-center justify-center rounded-lg border border-[#c5d4e8] bg-white text-[#1d4e89] transition hover:bg-[#e4eef8] cursor-pointer"
+          >
+            <Calendar className="h-3.5 w-3.5" />
+          </button>
           <button
             type="button"
             onClick={() => setOpen((prev) => !prev)}
@@ -712,6 +730,12 @@ function TrainingKpiCard({
 
       <div className="mt-3 flex items-center justify-between gap-2">
         <p className="min-w-0 truncate text-xs text-slate-400">{compareLabel}</p>
+        {calendarOpen ? (
+          <ErpTrainingFoodCalendar
+            anchorDate={anchorDate}
+            onClose={() => setCalendarOpen(false)}
+          />
+        ) : null}
         <div className="flex shrink-0 items-center gap-1">
           {MEMBERSHIP_SERVICES.map(({ key, label, tag }) => {
             const service = membership[key];
@@ -803,6 +827,7 @@ function DualHabitKpiCard({
 
 export default function ErpDashboard({
   period,
+  anchorDate,
   rangeLabel,
   current,
   previous,
@@ -1105,6 +1130,7 @@ export default function ErpDashboard({
                 key={item.label}
                 item={item}
                 compareLabel={compareLabel}
+                anchorDate={anchorDate}
                 trainingBreakdown={trainingCats}
                 membershipMonth={membershipMonth}
                 membershipMonths={membershipMonths}
