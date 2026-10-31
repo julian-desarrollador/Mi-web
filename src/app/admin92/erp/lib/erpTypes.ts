@@ -16,8 +16,11 @@ export type ErpWorkTimerItem = {
 
 export type ErpTimeKind = "promesa" | "conocimiento";
 
-/** Focus: una cuota, el tramo entero. Repartido: un tramo partido entre varias. */
-export type ErpTimerShare = "focus" | "repartido";
+/**
+ * Focus: una cuota, el tramo entero. Repartido (viejo): un tramo partido entre varias.
+ * Paralelo: varias cuotas a la vez, cada una se lleva el tramo completo como compartido.
+ */
+export type ErpTimerShare = "focus" | "repartido" | "paralelo";
 
 /** Una cuota (focus), un conjunto (repartido), o un tiempo sin cuota. */
 export type ErpTimerDestino = {
@@ -55,6 +58,8 @@ export type ErpActiveWorkTimer = {
   timeKind?: ErpTimeKind;
   /** ISO: inicio del tramo actual */
   startedAt: string;
+  /** ISO: inicio de la sesión continua (sobrevive al rotar tramos entre cuotas) */
+  sessionStartedAt?: string;
   items: ErpWorkTimerItem[];
 };
 
@@ -360,11 +365,18 @@ export function normalizeActiveWorkTimer(raw: unknown): ErpActiveWorkTimer | nul
   const startedAt = typeof row.startedAt === "string" ? row.startedAt : "";
   if (!startedAt || Number.isNaN(Date.parse(startedAt))) return null;
   const destino = readTimerDestino(row);
+  const sessionStartedAt =
+    typeof row.sessionStartedAt === "string" &&
+    !Number.isNaN(Date.parse(row.sessionStartedAt)) &&
+    row.sessionStartedAt <= startedAt
+      ? row.sessionStartedAt
+      : undefined;
   return {
     category,
     name,
     ...destino,
     startedAt,
+    ...(sessionStartedAt ? { sessionStartedAt } : {}),
     items: normalizeWorkTimerItems(row.items),
   };
 }
@@ -375,6 +387,16 @@ export function elapsedActiveSeconds(
 ): number {
   const start = Date.parse(active.startedAt);
   if (!Number.isFinite(start)) return 0;
+  return Math.max(0, Math.floor((nowMs - start) / 1000));
+}
+
+/** Tiempo real de la sesión: no se reinicia al abrir/cerrar cuotas en paralelo. */
+export function elapsedSessionSeconds(
+  active: ErpActiveWorkTimer,
+  nowMs: number = Date.now(),
+): number {
+  const start = Date.parse(active.sessionStartedAt ?? active.startedAt);
+  if (!Number.isFinite(start)) return elapsedActiveSeconds(active, nowMs);
   return Math.max(0, Math.floor((nowMs - start) / 1000));
 }
 
@@ -433,15 +455,55 @@ export function repartidoSecondsForClient(
   return splitEvenSeconds(totalSeconds, clients.length)[index] ?? 0;
 }
 
+/** Varias cuotas en un mismo tramo (repartido viejo o paralelo). */
+export function isMultiCuotaDestino(
+  destino: ErpTimerDestino | null | undefined,
+): destino is ErpTimerDestino & { cuotaClients: string[] } {
+  return Boolean(
+    destino &&
+      (destino.share === "repartido" || destino.share === "paralelo") &&
+      destino.cuotaClients &&
+      destino.cuotaClients.length >= 2,
+  );
+}
+
+/**
+ * Segundos que un tramo aporta a una cuota. Paralelo: el tramo completo.
+ * Repartido (viejo): partes iguales.
+ */
+export function cuotaSecondsForTimer(
+  timer: ErpTimerDestino & { seconds: number },
+  clientName: string,
+): { focus: number; compartido: number } {
+  const key = clientName.trim().toLowerCase();
+  if (timer.seconds <= 0 || !key) return { focus: 0, compartido: 0 };
+  if (isMultiCuotaDestino(timer)) {
+    const inSet = timer.cuotaClients.some((client) => client.trim().toLowerCase() === key);
+    if (!inSet) return { focus: 0, compartido: 0 };
+    const part =
+      timer.share === "paralelo"
+        ? timer.seconds
+        : repartidoSecondsForClient(timer.cuotaClients, timer.seconds, clientName);
+    return { focus: 0, compartido: part };
+  }
+  if (timer.cuotaClient && timer.cuotaClient.trim().toLowerCase() === key) {
+    return { focus: timer.seconds, compartido: 0 };
+  }
+  return { focus: 0, compartido: 0 };
+}
+
 export function readTimerDestino(raw: {
   cuotaClient?: unknown;
   cuotaClients?: unknown;
+  share?: unknown;
   timeKind?: unknown;
 } | null | undefined): ErpTimerDestino {
   if (!raw) return {};
   const clients = uniqueCuotaNames(raw.cuotaClients);
   const single = typeof raw.cuotaClient === "string" ? raw.cuotaClient.trim().slice(0, 120) : "";
-  if (clients.length >= 2) return { cuotaClients: clients, share: "repartido" };
+  if (clients.length >= 2) {
+    return { cuotaClients: clients, share: raw.share === "paralelo" ? "paralelo" : "repartido" };
+  }
   if (clients.length === 1) return { cuotaClient: clients[0], share: "focus" };
   if (single) return { cuotaClient: single, share: "focus" };
   if (raw.timeKind === "promesa" || raw.timeKind === "conocimiento") {
@@ -451,8 +513,8 @@ export function readTimerDestino(raw: {
 }
 
 export function timerDestinoKey(destino: ErpTimerDestino | null | undefined): string {
-  if (destino?.share === "repartido" && destino.cuotaClients && destino.cuotaClients.length >= 2) {
-    return `repartido:${destino.cuotaClients.map((client) => client.trim().toLowerCase()).join("|")}`;
+  if (isMultiCuotaDestino(destino)) {
+    return `${destino.share}:${destino.cuotaClients.map((client) => client.trim().toLowerCase()).join("|")}`;
   }
   if (destino?.cuotaClient) return `cuota:${destino.cuotaClient.trim().toLowerCase()}`;
   if (destino?.timeKind) return destino.timeKind;
@@ -549,6 +611,77 @@ export function startActiveWorkTimerOnLog(
     },
   };
   return next;
+}
+
+/**
+ * Cambia el conjunto de cuotas en curso: cierra el tramo actual (queda guardado en
+ * workTimers) y abre uno nuevo con `clients`, sin cortar la sesión. Vacío = detener.
+ * 1 cuota → focus; 2+ → paralelo (cada una se lleva el tramo completo).
+ */
+export function setActiveCuotasOnLog(
+  log: ErpDayLog,
+  clients: string[],
+  opts: { category: WorkCategoryKey; name: string; nowMs?: number },
+): ErpDayLog {
+  const nowMs = opts.nowMs ?? Date.now();
+  const active = normalizeActiveWorkTimer(log.activeWorkTimer ?? null);
+  const set = uniqueCuotaNames(clients).sort((a, b) =>
+    a.toLowerCase().localeCompare(b.toLowerCase(), "es"),
+  );
+  const stopped = active ? stopActiveWorkTimerOnLog(log, nowMs) : log;
+  if (set.length === 0) return stopped;
+
+  const destino: ErpTimerDestino =
+    set.length === 1
+      ? { cuotaClient: set[0], share: "focus" }
+      : { cuotaClients: set, share: "paralelo" };
+  const nowIso = new Date(nowMs).toISOString();
+  return {
+    ...stopped,
+    activeWorkTimer: {
+      category: active?.category ?? opts.category,
+      name: active ? active.name : opts.name.trim().slice(0, 200),
+      ...destino,
+      startedAt: nowIso,
+      sessionStartedAt: active ? (active.sessionStartedAt ?? active.startedAt) : nowIso,
+      items: active ? [...active.items] : [],
+    },
+  };
+}
+
+/** Cuotas abiertas en el timer en curso. */
+export function activeCuotaClients(active: ErpActiveWorkTimer | null | undefined): string[] {
+  if (!active) return [];
+  if (isMultiCuotaDestino(active)) return active.cuotaClients;
+  return active.cuotaClient ? [active.cuotaClient] : [];
+}
+
+/** Tiempo del día en una cuota (tramos guardados + el que corre). Reloj play/pausa del chip. */
+export function todaySecondsForCuota(
+  log: ErpDayLog | null | undefined,
+  clientName: string,
+  nowMs: number = Date.now(),
+): { focus: number; compartido: number } {
+  const totals = { focus: 0, compartido: 0 };
+  if (!log) return totals;
+  const timers = normalizeWorkTimers(log.workTimers);
+  for (const category of Object.keys(timers) as WorkCategoryKey[]) {
+    for (const timer of timers[category]) {
+      const part = cuotaSecondsForTimer(timer, clientName);
+      totals.focus += part.focus;
+      totals.compartido += part.compartido;
+    }
+  }
+  const active = normalizeActiveWorkTimer(log.activeWorkTimer ?? null);
+  if (active) {
+    const part = cuotaSecondsForTimer(
+      { ...active, seconds: elapsedActiveSeconds(active, nowMs) },
+      clientName,
+    );
+    totals.focus += part.focus;
+    totals.compartido += part.compartido;
+  }
+  return totals;
 }
 
 export function normalizeWorkTimers(raw: unknown): ErpWorkTimers {

@@ -177,7 +177,7 @@ export default function HerramientasPanel({
               href={wordOnlineUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 hover:border-slate-400 hover:bg-slate-50 transition-colors"
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 hover:border-slate-400 transition-colors"
             >
               <FileText className="h-4 w-4 shrink-0 text-[#84b9ed]" aria-hidden />
               Word online
@@ -216,7 +216,7 @@ export default function HerramientasPanel({
                       type="button"
                       onClick={() => handleSaveEdit(n._id)}
                       disabled={saving || !editText.trim()}
-                      className="rounded-lg bg-[#84b9ed] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#6ba3d9] cursor-pointer disabled:opacity-50"
+                      className="rounded-lg bg-[#84b9ed] px-3 py-1.5 text-xs font-semibold text-white cursor-pointer disabled:opacity-50"
                     >
                       Guardar
                     </button>
@@ -226,7 +226,7 @@ export default function HerramientasPanel({
                         setEditingId(null);
                         setEditText("");
                       }}
-                      className="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100 cursor-pointer"
+                      className="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-600 cursor-pointer"
                     >
                       Cancelar
                     </button>
@@ -280,7 +280,7 @@ export default function HerramientasPanel({
               className={`rounded-lg px-4 py-2 text-sm font-semibold transition-colors cursor-pointer ${
                 saving || !draft.trim()
                   ? "bg-slate-200 text-slate-500 cursor-not-allowed"
-                  : "bg-[#84b9ed] text-white hover:bg-[#6ba3d9]"
+                  : "bg-[#84b9ed] text-white"
               }`}
             >
               {saving ? "Guardando..." : "Agregar"}
@@ -291,7 +291,7 @@ export default function HerramientasPanel({
                 setShowAddForm(false);
                 setDraft("");
               }}
-              className="rounded-lg px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 cursor-pointer"
+              className="rounded-lg px-4 py-2 text-sm font-medium text-slate-600 cursor-pointer"
             >
               Cancelar
             </button>
@@ -301,7 +301,7 @@ export default function HerramientasPanel({
         <button
           type="button"
           onClick={() => setShowAddForm(true)}
-          className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+          className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition-colors cursor-pointer"
         >
           Agregar nota
         </button>

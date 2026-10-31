@@ -1,5 +1,7 @@
 "use client";
 
+// Nota o recordatorio editable de un día del calendario de contabilidad.
+
 import { useEffect, useState } from "react";
 import { StickyNote } from "lucide-react";
 import { CALENDARIO_NOTA_MAX } from "@/app/admin92/contabilidad/lib/calendarioNotas";
@@ -94,7 +96,7 @@ export default function CalendarioDiaNota({ date, text, onSaved }: Props) {
           type="button"
           disabled={saving || unchanged}
           onClick={() => void persist(draft)}
-          className="rounded-lg bg-[#1d4e89] px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-[#163d6b] cursor-pointer disabled:opacity-50"
+          className="rounded-lg bg-[#1d4e89] px-2.5 py-1.5 text-xs font-semibold text-white cursor-pointer disabled:opacity-50"
         >
           {saving ? "Guardando…" : "Guardar"}
         </button>
@@ -103,7 +105,7 @@ export default function CalendarioDiaNota({ date, text, onSaved }: Props) {
             type="button"
             disabled={saving}
             onClick={() => void persist("")}
-            className="rounded-lg border border-[#c5d4e8] bg-white px-2.5 py-1.5 text-xs font-medium text-slate-900 hover:bg-[#e4eef8] cursor-pointer disabled:opacity-50"
+            className="rounded-lg border border-[#c5d4e8] bg-white px-2.5 py-1.5 text-xs font-medium text-slate-900 cursor-pointer disabled:opacity-50"
           >
             Quitar
           </button>
@@ -112,7 +114,7 @@ export default function CalendarioDiaNota({ date, text, onSaved }: Props) {
             type="button"
             disabled={saving}
             onClick={cancel}
-            className="rounded-lg border border-[#c5d4e8] bg-white px-2.5 py-1.5 text-xs font-medium text-slate-900 hover:bg-[#e4eef8] cursor-pointer disabled:opacity-50"
+            className="rounded-lg border border-[#c5d4e8] bg-white px-2.5 py-1.5 text-xs font-medium text-slate-900 cursor-pointer disabled:opacity-50"
           >
             Cancelar
           </button>

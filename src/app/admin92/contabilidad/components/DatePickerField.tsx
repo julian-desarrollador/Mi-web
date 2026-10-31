@@ -200,7 +200,7 @@ export default function DatePickerField({
           type="button"
           onClick={() => setViewMonth((m) => shiftMonth(m, -1))}
           aria-label="Mes anterior"
-          className="rounded-lg border border-slate-200 bg-white p-1.5 text-slate-600 hover:bg-slate-50 cursor-pointer"
+          className="rounded-lg border border-slate-200 bg-white p-1.5 text-slate-600 cursor-pointer"
         >
           <ChevronLeft className="h-4 w-4" />
         </button>
@@ -211,7 +211,7 @@ export default function DatePickerField({
           type="button"
           onClick={() => setViewMonth((m) => shiftMonth(m, 1))}
           aria-label="Mes siguiente"
-          className="rounded-lg border border-slate-200 bg-white p-1.5 text-slate-600 hover:bg-slate-50 cursor-pointer"
+          className="rounded-lg border border-slate-200 bg-white p-1.5 text-slate-600 cursor-pointer"
         >
           <ChevronRight className="h-4 w-4" />
         </button>
@@ -243,8 +243,8 @@ export default function DatePickerField({
                   : isToday
                     ? "border-[#84b9ed] bg-slate-50 font-medium text-slate-900"
                     : cell.inMonth
-                      ? "border-transparent bg-white text-slate-900 hover:bg-slate-50"
-                      : "border-transparent bg-white text-slate-400 hover:bg-slate-50"
+                      ? "border-transparent bg-white text-slate-900"
+                      : "border-transparent bg-white text-slate-400"
               }`}
             >
               {Number(cell.date.slice(8, 10))}
@@ -257,7 +257,7 @@ export default function DatePickerField({
         <button
           type="button"
           onClick={() => selectDay(today)}
-          className="rounded-lg px-2 py-1 text-xs font-semibold text-[#4a7fb8] hover:bg-slate-50 cursor-pointer"
+          className="rounded-lg px-2 py-1 text-xs font-semibold text-[#4a7fb8] cursor-pointer"
         >
           Hoy
         </button>
@@ -265,7 +265,7 @@ export default function DatePickerField({
           <button
             type="button"
             onClick={clearDate}
-            className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-slate-500 hover:bg-slate-50 cursor-pointer"
+            className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-slate-500 cursor-pointer"
           >
             <X className="h-3 w-3" />
             Limpiar

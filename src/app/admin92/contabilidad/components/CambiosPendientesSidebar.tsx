@@ -90,7 +90,7 @@ function PrioridadInput({ cobroId, prioridad, onPrioridadChange }: PrioridadInpu
           type="button"
           aria-label="Aumentar urgencia (número menor)"
           onClick={() => step(-1)}
-          className="flex h-[15px] w-[18px] items-center justify-center text-[#4a7fb8] hover:bg-[#84b9ed]/20 active:bg-[#84b9ed]/30 cursor-pointer"
+          className="flex h-[15px] w-[18px] items-center justify-center text-[#4a7fb8] active:bg-[#84b9ed]/30 cursor-pointer"
         >
           <ChevronUp className="h-3 w-3 stroke-[2.5]" />
         </button>
@@ -98,7 +98,7 @@ function PrioridadInput({ cobroId, prioridad, onPrioridadChange }: PrioridadInpu
           type="button"
           aria-label="Disminuir urgencia (número mayor)"
           onClick={() => step(1)}
-          className="flex h-[15px] w-[18px] items-center justify-center border-t border-slate-200 text-[#4a7fb8] hover:bg-[#84b9ed]/20 active:bg-[#84b9ed]/30 cursor-pointer"
+          className="flex h-[15px] w-[18px] items-center justify-center border-t border-slate-200 text-[#4a7fb8] active:bg-[#84b9ed]/30 cursor-pointer"
         >
           <ChevronDown className="h-3 w-3 stroke-[2.5]" />
         </button>
@@ -159,7 +159,7 @@ export default function CambiosPendientesSidebar({
             type="button"
             onClick={() => onSortModeChange("fecha")}
             className={`rounded-md px-2 py-1 font-medium cursor-pointer ${
-              sortMode === "fecha" ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-50"
+              sortMode === "fecha" ? "bg-slate-900 text-white" : "text-slate-600"
             }`}
           >
             Fecha
@@ -168,7 +168,7 @@ export default function CambiosPendientesSidebar({
             type="button"
             onClick={() => onSortModeChange("prioridad")}
             className={`rounded-md px-2 py-1 font-medium cursor-pointer ${
-              sortMode === "prioridad" ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-50"
+              sortMode === "prioridad" ? "bg-slate-900 text-white" : "text-slate-600"
             }`}
           >
             Prioridad
@@ -177,7 +177,7 @@ export default function CambiosPendientesSidebar({
             type="button"
             onClick={() => onSortModeChange("tareas")}
             className={`rounded-md px-2 py-1 font-medium cursor-pointer ${
-              sortMode === "tareas" ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-50"
+              sortMode === "tareas" ? "bg-slate-900 text-white" : "text-slate-600"
             }`}
           >
             Tareas
@@ -186,7 +186,7 @@ export default function CambiosPendientesSidebar({
             type="button"
             onClick={() => onSortModeChange("saas")}
             className={`rounded-md px-2 py-1 font-medium cursor-pointer ${
-              sortMode === "saas" ? "bg-indigo-600 text-white" : "text-slate-600 hover:bg-slate-50"
+              sortMode === "saas" ? "bg-indigo-600 text-white" : "text-slate-600"
             }`}
           >
             SaaS
@@ -214,7 +214,7 @@ export default function CambiosPendientesSidebar({
                     className={`flex w-full items-start gap-1 rounded-lg border px-2 py-2 transition-colors ${
                       isSelected
                         ? "border-amber-400 bg-amber-50 ring-2 ring-amber-300/60"
-                        : "border-slate-200 bg-white hover:border-amber-200 hover:bg-amber-50/40"
+                        : "border-slate-200 bg-white hover:border-amber-200"
                     }`}
                   >
                     <button
@@ -255,7 +255,7 @@ export default function CambiosPendientesSidebar({
                         onClick={() => onDismissTaskFromColaActiva(t.cobroId, t.taskId)}
                         title="Quitar de cola activa (queda en Cola operativa)"
                         aria-label="Quitar de cola activa"
-                        className="shrink-0 rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 cursor-pointer"
+                        className="shrink-0 rounded-md p-1.5 text-slate-400 hover:text-slate-700 cursor-pointer"
                       >
                         <ListMinus className="h-4 w-4" />
                       </button>
@@ -283,7 +283,7 @@ export default function CambiosPendientesSidebar({
                   className={`flex w-full items-start gap-2 rounded-lg border px-2.5 py-2 transition-colors ${
                     isSelected
                       ? "border-amber-400 bg-amber-50 ring-2 ring-amber-300/60"
-                      : "border-slate-200 bg-white hover:border-amber-200 hover:bg-amber-50/40"
+                      : "border-slate-200 bg-white hover:border-amber-200"
                   }`}
                 >
                   {c.source === "desarrollo50" ? (
@@ -323,7 +323,7 @@ export default function CambiosPendientesSidebar({
             type="button"
             onClick={() => setMesesAtrasadosOpen((v) => !v)}
             aria-expanded={mesesAtrasadosOpen}
-            className="flex w-full items-center justify-between gap-2 rounded-lg border border-amber-200 bg-amber-50/60 px-3 py-2 text-sm font-medium text-amber-900 hover:bg-amber-50 hover:border-amber-300 cursor-pointer transition-colors"
+            className="flex w-full items-center justify-between gap-2 rounded-lg border border-amber-200 bg-amber-50/60 px-3 py-2 text-sm font-medium text-amber-900 hover:border-amber-300 cursor-pointer transition-colors"
           >
             <span>
               {atrasadosCount} atrasado{atrasadosCount !== 1 ? "s" : ""}
@@ -344,7 +344,7 @@ export default function CambiosPendientesSidebar({
                       onGoToMesAtrasado(monthKey);
                       setMesesAtrasadosOpen(false);
                     }}
-                    className="w-full rounded-md px-2.5 py-2 text-left text-sm font-medium text-amber-900 hover:bg-amber-100/80 cursor-pointer transition-colors"
+                    className="w-full rounded-md px-2.5 py-2 text-left text-sm font-medium text-amber-900 cursor-pointer transition-colors"
                   >
                     {formatMonthLabel(monthKey)}
                   </button>

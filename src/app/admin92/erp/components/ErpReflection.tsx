@@ -24,7 +24,7 @@ export default function ErpReflection() {
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="max-w-2xl cursor-pointer text-center text-sm italic leading-relaxed text-slate-500 transition hover:text-slate-800"
+          className="max-w-2xl cursor-pointer text-center text-sm italic leading-relaxed text-slate-500 transition"
         >
           “{PHRASE}”
         </button>
@@ -55,7 +55,7 @@ export default function ErpReflection() {
                 type="button"
                 onClick={() => setOpen(false)}
                 aria-label="Cerrar"
-                className="shrink-0 rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 cursor-pointer"
+                className="shrink-0 rounded-lg p-1.5 text-slate-400 transition cursor-pointer"
               >
                 <X className="h-4 w-4" />
               </button>

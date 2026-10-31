@@ -68,14 +68,14 @@ export default function CuotaNotaEditor({ cobroId, notes, onSaved, compact }: Pr
             type="button"
             onClick={handleSave}
             disabled={saving}
-            className="rounded-lg bg-[#84b9ed] px-2.5 py-1 text-xs font-semibold text-white hover:bg-[#6ba3d9] cursor-pointer disabled:opacity-50"
+            className="rounded-lg bg-[#84b9ed] px-2.5 py-1 text-xs font-semibold text-white cursor-pointer disabled:opacity-50"
           >
             {saving ? "Guardando..." : "Guardar nota"}
           </button>
           <button
             type="button"
             onClick={closeEditor}
-            className="rounded-lg px-2.5 py-1 text-xs font-medium text-slate-600 hover:bg-slate-100 cursor-pointer"
+            className="rounded-lg px-2.5 py-1 text-xs font-medium text-slate-600 cursor-pointer"
           >
             Cancelar
           </button>

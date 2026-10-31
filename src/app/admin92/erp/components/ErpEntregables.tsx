@@ -135,7 +135,7 @@ function DayPartButtons({
             className={`rounded-md border px-2 py-1 text-[11px] font-semibold cursor-pointer disabled:opacity-50 ${
               selected
                 ? "border-[#1d4e89] bg-[#1d4e89] text-white"
-                : "border-[#c5d4e8] bg-white text-[#3d5270] hover:bg-[#e4eef8]"
+                : "border-[#c5d4e8] bg-white text-[#3d5270]"
             }`}
           >
             {ENTREGABLE_DAY_PART_LABEL[part]}
@@ -171,7 +171,7 @@ function StatusButtons({
             : status === "done"
               ? "border-green-700 bg-green-700 text-white"
               : "border-[#1d4e89] bg-[#1d4e89] text-white"
-          : "border-[#c5d4e8] bg-white text-[#3d5270] hover:bg-[#e4eef8]";
+          : "border-[#c5d4e8] bg-white text-[#3d5270]";
         return (
           <button
             key={status}
@@ -235,7 +235,7 @@ function ConfirmDeleteDialog({
           <button
             type="button"
             onClick={onCancel}
-            className="rounded-xl border border-[#c5d4e8] bg-white px-3.5 py-2 text-sm font-semibold text-[#3d5270] hover:bg-[#e4eef8] cursor-pointer"
+            className="rounded-xl border border-[#c5d4e8] bg-white px-3.5 py-2 text-sm font-semibold text-[#3d5270] cursor-pointer"
           >
             Cancelar
           </button>
@@ -243,7 +243,7 @@ function ConfirmDeleteDialog({
             type="button"
             disabled={busy}
             onClick={onConfirm}
-            className="rounded-xl bg-rose-600 px-3.5 py-2 text-sm font-semibold text-white hover:bg-rose-700 cursor-pointer disabled:opacity-50"
+            className="rounded-xl bg-rose-600 px-3.5 py-2 text-sm font-semibold text-white cursor-pointer disabled:opacity-50"
           >
             Eliminar
           </button>
@@ -307,7 +307,7 @@ function SortableSubtaskRow({
           className={`mt-0.5 shrink-0 rounded p-0.5 text-[#3d5270] touch-none select-none ${
             dragDisabled
               ? "cursor-not-allowed opacity-40"
-              : "cursor-grab hover:bg-[#e4eef8] hover:text-[#1d4e89] active:cursor-grabbing"
+              : "cursor-grab active:cursor-grabbing"
           }`}
           {...attributes}
           {...listeners}
@@ -419,7 +419,7 @@ function SortableSubtaskRow({
           disabled={disabled}
           aria-label={`Quitar ${row.title}`}
           onClick={onRemove}
-          className="rounded-md p-1 text-[#3d5270] hover:text-rose-600 cursor-pointer disabled:opacity-50"
+          className="rounded-md p-1 text-[#3d5270] cursor-pointer disabled:opacity-50"
         >
           <Trash2 className="h-3.5 w-3.5" />
         </button>
@@ -477,7 +477,7 @@ function SubtaskDetailModal({
             type="button"
             onClick={onCancel}
             aria-label="Cerrar"
-            className="rounded-md p-1 text-[#3d5270] hover:bg-[#e4eef8] hover:text-[#0f2744] cursor-pointer"
+            className="rounded-md p-1 text-[#3d5270] cursor-pointer"
           >
             <X className="h-4 w-4" />
           </button>
@@ -508,7 +508,7 @@ function SubtaskDetailModal({
           <button
             type="button"
             onClick={onCancel}
-            className="rounded-lg px-2.5 py-1.5 text-xs font-medium text-[#3d5270] hover:bg-[#e4eef8] cursor-pointer"
+            className="rounded-lg px-2.5 py-1.5 text-xs font-medium text-[#3d5270] cursor-pointer"
           >
             Cerrar
           </button>
@@ -516,7 +516,7 @@ function SubtaskDetailModal({
             type="button"
             disabled={busy || !draftTitle.trim()}
             onClick={() => onSave(draftTitle, draftDescription)}
-            className="rounded-lg bg-[#1d4e89] px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-[#163d6b] cursor-pointer disabled:opacity-50"
+            className="rounded-lg bg-[#1d4e89] px-2.5 py-1.5 text-xs font-semibold text-white cursor-pointer disabled:opacity-50"
           >
             Guardar
           </button>
@@ -661,7 +661,7 @@ function TaskSubtasks({
         type="button"
         aria-expanded={expanded}
         onClick={() => setExpanded((value) => !value)}
-        className="inline-flex items-center gap-1 rounded-md px-1 py-0.5 text-[11px] font-semibold text-[#1d4e89] hover:bg-[#e4eef8] cursor-pointer"
+        className="inline-flex items-center gap-1 rounded-md px-1 py-0.5 text-[11px] font-semibold text-[#1d4e89] cursor-pointer"
       >
         <ChevronRight className={`h-3.5 w-3.5 ${expanded ? "rotate-90" : ""}`} />
         Subtareas
@@ -751,7 +751,7 @@ function TaskSubtasks({
           disabled={disabled || !draftTitle.trim()}
           onClick={() => void addSubtask()}
           aria-label="Agregar subtarea"
-          className="rounded-md border border-[#1d4e89] bg-[#1d4e89] p-1 text-white hover:bg-[#163d6b] cursor-pointer disabled:opacity-50"
+          className="rounded-md border border-[#1d4e89] bg-[#1d4e89] p-1 text-white cursor-pointer disabled:opacity-50"
         >
           <Plus className="h-3.5 w-3.5" />
         </button>
@@ -826,7 +826,7 @@ function SortableBlockColumn({
           className={`shrink-0 rounded p-0.5 text-[#3d5270] touch-none select-none ${
             dragDisabled
               ? "cursor-not-allowed opacity-40"
-              : "cursor-grab hover:bg-[#e4eef8] hover:text-[#1d4e89] active:cursor-grabbing"
+              : "cursor-grab active:cursor-grabbing"
           }`}
           {...attributes}
           {...listeners}
@@ -984,7 +984,7 @@ function EntregableLaneBoard({
           type="button"
           disabled={saving || !newBlockName.trim()}
           onClick={onCreateBlock}
-          className="inline-flex items-center gap-1 rounded-lg bg-[#1d4e89] px-3 py-2 text-sm font-semibold text-white hover:bg-[#163d6b] cursor-pointer disabled:opacity-50"
+          className="inline-flex items-center gap-1 rounded-lg bg-[#1d4e89] px-3 py-2 text-sm font-semibold text-white cursor-pointer disabled:opacity-50"
         >
           <Plus className="h-4 w-4" />
           Bloque
@@ -1434,7 +1434,7 @@ export default function ErpEntregables() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50 cursor-pointer"
+        className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition cursor-pointer"
       >
         <Package className="h-4 w-4 text-yellow-500" />
         Entregables
@@ -1476,7 +1476,7 @@ export default function ErpEntregables() {
                           setSelectedLane("entregables");
                         }}
                         className={`rounded-lg px-3 py-1.5 text-sm font-medium transition cursor-pointer ${
-                          active ? "text-white" : "text-[#0f2744] hover:bg-[#d5e4f4]"
+                          active ? "text-white" : "text-[#0f2744]"
                         }`}
                         style={active ? { backgroundColor: color } : undefined}
                       >
@@ -1490,7 +1490,7 @@ export default function ErpEntregables() {
                 type="button"
                 onClick={() => setOpen(false)}
                 aria-label="Cerrar"
-                className="rounded-lg p-1.5 text-[#3d5270] transition hover:bg-[#e4eef8] hover:text-[#0f2744] cursor-pointer"
+                className="rounded-lg p-1.5 text-[#3d5270] transition cursor-pointer"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -1608,7 +1608,7 @@ export default function ErpEntregables() {
                         onClick={() => void removeBlock(block)}
                         disabled={saving}
                         aria-label={`Eliminar bloque ${block.name}`}
-                        className="rounded-lg p-1.5 text-[#3d5270] hover:bg-[#f4f8fc] hover:text-rose-600 cursor-pointer disabled:opacity-50"
+                        className="rounded-lg p-1.5 text-[#3d5270] cursor-pointer disabled:opacity-50"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
@@ -1673,7 +1673,7 @@ export default function ErpEntregables() {
                                 <button
                                   type="button"
                                   onClick={closeEdit}
-                                  className="rounded-lg px-2.5 py-1.5 text-xs font-medium text-[#3d5270] hover:bg-[#e4eef8] cursor-pointer"
+                                  className="rounded-lg px-2.5 py-1.5 text-xs font-medium text-[#3d5270] cursor-pointer"
                                 >
                                   Cancelar
                                 </button>
@@ -1681,7 +1681,7 @@ export default function ErpEntregables() {
                                   type="button"
                                   disabled={saving}
                                   onClick={() => void saveEdit()}
-                                  className="rounded-lg bg-[#1d4e89] px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-[#163d6b] cursor-pointer disabled:opacity-50"
+                                  className="rounded-lg bg-[#1d4e89] px-2.5 py-1.5 text-xs font-semibold text-white cursor-pointer disabled:opacity-50"
                                 >
                                   Guardar
                                 </button>
@@ -1739,7 +1739,7 @@ export default function ErpEntregables() {
                                     onClick={() => setTaskToDelete(item)}
                                     disabled={saving}
                                     aria-label={`Eliminar ${item.title}`}
-                                    className="rounded-md p-1 text-[#3d5270] hover:text-rose-600 cursor-pointer disabled:opacity-50"
+                                    className="rounded-md p-1 text-[#3d5270] cursor-pointer disabled:opacity-50"
                                   >
                                     <Trash2 className="h-3.5 w-3.5" />
                                   </button>
@@ -1825,7 +1825,7 @@ export default function ErpEntregables() {
                             onClick={() =>
                               setComposerOpen((prev) => ({ ...prev, [block._id]: false }))
                             }
-                            className="rounded-lg px-2.5 py-1.5 text-xs font-medium text-[#3d5270] hover:bg-[#e4eef8] cursor-pointer"
+                            className="rounded-lg px-2.5 py-1.5 text-xs font-medium text-[#3d5270] cursor-pointer"
                           >
                             Cerrar
                           </button>
@@ -1833,7 +1833,7 @@ export default function ErpEntregables() {
                             type="button"
                             disabled={saving || !draft.title.trim()}
                             onClick={() => void createItem(block._id)}
-                            className="inline-flex items-center gap-1 rounded-lg bg-[#1d4e89] px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-[#163d6b] cursor-pointer disabled:opacity-50"
+                            className="inline-flex items-center gap-1 rounded-lg bg-[#1d4e89] px-2.5 py-1.5 text-xs font-semibold text-white cursor-pointer disabled:opacity-50"
                           >
                             <Plus className="h-3.5 w-3.5" />
                             Agregar
@@ -1846,7 +1846,7 @@ export default function ErpEntregables() {
                         onClick={() =>
                           setComposerOpen((prev) => ({ ...prev, [block._id]: true }))
                         }
-                        className="mt-2 inline-flex w-full shrink-0 items-center justify-center gap-1.5 rounded-lg border border-dashed border-[#c5d4e8] bg-[#f4f8fc] px-3 py-2 text-sm font-medium text-[#1d4e89] hover:bg-[#e4eef8] cursor-pointer"
+                        className="mt-2 inline-flex w-full shrink-0 items-center justify-center gap-1.5 rounded-lg border border-dashed border-[#c5d4e8] bg-[#f4f8fc] px-3 py-2 text-sm font-medium text-[#1d4e89] cursor-pointer"
                       >
                         <Plus className="h-4 w-4" />
                         Nueva tarea

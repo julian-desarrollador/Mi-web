@@ -132,9 +132,18 @@ export default function WorkProjectsPanel({
       timeKind?: string;
     }) => {
       if (timer.seconds <= 0) return;
-      if (timer.share === "repartido" && timer.cuotaClients && timer.cuotaClients.length >= 2) {
+      if (
+        (timer.share === "repartido" || timer.share === "paralelo") &&
+        timer.cuotaClients &&
+        timer.cuotaClients.length >= 2
+      ) {
         for (const client of timer.cuotaClients) {
-          addRepartido(client, repartidoSecondsForClient(timer.cuotaClients, timer.seconds, client));
+          addRepartido(
+            client,
+            timer.share === "paralelo"
+              ? timer.seconds
+              : repartidoSecondsForClient(timer.cuotaClients, timer.seconds, client),
+          );
         }
         return;
       }
@@ -209,7 +218,7 @@ export default function WorkProjectsPanel({
       <button
         type="button"
         onClick={() => setGuideOpen(true)}
-        className="cursor-pointer rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-800 hover:bg-slate-100"
+        className="cursor-pointer rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-800"
       >
         Cómo usarlo
       </button>
@@ -331,7 +340,7 @@ export default function WorkProjectsPanel({
                 type="button"
                 onClick={() => setGuideOpen(false)}
                 aria-label="Cerrar"
-                className="shrink-0 cursor-pointer rounded-lg p-1.5 text-slate-700 hover:bg-slate-100"
+                className="shrink-0 cursor-pointer rounded-lg p-1.5 text-slate-700"
               >
                 <X className="h-4 w-4" />
               </button>

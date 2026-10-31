@@ -93,3 +93,43 @@ export function parseCuatroHorasMark(
     value: { date, fulfilled: typeof body.fulfilled === "boolean" ? body.fulfilled : null, note },
   };
 }
+
+function clockMinutes(value: string): number | null {
+  const match = CLOCK.exec(value.trim());
+  if (!match) return null;
+  const hour = Number(match[1]);
+  const minute = Number(match[2]);
+  if (hour > 23 || minute > 59) return null;
+  return hour * 60 + minute;
+}
+
+/** Minutos de `start` a `end`. Si `end` es anterior, cuenta el cruce de medianoche. */
+export function minutesBetween(start: string, end: string): number | null {
+  const from = clockMinutes(start);
+  const to = clockMinutes(end);
+  if (from === null || to === null) return null;
+  const diff = to - from;
+  return diff >= 0 ? diff : diff + 24 * 60;
+}
+
+export function formatClock(value: string): string {
+  const total = clockMinutes(value);
+  if (total === null) return value;
+  const hour = Math.floor(total / 60);
+  const minute = total % 60;
+  return `${hour}:${String(minute).padStart(2, "0")}`;
+}
+
+export function formatDuration(totalMinutes: number): string {
+  const minutes = Math.max(0, Math.round(totalMinutes));
+  const hours = Math.floor(minutes / 60);
+  const rest = minutes % 60;
+  if (hours === 0) return `${rest} min`;
+  if (rest === 0) return `${hours} h`;
+  return `${hours} h ${rest}`;
+}
+
+export function formatDayMonth(dateStr: string): string {
+  const [, month, day] = dateStr.split("-");
+  return `${day}/${month}`;
+}

@@ -1,9 +1,9 @@
 import {
+  cuotaSecondsForTimer,
   elapsedActiveSeconds,
   formatHoursAsHm,
   normalizeActiveWorkTimer,
   normalizeWorkTimers,
-  repartidoSecondsForClient,
   type ErpDayLog,
   type ErpWorkTimer,
   type WorkCategoryKey,
@@ -61,7 +61,7 @@ export function formatCuotaTimerHours(seconds: number): string {
 
 export function formatCuotaRepartidoHours(seconds: number): string {
   const safe = Number.isFinite(seconds) && seconds > 0 ? seconds : 0;
-  return `${formatHoursAsHm(safe / 3600)} rep`;
+  return `${formatHoursAsHm(safe / 3600)} comp`;
 }
 
 function addTimerShares(
@@ -69,15 +69,9 @@ function addTimerShares(
   key: string,
   totals: { focus: number; repartido: number },
 ) {
-  if (timer.seconds <= 0) return;
-  if (timer.share === "repartido" && timer.cuotaClients && timer.cuotaClients.length >= 2) {
-    const part = repartidoSecondsForClient(timer.cuotaClients, timer.seconds, key);
-    if (part > 0) totals.repartido += part;
-    return;
-  }
-  if (timer.cuotaClient && clientKey(timer.cuotaClient) === key) {
-    totals.focus += timer.seconds;
-  }
+  const part = cuotaSecondsForTimer(timer, key);
+  totals.focus += part.focus;
+  totals.repartido += part.compartido;
 }
 
 export function secondsForCuotaClient(

@@ -105,7 +105,7 @@ function SortableSaasTaskRow({
         title="Arrastrá para reordenar"
         className={`mt-0.5 shrink-0 rounded p-0.5 text-slate-400 touch-none select-none ${
           dragEnabled
-            ? "cursor-grab active:cursor-grabbing hover:bg-indigo-100 hover:text-indigo-700"
+            ? "cursor-grab active:cursor-grabbing hover:text-indigo-700"
             : "cursor-not-allowed opacity-40"
         }`}
         {...attributes}
@@ -603,7 +603,7 @@ export default function SaasTareasPanel({ onCountChange }: Props) {
             type="button"
             disabled={saving}
             onClick={() => void handleConfirmComplete()}
-            className="rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 cursor-pointer disabled:opacity-50"
+            className="rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white cursor-pointer disabled:opacity-50"
           >
             Confirmar
           </button>
@@ -611,7 +611,7 @@ export default function SaasTareasPanel({ onCountChange }: Props) {
             type="button"
             disabled={saving}
             onClick={() => setPendingComplete(null)}
-            className="rounded-md border border-slate-300 px-3 py-1.5 text-xs text-slate-600 hover:bg-white cursor-pointer"
+            className="rounded-md border border-slate-300 px-3 py-1.5 text-xs text-slate-600 cursor-pointer"
           >
             Cancelar
           </button>
@@ -641,7 +641,7 @@ export default function SaasTareasPanel({ onCountChange }: Props) {
           type="button"
           disabled={saving || !newTaskText.trim()}
           onClick={() => void handleAdd()}
-          className="inline-flex items-center gap-1 rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 cursor-pointer disabled:opacity-50"
+          className="inline-flex items-center gap-1 rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white cursor-pointer disabled:opacity-50"
         >
           <Plus className="h-3.5 w-3.5" />
           Agregar
@@ -661,7 +661,7 @@ export default function SaasTareasPanel({ onCountChange }: Props) {
               <button
                 type="button"
                 onClick={() => setTaskPendingDelete(null)}
-                className="rounded-md border border-slate-300 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50 cursor-pointer"
+                className="rounded-md border border-slate-300 px-3 py-1.5 text-sm text-slate-600 cursor-pointer"
               >
                 Cancelar
               </button>
@@ -669,7 +669,7 @@ export default function SaasTareasPanel({ onCountChange }: Props) {
                 type="button"
                 disabled={saving}
                 onClick={() => void handleDelete(taskPendingDelete.id)}
-                className="rounded-md bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700 cursor-pointer disabled:opacity-50"
+                className="rounded-md bg-red-600 px-3 py-1.5 text-sm font-medium text-white cursor-pointer disabled:opacity-50"
               >
                 Eliminar
               </button>

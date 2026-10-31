@@ -246,7 +246,7 @@ export default function ErpTrainingFoodCalendar({ anchorDate, onClose }: Props) 
         className={`flex min-h-14 flex-col items-center justify-center gap-1 rounded-xl border px-1 py-1.5 cursor-pointer ${
           active
             ? "border-[#1d4e89] bg-[#e4eef8]"
-            : "border-[#c5d4e8] bg-white hover:bg-[#e4eef8]"
+            : "border-[#c5d4e8] bg-white"
         } ${inMonth ? "" : "opacity-60"}`}
       >
         {view === "week" ? (
@@ -294,7 +294,7 @@ export default function ErpTrainingFoodCalendar({ anchorDate, onClose }: Props) 
             type="button"
             onClick={onClose}
             aria-label="Cerrar"
-            className="shrink-0 rounded-lg p-1.5 text-[#3d5270] transition hover:bg-[#e4eef8] hover:text-[#0f2744] cursor-pointer"
+            className="shrink-0 rounded-lg p-1.5 text-[#3d5270] transition cursor-pointer"
           >
             <X className="h-4 w-4" />
           </button>
@@ -320,7 +320,7 @@ export default function ErpTrainingFoodCalendar({ anchorDate, onClose }: Props) 
               type="button"
               onClick={() => move(-1)}
               aria-label={view === "week" ? "Semana anterior" : "Mes anterior"}
-              className="rounded-lg p-1.5 text-[#3d5270] hover:bg-[#e4eef8] hover:text-[#0f2744] cursor-pointer"
+              className="rounded-lg p-1.5 text-[#3d5270] cursor-pointer"
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
@@ -331,7 +331,7 @@ export default function ErpTrainingFoodCalendar({ anchorDate, onClose }: Props) 
               type="button"
               onClick={() => move(1)}
               aria-label={view === "week" ? "Semana siguiente" : "Mes siguiente"}
-              className="rounded-lg p-1.5 text-[#3d5270] hover:bg-[#e4eef8] hover:text-[#0f2744] cursor-pointer"
+              className="rounded-lg p-1.5 text-[#3d5270] cursor-pointer"
             >
               <ChevronRight className="h-4 w-4" />
             </button>

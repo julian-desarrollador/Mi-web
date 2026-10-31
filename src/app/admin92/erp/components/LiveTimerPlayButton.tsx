@@ -60,8 +60,8 @@ export default function LiveTimerPlayButton({
       }}
       className={`inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border transition cursor-pointer disabled:opacity-50 ${
         running
-          ? "border-rose-300 bg-rose-50 text-rose-600 hover:bg-rose-100"
-          : "border-slate-200 bg-white text-slate-500 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-600"
+          ? "border-rose-300 bg-rose-50 text-rose-600"
+          : "border-slate-200 bg-white text-slate-500"
       }`}
     >
       {running ? (

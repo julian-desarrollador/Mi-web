@@ -11,6 +11,7 @@ import HerramientasPanel from "@/app/admin92/contabilidad/components/Herramienta
 import StackModal from "@/app/admin92/contabilidad/components/StackModal";
 import CuotaNotaEditor from "@/app/admin92/contabilidad/components/CuotaNotaEditor";
 import CalendarioDiaNota from "@/app/admin92/contabilidad/components/CalendarioDiaNota";
+import FlujoCajaModal from "@/app/admin92/contabilidad/components/FlujoCajaModal";
 import CuotaOperativaPanel from "@/app/admin92/contabilidad/components/CuotaOperativaPanel";
 import Desarrollo50TasksBlock from "@/app/admin92/contabilidad/components/Desarrollo50TasksBlock";
 import CambiosPendientesSidebar from "@/app/admin92/contabilidad/components/CambiosPendientesSidebar";
@@ -164,7 +165,7 @@ type ProyectoContabilidad = {
 
 const typeLabels: Record<AccountingType, string> = {
   ingreso: "Ingreso",
-  gasto: "Gasto",
+  gasto: "Salida",
   inversion: "Inversión",
 };
 
@@ -309,6 +310,7 @@ function Admin92PageContent() {
   const [copyRow, setCopyRow] = useState<{ id: string; month: string } | null>(null);
   const [cobroChamba, setCobroChamba] = useState(false);
   const [includeChamba, setIncludeChamba] = useState(false);
+  const [flujoCajaOpen, setFlujoCajaOpen] = useState(false);
   const [editingCobro, setEditingCobro] = useState<Cobro | null>(null);
   const [editCobroAmount, setEditCobroAmount] = useState("");
   const [editCobroServicio, setEditCobroServicio] = useState("");
@@ -1908,20 +1910,31 @@ function Admin92PageContent() {
                     onClick={() => setIncludeChamba((v) => !v)}
                   />
                 </div>
-                <Link
-                  href="/admin92/contabilidad/cartera"
-                  className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700 transition-colors hover:border-blue-300 hover:bg-blue-100"
+                <button
+                  type="button"
+                  onClick={() => setFlujoCajaOpen(true)}
+                  className="rounded-lg border border-[#1d4e89] bg-white px-3 py-1.5 text-xs font-semibold text-[#1d4e89] transition-colors cursor-pointer"
                 >
-                  Cartera de inversiones
-                </Link>
+                  Flujo de caja
+                </button>
               </div>
-              <div className="grid grid-cols-1 min-[520px]:grid-cols-2 min-[1000px]:grid-cols-3 gap-4 items-start">
-              <div className="rounded-xl border border-slate-200 bg-green-50/50 p-4">
+              {flujoCajaOpen ? (
+                <FlujoCajaModal
+                  monthLabel={formatMonthLabel(contabilidadMonth)}
+                  ingresos={filteredRecords.filter(
+                    (record) => record.type === "ingreso" && (includeChamba || record.chamba !== true),
+                  )}
+                  gastos={filteredRecords.filter((record) => record.type === "gasto")}
+                  onClose={() => setFlujoCajaOpen(false)}
+                />
+              ) : null}
+              <div className="grid grid-cols-1 min-[520px]:grid-cols-2 gap-4">
+              <div className="rounded-xl border border-slate-200 bg-white p-4">
                 <p className="text-xs font-medium text-slate-600 mb-1">Ingresos</p>
                 <p className="text-xl font-bold text-green-700">{formatCurrency(totalIngresos)}</p>
               </div>
-              <div className="rounded-xl border border-slate-200 bg-red-50/50 p-4">
-                <p className="text-xs font-medium text-slate-600 mb-1">Gastos</p>
+              <div className="rounded-xl border border-slate-200 bg-white p-4">
+                <p className="text-xs font-medium text-slate-600 mb-1">Salidas</p>
                 <p className="text-xl font-bold text-red-700">{formatCurrency(totalGastos)}</p>
                 <div className="mt-1 grid grid-cols-3 gap-2">
                   <div className="min-w-0">
@@ -1929,33 +1942,33 @@ function Admin92PageContent() {
                       <Wrench className="h-3.5 w-3.5 shrink-0" aria-hidden />
                       <span className="whitespace-nowrap">Herramientas</span>
                     </p>
-                    <p className="text-xs font-medium text-slate-900">{formatCurrency(totalHerramientas)}</p>
+                    <p className="text-sm font-semibold text-slate-900">{formatCurrency(totalHerramientas)}</p>
                   </div>
                   <div className="min-w-0">
                     <p className="flex items-center gap-1 text-xs font-medium text-slate-900">
                       <Smile className="h-3.5 w-3.5 shrink-0" aria-hidden />
                       <span className="whitespace-nowrap">Placer</span>
                     </p>
-                    <p className="text-xs font-medium text-slate-900">{formatCurrency(totalPlacer)}</p>
+                    <p className="text-sm font-semibold text-slate-900">{formatCurrency(totalPlacer)}</p>
                   </div>
                   <div className="min-w-0">
                     <p className="flex items-center gap-1 text-xs font-medium text-slate-900">
                       <Handshake className="h-3.5 w-3.5 shrink-0" aria-hidden />
                       <span className="whitespace-nowrap">Servicio</span>
                     </p>
-                    <p className="text-xs font-medium text-slate-900">{formatCurrency(totalServicio)}</p>
+                    <p className="text-sm font-semibold text-slate-900">{formatCurrency(totalServicio)}</p>
                   </div>
                 </div>
               </div>
-              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+              <div className="rounded-xl border border-slate-200 bg-white p-4">
+                <p className="text-xs font-medium text-slate-600 mb-1">Inversión</p>
+                <p className="text-xl font-bold text-blue-700">{formatCurrency(totalInversion)}</p>
+              </div>
+              <div className="rounded-xl border border-slate-200 bg-white p-4">
                 <p className="text-xs font-medium text-slate-600 mb-1">Resultado</p>
                 <p className={`text-xl font-bold ${resultado >= 0 ? "text-green-700" : "text-red-700"}`}>
                   {formatCurrency(resultado)}
                 </p>
-              </div>
-              <div className="rounded-xl border border-slate-200 bg-blue-50/50 p-4">
-                <p className="text-xs font-medium text-slate-600 mb-1">Inversión</p>
-                <p className="text-xl font-bold text-blue-700">{formatCurrency(totalInversion)}</p>
               </div>
               </div>
             </div>
@@ -1964,15 +1977,15 @@ function Admin92PageContent() {
             <div>
               <p className="text-xs font-medium text-slate-500 mb-2 uppercase tracking-wide">Cobranza del mes</p>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="rounded-xl border border-slate-200 bg-amber-50/40 p-4">
+                <div className="rounded-xl border border-slate-200 bg-white p-4">
                   <p className="text-xs font-medium text-slate-600 mb-1">Esperado</p>
                   <p className="text-xl font-bold text-amber-800">{formatCurrency(cobranzaKpis.esperado)}</p>
                 </div>
-                <div className="rounded-xl border border-slate-200 bg-green-50/40 p-4">
+                <div className="rounded-xl border border-slate-200 bg-white p-4">
                   <p className="text-xs font-medium text-slate-600 mb-1">Cobrado</p>
                   <p className="text-xl font-bold text-green-700">{formatCurrency(cobranzaKpis.cobrado)}</p>
                 </div>
-                <div className="rounded-xl border border-slate-200 bg-orange-50/40 p-4">
+                <div className="rounded-xl border border-slate-200 bg-white p-4">
                   <p className="text-xs font-medium text-slate-600 mb-1">Pendiente</p>
                   <p className="text-xl font-bold text-orange-700">{formatCurrency(cobranzaKpis.pendiente)}</p>
                 </div>
@@ -1990,7 +2003,7 @@ function Admin92PageContent() {
                     <button
                       type="button"
                       onClick={() => setShowNewRecordForm((v) => !v)}
-                      className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+                      className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 transition-colors cursor-pointer"
                     >
                       {showNewRecordForm ? "Ocultar formulario" : "Ver formulario"}
                     </button>
@@ -2021,7 +2034,7 @@ function Admin92PageContent() {
                       className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 cursor-pointer focus:ring-2 focus:ring-[#84b9ed] focus:border-transparent"
                     >
                       <option value="ingreso" className="bg-white text-slate-900">Ingreso</option>
-                      <option value="gasto" className="bg-white text-slate-900">Gasto</option>
+                      <option value="gasto" className="bg-white text-slate-900">Salida</option>
                       <option value="inversion" className="bg-white text-slate-900">Inversión</option>
                     </select>
                   </div>
@@ -2089,7 +2102,7 @@ function Admin92PageContent() {
                       className={`rounded-lg px-6 py-2.5 text-sm font-semibold transition-colors ${
                         submitting
                           ? "bg-slate-200 text-slate-500 cursor-not-allowed"
-                          : "bg-[#84b9ed] text-white hover:bg-[#6ba3d9] cursor-pointer"
+                          : "bg-[#84b9ed] text-white cursor-pointer"
                       }`}
                     >
                       {submitting
@@ -2126,7 +2139,7 @@ function Admin92PageContent() {
                       className={`rounded-lg border px-3 py-2 text-sm font-medium transition-colors cursor-pointer ${
                         active
                           ? "border-[#84b9ed] bg-[#84b9ed]/10 text-[#4a7fb8] ring-2 ring-[#84b9ed]/30"
-                          : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
+                          : "border-slate-300 bg-white text-slate-700"
                       }`}
                     >
                       {label}
@@ -2135,14 +2148,14 @@ function Admin92PageContent() {
                 })}
                 <Link
                   href="/admin92/erp"
-                  className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700 transition-colors hover:border-blue-300 hover:bg-blue-100"
+                  className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700 transition-colors hover:border-blue-300"
                 >
                   ERP
                 </Link>
                 <button
                   type="button"
                   onClick={() => setStackOpen(true)}
-                  className="ml-auto inline-block translate-y-3 cursor-pointer rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
+                  className="ml-auto inline-block translate-y-3 cursor-pointer rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition-colors"
                 >
                   Stack
                 </button>
@@ -2376,7 +2389,7 @@ function Admin92PageContent() {
                       type="button"
                       disabled={confirmingStats}
                       onClick={handleConfirmStatsEnviadas}
-                      className="rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-700 cursor-pointer disabled:opacity-50"
+                      className="rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white cursor-pointer disabled:opacity-50"
                     >
                       {confirmingStats ? "Guardando…" : "Confirmar"}
                     </button>
@@ -2387,7 +2400,7 @@ function Admin92PageContent() {
                         setPendingStatsCobro(null);
                         setStatsFechaEnvio("");
                       }}
-                      className="rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-600 hover:bg-white cursor-pointer"
+                      className="rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-600 cursor-pointer"
                     >
                       Cancelar
                     </button>
@@ -2535,8 +2548,8 @@ function Admin92PageContent() {
                                         }
                                         className={`inline-flex items-center justify-center w-8 h-8 rounded-lg border-2 transition-colors cursor-pointer ${
                                           c.recordatorioEnviado
-                                            ? "border-blue-500 bg-blue-100 text-blue-700 hover:bg-blue-200"
-                                            : "border-slate-300 bg-white text-slate-400 hover:border-slate-400 hover:bg-slate-50"
+                                            ? "border-blue-500 bg-blue-100 text-blue-700"
+                                            : "border-slate-300 bg-white text-slate-400 hover:border-slate-400"
                                         }`}
                                       >
                                         {c.recordatorioEnviado ? <Check className="w-4 h-4" /> : null}
@@ -2551,8 +2564,8 @@ function Admin92PageContent() {
                                       onClick={() => handleTogglePaid(c)}
                                       className={`rounded-lg border px-2.5 py-1 text-xs font-medium cursor-pointer ${
                                         c.paid
-                                          ? "border-slate-300 bg-white text-slate-600 hover:bg-slate-50"
-                                          : "border-green-300 bg-green-50 text-green-800 hover:bg-green-100"
+                                          ? "border-slate-300 bg-white text-slate-600"
+                                          : "border-green-300 bg-green-50 text-green-800"
                                       }`}
                                     >
                                       {c.paid ? "Marcar pendiente" : "Marcar pagada"}
@@ -2651,8 +2664,8 @@ function Admin92PageContent() {
                                   }
                                   className={`inline-flex items-center gap-1 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer ${
                                     c.recordatorioEnviado
-                                      ? "border-blue-500 bg-blue-100 text-blue-800 hover:bg-blue-200"
-                                      : "border-slate-300 bg-white text-slate-600 hover:bg-slate-50"
+                                      ? "border-blue-500 bg-blue-100 text-blue-800"
+                                      : "border-slate-300 bg-white text-slate-600"
                                   }`}
                                 >
                                   {c.recordatorioEnviado ? <Check className="w-3.5 h-3.5" /> : null}
@@ -2664,8 +2677,8 @@ function Admin92PageContent() {
                                 onClick={() => handleTogglePaid(c)}
                                 className={`rounded-lg border px-3 py-1.5 text-xs font-medium cursor-pointer ${
                                   c.paid
-                                    ? "border-slate-300 bg-white text-slate-600 hover:bg-slate-50"
-                                    : "border-green-300 bg-green-50 text-green-800 hover:bg-green-100"
+                                    ? "border-slate-300 bg-white text-slate-600"
+                                    : "border-green-300 bg-green-50 text-green-800"
                                 }`}
                               >
                                 {c.paid ? "Marcar pendiente" : "Marcar pagada"}
@@ -2710,7 +2723,7 @@ function Admin92PageContent() {
                           {dayRecords.map((r) => (
                             <tr
                               key={r._id || r.createdAt}
-                              className="border-b border-slate-100 hover:bg-slate-50/50"
+                              className="border-b border-slate-100"
                             >
                               <td className="py-3 px-2 text-slate-600">
                                 {new Date(r.date).toLocaleDateString("es-AR")}
@@ -2750,7 +2763,7 @@ function Admin92PageContent() {
                                     onClick={() => handleEdit(r)}
                                     title="Editar"
                                     aria-label="Editar"
-                                    className="p-2 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-[#84b9ed] transition-colors"
+                                    className="p-2 rounded-lg text-slate-600 hover:text-[#84b9ed] transition-colors"
                                   >
                                     <Pencil className="w-4 h-4" />
                                   </button>
@@ -2759,7 +2772,7 @@ function Admin92PageContent() {
                                     onClick={() => handleDelete(r)}
                                     title="Eliminar"
                                     aria-label="Eliminar"
-                                    className="p-2 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-red-600 transition-colors"
+                                    className="p-2 rounded-lg text-slate-600 hover:text-red-600 transition-colors"
                                   >
                                     <Trash2 className="w-4 h-4" />
                                   </button>
@@ -2829,7 +2842,7 @@ function Admin92PageContent() {
                               onClick={() => handleEdit(r)}
                               title="Editar"
                               aria-label="Editar"
-                              className="p-2 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-[#84b9ed] transition-colors"
+                              className="p-2 rounded-lg text-slate-600 hover:text-[#84b9ed] transition-colors"
                             >
                               <Pencil className="w-4 h-4" />
                             </button>
@@ -2838,7 +2851,7 @@ function Admin92PageContent() {
                               onClick={() => handleDelete(r)}
                               title="Eliminar"
                               aria-label="Eliminar"
-                              className="p-2 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-red-600 transition-colors"
+                              className="p-2 rounded-lg text-slate-600 hover:text-red-600 transition-colors"
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>
@@ -2862,7 +2875,7 @@ function Admin92PageContent() {
                       href={WORD_ONLINE_URL}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 hover:border-slate-400 hover:bg-slate-50 transition-colors"
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 hover:border-slate-400 transition-colors"
                     >
                       <FileText className="h-4 w-4 shrink-0 text-[#84b9ed]" aria-hidden />
                       Word online
@@ -2895,7 +2908,7 @@ function Admin92PageContent() {
                   type="button"
                   onClick={() => setCobroFormMode("single")}
                   className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors cursor-pointer flex items-center gap-1.5 ${
-                    cobroFormMode === "single" ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-100"
+                    cobroFormMode === "single" ? "bg-slate-900 text-white" : "text-slate-600"
                   }`}
                 >
                   Cuota única
@@ -2904,7 +2917,7 @@ function Admin92PageContent() {
                   type="button"
                   onClick={() => setCobroFormMode("recurrent")}
                   className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors cursor-pointer ${
-                    cobroFormMode === "recurrent" ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-100"
+                    cobroFormMode === "recurrent" ? "bg-slate-900 text-white" : "text-slate-600"
                   }`}
                 >
                   Cuotas recurrentes
@@ -2913,7 +2926,7 @@ function Admin92PageContent() {
                   type="button"
                   onClick={() => setCobroFormMode("actions")}
                   className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors cursor-pointer flex items-center gap-1.5 ${
-                    cobroFormMode === "actions" ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-100"
+                    cobroFormMode === "actions" ? "bg-slate-900 text-white" : "text-slate-600"
                   }`}
                 >
                   <Calendar className="w-4 h-4" />
@@ -2939,7 +2952,7 @@ function Admin92PageContent() {
                           <button
                             type="button"
                             onClick={() => handleCopy(MENSAJE_RECORDATORIO_PAGO, "recordatorio-plantilla")}
-                            className="inline-flex items-center gap-1 rounded px-2 py-1 text-xs font-medium bg-amber-200 text-amber-900 hover:bg-amber-300 cursor-pointer"
+                            className="inline-flex items-center gap-1 rounded px-2 py-1 text-xs font-medium bg-amber-200 text-amber-900 cursor-pointer"
                           >
                             <Copy className="w-3 h-3" />
                             {copiedId === "recordatorio-plantilla" ? "Copiado" : "Copiar"}
@@ -2965,7 +2978,7 @@ function Admin92PageContent() {
                                   <button
                                     type="button"
                                     onClick={() => handleCopy(mensaje, `recordatorio-${c.id}`)}
-                                    className="inline-flex items-center gap-1 rounded px-2 py-1 text-xs font-medium bg-amber-200 text-amber-900 hover:bg-amber-300 cursor-pointer"
+                                    className="inline-flex items-center gap-1 rounded px-2 py-1 text-xs font-medium bg-amber-200 text-amber-900 cursor-pointer"
                                   >
                                     <Copy className="w-3 h-3" />
                                     {copiedId === `recordatorio-${c.id}` ? "Copiado" : "Copiar"}
@@ -2994,7 +3007,7 @@ function Admin92PageContent() {
                                     <button
                                       type="button"
                                       onClick={() => handleCopy(mensaje, `recordatorio-wb-${c.id}`)}
-                                      className="inline-flex items-center gap-1 rounded px-2 py-1 text-xs font-medium bg-amber-200 text-amber-900 hover:bg-amber-300 cursor-pointer"
+                                      className="inline-flex items-center gap-1 rounded px-2 py-1 text-xs font-medium bg-amber-200 text-amber-900 cursor-pointer"
                                     >
                                       <Copy className="w-3 h-3" />
                                       {copiedId === `recordatorio-wb-${c.id}` ? "Copiado" : "Copiar"}
@@ -3019,7 +3032,7 @@ function Admin92PageContent() {
                           <button
                             type="button"
                             onClick={() => handleCopy(MENSAJE_ESTADISTICAS, "estadisticas")}
-                            className="inline-flex items-center gap-1 rounded px-2 py-1 text-xs font-medium bg-violet-200 text-violet-900 hover:bg-violet-300 cursor-pointer"
+                            className="inline-flex items-center gap-1 rounded px-2 py-1 text-xs font-medium bg-violet-200 text-violet-900 cursor-pointer"
                           >
                             <Copy className="w-3 h-3" />
                             {copiedId === "estadisticas" ? "Copiado" : "Copiar"}
@@ -3075,7 +3088,7 @@ function Admin92PageContent() {
                     <button
                       type="button"
                       onClick={() => setShowSingleCobroForm((v) => !v)}
-                      className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+                      className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 transition-colors cursor-pointer"
                     >
                       {showSingleCobroForm ? "Ocultar formulario" : "Ver formulario"}
                     </button>
@@ -3145,7 +3158,7 @@ function Admin92PageContent() {
                           type="submit"
                           disabled={cobroSubmitting}
                           className={`rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors cursor-pointer ${
-                            cobroSubmitting ? "bg-slate-200 text-slate-500 cursor-not-allowed" : "bg-[#84b9ed] text-white hover:bg-[#6ba3d9]"
+                            cobroSubmitting ? "bg-slate-200 text-slate-500 cursor-not-allowed" : "bg-[#84b9ed] text-white"
                           }`}
                         >
                           {cobroSubmitting ? "Guardando..." : "Agregar"}
@@ -3248,7 +3261,7 @@ function Admin92PageContent() {
                       type="submit"
                       disabled={cobroSubmitting}
                       className={`rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors cursor-pointer ${
-                        cobroSubmitting ? "bg-slate-200 text-slate-500 cursor-not-allowed" : "bg-[#84b9ed] text-white hover:bg-[#6ba3d9]"
+                        cobroSubmitting ? "bg-slate-200 text-slate-500 cursor-not-allowed" : "bg-[#84b9ed] text-white"
                       }`}
                     >
                       {cobroSubmitting ? "Guardando..." : "Generar cuotas"}
@@ -3309,7 +3322,7 @@ function Admin92PageContent() {
                         type="submit"
                         disabled={cobroSubmitting}
                         className={`rounded-lg px-4 py-2 text-sm font-semibold cursor-pointer ${
-                          cobroSubmitting ? "bg-slate-200 text-slate-500 cursor-not-allowed" : "bg-[#84b9ed] text-white hover:bg-[#6ba3d9]"
+                          cobroSubmitting ? "bg-slate-200 text-slate-500 cursor-not-allowed" : "bg-[#84b9ed] text-white"
                         }`}
                       >
                         {cobroSubmitting ? "Guardando..." : "Guardar"}
@@ -3317,7 +3330,7 @@ function Admin92PageContent() {
                       <button
                         type="button"
                         onClick={handleCancelEditCobro}
-                        className="rounded-lg px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 cursor-pointer"
+                        className="rounded-lg px-4 py-2 text-sm font-medium text-slate-600 cursor-pointer"
                       >
                         Cancelar
                       </button>
@@ -3411,15 +3424,8 @@ function Admin92PageContent() {
                       </tr>
                     ) : (
                       filteredCobros.map((c) => {
-                        const estado = getCuotaEstado(c);
-                        const rowTint =
-                          estado === "pagada"
-                            ? "bg-green-50/30"
-                            : estado === "recordada"
-                              ? "bg-blue-50/30"
-                              : "";
                         return (
-                        <tr key={c.id} className={`border-b border-slate-100 hover:bg-slate-50/50 ${rowTint}`}>
+                        <tr key={c.id} className="border-b border-slate-100 bg-white">
                           <td className="py-3 px-2 font-medium text-slate-900">{c.clientName}</td>
                           <td className="py-3 px-2 text-slate-600">{c.servicio || "—"}</td>
                           <td className="py-3 px-2">
@@ -3440,8 +3446,8 @@ function Admin92PageContent() {
                               title={c.paid ? "Marcar como pendiente" : "Marcar como pagado"}
                               className={`inline-flex items-center justify-center w-8 h-8 rounded-lg border-2 transition-colors cursor-pointer ${
                                 c.paid
-                                  ? "border-green-500 bg-green-100 text-green-700 hover:bg-green-200"
-                                  : "border-slate-300 bg-white text-slate-400 hover:border-slate-400 hover:bg-slate-50"
+                                  ? "border-green-500 bg-green-100 text-green-700"
+                                  : "border-slate-300 bg-white text-slate-400 hover:border-slate-400"
                               }`}
                             >
                               {c.paid ? <Check className="w-4 h-4" /> : null}
@@ -3458,8 +3464,8 @@ function Admin92PageContent() {
                               }
                               className={`inline-flex items-center justify-center w-8 h-8 rounded-lg border-2 transition-colors cursor-pointer ${
                                 c.recordatorioEnviado
-                                  ? "border-blue-500 bg-blue-100 text-blue-700 hover:bg-blue-200"
-                                  : "border-slate-300 bg-white text-slate-400 hover:border-slate-400 hover:bg-slate-50"
+                                  ? "border-blue-500 bg-blue-100 text-blue-700"
+                                  : "border-slate-300 bg-white text-slate-400 hover:border-slate-400"
                               }`}
                             >
                               {c.recordatorioEnviado ? <Check className="w-4 h-4" /> : null}
@@ -3476,8 +3482,8 @@ function Admin92PageContent() {
                               }
                               className={`inline-flex items-center justify-center w-8 h-8 rounded-lg border-2 transition-colors cursor-pointer ${
                                 c.estadisticasEnviadas
-                                  ? "border-blue-500 bg-blue-100 text-blue-700 hover:bg-blue-200"
-                                  : "border-slate-300 bg-white text-slate-400 hover:border-slate-400 hover:bg-slate-50"
+                                  ? "border-blue-500 bg-blue-100 text-blue-700"
+                                  : "border-slate-300 bg-white text-slate-400 hover:border-slate-400"
                               }`}
                             >
                               {c.estadisticasEnviadas ? <Check className="w-4 h-4" /> : null}
@@ -3501,7 +3507,7 @@ function Admin92PageContent() {
                                 }
                                 title="Copiar a otro mes"
                                 aria-label="Copiar a otro mes"
-                                className="p-2 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-[#84b9ed] transition-colors cursor-pointer"
+                                className="p-2 rounded-lg text-slate-600 hover:text-[#84b9ed] transition-colors cursor-pointer"
                               >
                                 <Copy className="w-4 h-4" />
                               </button>
@@ -3527,7 +3533,7 @@ function Admin92PageContent() {
                                     type="button"
                                     disabled={cobroSubmitting}
                                     onClick={() => void handleCopyCobroToMonth(c, copyRow.month)}
-                                    className="rounded-lg bg-[#84b9ed] px-2 py-1 text-xs font-semibold text-white hover:bg-[#6ba3d9] cursor-pointer disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500"
+                                    className="rounded-lg bg-[#84b9ed] px-2 py-1 text-xs font-semibold text-white cursor-pointer disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500"
                                   >
                                     Pegar
                                   </button>
@@ -3538,7 +3544,7 @@ function Admin92PageContent() {
                                 onClick={() => handleEditCobro(c)}
                                 title="Editar"
                                 aria-label="Editar"
-                                className="p-2 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-[#84b9ed] transition-colors cursor-pointer"
+                                className="p-2 rounded-lg text-slate-600 hover:text-[#84b9ed] transition-colors cursor-pointer"
                               >
                                 <Pencil className="w-4 h-4" />
                               </button>
@@ -3547,7 +3553,7 @@ function Admin92PageContent() {
                                 onClick={() => handleDeleteCobro(c)}
                                 title="Eliminar"
                                 aria-label="Eliminar"
-                                className="p-2 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-red-600 transition-colors cursor-pointer"
+                                className="p-2 rounded-lg text-slate-600 hover:text-red-600 transition-colors cursor-pointer"
                               >
                                 <Trash2 className="w-4 h-4" />
                               </button>

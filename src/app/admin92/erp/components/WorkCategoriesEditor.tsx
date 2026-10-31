@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState, type ComponentType } from "react"
 import { AlertTriangle, ChevronDown, ChevronRight, Trash2 } from "lucide-react";
 import {
   formatHoursAsHm,
+  isMultiCuotaDestino,
   normalizeWork,
   normalizeWorkTimers,
   parseDurationToHours,
@@ -74,15 +75,19 @@ function parseDurationToSeconds(raw: string, fallback: number): number {
 
 type DraftDestino = "" | "cuota" | ErpTimeKind;
 
-function destinoFromDraft(kind: DraftDestino, clients: string[]): ErpTimerDestino {
-  if (kind === "cuota") return readTimerDestino({ cuotaClients: clients });
+function destinoFromDraft(
+  kind: DraftDestino,
+  clients: string[],
+  share?: ErpTimerDestino["share"],
+): ErpTimerDestino {
+  if (kind === "cuota") return readTimerDestino({ cuotaClients: clients, share });
   if (kind === "promesa" || kind === "conocimiento") return { timeKind: kind };
   return {};
 }
 
 function destinoCaption(timer: ErpTimerDestino): string | null {
-  if (timer.share === "repartido" && timer.cuotaClients && timer.cuotaClients.length >= 2) {
-    return `Repartido · ${timer.cuotaClients.join(", ")}`;
+  if (isMultiCuotaDestino(timer)) {
+    return `${timer.share === "paralelo" ? "Compartido" : "Repartido"} · ${timer.cuotaClients.join(", ")}`;
   }
   if (timer.cuotaClient) return timer.cuotaClient;
   if (timer.timeKind === "promesa") return "Promesa";
@@ -326,7 +331,7 @@ export default function WorkCategoriesEditor({
     for (const item of timer.items ?? []) items[item.id] = item.text;
     setDraftItems(items);
     setDraftCuotasOpen(true);
-    if (timer.share === "repartido" && timer.cuotaClients && timer.cuotaClients.length >= 2) {
+    if (isMultiCuotaDestino(timer)) {
       setDraftDestino("cuota");
       setDraftCuotaClients(timer.cuotaClients);
     } else if (timer.cuotaClient) {
@@ -404,7 +409,11 @@ export default function WorkCategoriesEditor({
         : (source.timers[parsed.category]?.[parsed.index]?.seconds ?? 0),
     );
 
-    const destino = destinoFromDraft(draftDestino, draftCuotaClients);
+    const destino = destinoFromDraft(
+      draftDestino,
+      draftCuotaClients,
+      parsed.kind === "orphan" ? undefined : source.timers[parsed.category]?.[parsed.index]?.share,
+    );
 
     if (parsed.kind === "orphan") {
       const prevSeconds = Math.round((source.work[parsed.category] ?? 0) * 3600);
@@ -624,7 +633,7 @@ export default function WorkCategoriesEditor({
           onClick={onDelete}
           disabled={persisting}
           aria-label={deleteLabel}
-          className="rounded-md p-1 text-slate-400 hover:bg-rose-50 hover:text-rose-600 disabled:opacity-50 cursor-pointer"
+          className="rounded-md p-1 text-slate-400 disabled:opacity-50 cursor-pointer"
         >
           <Trash2 className="h-3.5 w-3.5" />
         </button>
@@ -747,7 +756,7 @@ export default function WorkCategoriesEditor({
                 }}
                 disabled={persisting}
                 aria-label="Eliminar ítem"
-                className="rounded p-0.5 text-slate-300 hover:bg-rose-50 hover:text-rose-600 cursor-pointer"
+                className="rounded p-0.5 text-slate-300 cursor-pointer"
               >
                 <Trash2 className="h-3 w-3" />
               </button>
@@ -793,7 +802,7 @@ export default function WorkCategoriesEditor({
                   setExpanded((prev) => ({ ...prev, [cat.key]: !prev[cat.key] }))
                 }
                 aria-expanded={open}
-                className="group min-w-0 flex-1 cursor-pointer rounded-lg text-left transition hover:bg-slate-50/80"
+                className="group min-w-0 flex-1 cursor-pointer rounded-lg text-left transition"
               >
                 <div className="mb-1.5 flex items-center justify-between gap-2 px-1 py-0.5">
                   <span className="flex min-w-0 items-center gap-2 text-sm font-semibold text-slate-800">
@@ -886,7 +895,7 @@ export default function WorkCategoriesEditor({
                                 <button
                                   type="button"
                                   onClick={() => startEdit(key)}
-                                  className="min-w-0 flex-1 cursor-pointer rounded-lg px-1.5 py-1 text-left transition hover:bg-slate-50"
+                                  className="min-w-0 flex-1 cursor-pointer rounded-lg px-1.5 py-1 text-left transition"
                                 >
                                   {orphanBody}
                                 </button>
@@ -966,7 +975,7 @@ export default function WorkCategoriesEditor({
                               <button
                                 type="button"
                                 onClick={() => startEdit(key)}
-                                className="min-w-0 flex-1 cursor-pointer rounded-lg px-1.5 py-1 text-left transition hover:bg-slate-50"
+                                className="min-w-0 flex-1 cursor-pointer rounded-lg px-1.5 py-1 text-left transition"
                               >
                                 {timerBody}
                               </button>
@@ -1035,7 +1044,7 @@ export default function WorkCategoriesEditor({
               <button
                 type="button"
                 onClick={() => setDeleteConfirm(null)}
-                className="cursor-pointer rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                className="cursor-pointer rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-sm font-semibold text-slate-700 transition"
               >
                 Cancelar
               </button>
@@ -1043,7 +1052,7 @@ export default function WorkCategoriesEditor({
                 type="button"
                 onClick={() => void confirmDelete()}
                 disabled={persisting}
-                className="cursor-pointer rounded-xl bg-rose-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-rose-700 disabled:opacity-60"
+                className="cursor-pointer rounded-xl bg-rose-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition disabled:opacity-60"
               >
                 Eliminar
               </button>

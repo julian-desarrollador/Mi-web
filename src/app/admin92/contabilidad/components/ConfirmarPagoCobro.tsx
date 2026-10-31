@@ -57,14 +57,14 @@ export default function ConfirmarPagoCobro({
           <button
             type="button"
             onClick={() => onFechaCobroChange(todayYmd())}
-            className="rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 cursor-pointer"
+            className="rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 cursor-pointer"
           >
             Hoy
           </button>
           <button
             type="button"
             onClick={() => onFechaCobroChange(cobro.dueDate)}
-            className="rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 cursor-pointer"
+            className="rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 cursor-pointer"
           >
             Mismo día del vencimiento
           </button>
@@ -73,7 +73,7 @@ export default function ConfirmarPagoCobro({
           type="button"
           onClick={onConfirm}
           disabled={confirming || !fechaCobro}
-          className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {confirming ? "Guardando..." : "Confirmar pago"}
         </button>
@@ -81,7 +81,7 @@ export default function ConfirmarPagoCobro({
           type="button"
           onClick={onCancel}
           disabled={confirming}
-          className="rounded-lg px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 cursor-pointer disabled:opacity-50"
+          className="rounded-lg px-4 py-2 text-sm font-medium text-slate-600 cursor-pointer disabled:opacity-50"
         >
           Cancelar
         </button>

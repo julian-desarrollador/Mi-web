@@ -210,7 +210,7 @@ export default function Desarrollos50Panel({ onCountChange, onAccountingChange }
                       type="button"
                       disabled={saving}
                       onClick={() => openCobrarFinal(d)}
-                      className="rounded-md bg-sky-600 px-2.5 py-1 text-[10px] font-medium text-white hover:bg-sky-700 cursor-pointer disabled:opacity-50"
+                      className="rounded-md bg-sky-600 px-2.5 py-1 text-[10px] font-medium text-white cursor-pointer disabled:opacity-50"
                     >
                       Cobrar 50% final
                     </button>
@@ -220,7 +220,7 @@ export default function Desarrollos50Panel({ onCountChange, onAccountingChange }
                       onClick={() => void handleDelete(d)}
                       title="Eliminar desarrollo"
                       aria-label="Eliminar desarrollo"
-                      className="rounded-md p-1 text-slate-400 hover:text-red-600 hover:bg-red-50 cursor-pointer disabled:opacity-50"
+                      className="rounded-md p-1 text-slate-400 hover:text-red-600 cursor-pointer disabled:opacity-50"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>
@@ -252,7 +252,7 @@ export default function Desarrollos50Panel({ onCountChange, onAccountingChange }
                     type="button"
                     disabled={saving}
                     onClick={() => void handleCobrarFinal()}
-                    className="rounded-md bg-sky-600 px-3 py-1.5 text-[11px] font-medium text-white hover:bg-sky-700 cursor-pointer disabled:opacity-50"
+                    className="rounded-md bg-sky-600 px-3 py-1.5 text-[11px] font-medium text-white cursor-pointer disabled:opacity-50"
                   >
                     Confirmar y cerrar
                   </button>
@@ -260,7 +260,7 @@ export default function Desarrollos50Panel({ onCountChange, onAccountingChange }
                     type="button"
                     disabled={saving}
                     onClick={() => setFinalTarget(null)}
-                    className="rounded-md border border-slate-300 px-3 py-1.5 text-[11px] text-slate-600 hover:bg-white cursor-pointer"
+                    className="rounded-md border border-slate-300 px-3 py-1.5 text-[11px] text-slate-600 cursor-pointer"
                   >
                     Cancelar
                   </button>
@@ -332,14 +332,14 @@ export default function Desarrollos50Panel({ onCountChange, onAccountingChange }
             <button
               type="submit"
               disabled={saving}
-              className="rounded-md bg-sky-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-sky-700 cursor-pointer disabled:opacity-50"
+              className="rounded-md bg-sky-600 px-3 py-1.5 text-xs font-medium text-white cursor-pointer disabled:opacity-50"
             >
               {saving ? "Guardando…" : "Registrar 1.er 50%"}
             </button>
             <button
               type="button"
               onClick={() => setShowForm(false)}
-              className="rounded-md border border-slate-300 px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-50 cursor-pointer"
+              className="rounded-md border border-slate-300 px-3 py-1.5 text-xs text-slate-600 cursor-pointer"
             >
               Cancelar
             </button>
@@ -352,7 +352,7 @@ export default function Desarrollos50Panel({ onCountChange, onAccountingChange }
             setShowForm(true);
             setError("");
           }}
-          className="inline-flex items-center gap-1 rounded-md border border-sky-300 bg-white px-2.5 py-1.5 text-xs font-medium text-sky-800 hover:bg-sky-50 cursor-pointer"
+          className="inline-flex items-center gap-1 rounded-md border border-sky-300 bg-white px-2.5 py-1.5 text-xs font-medium text-sky-800 cursor-pointer"
         >
           <Plus className="h-3.5 w-3.5" />
           Nuevo desarrollo 50%

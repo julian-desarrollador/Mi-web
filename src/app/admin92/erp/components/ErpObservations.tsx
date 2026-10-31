@@ -186,7 +186,7 @@ export default function ErpObservations() {
           setMode("list");
           setOpen(true);
         }}
-        className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50 cursor-pointer"
+        className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition cursor-pointer"
       >
         <StickyNote className="h-4 w-4" />
         Observaciones
@@ -215,7 +215,7 @@ export default function ErpObservations() {
                   <button
                     type="button"
                     onClick={startCreate}
-                    className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-2.5 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50 cursor-pointer"
+                    className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-2.5 py-1.5 text-sm font-medium text-slate-700 cursor-pointer"
                   >
                     <Plus className="h-4 w-4" />
                     Agregar
@@ -225,7 +225,7 @@ export default function ErpObservations() {
                   type="button"
                   onClick={() => setOpen(false)}
                   aria-label="Cerrar"
-                  className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 cursor-pointer"
+                  className="rounded-lg p-1.5 text-slate-400 transition cursor-pointer"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -254,14 +254,14 @@ export default function ErpObservations() {
                         setMode("list");
                         setViewingId(null);
                       }}
-                      className="rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 cursor-pointer"
+                      className="rounded-lg px-3 py-2 text-sm font-medium text-slate-600 cursor-pointer"
                     >
                       Volver
                     </button>
                     <button
                       type="button"
                       onClick={() => startEdit(viewingItem, true)}
-                      className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-3 py-2 text-sm font-semibold text-white hover:bg-slate-800 cursor-pointer"
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-3 py-2 text-sm font-semibold text-white cursor-pointer"
                     >
                       <Pencil className="h-3.5 w-3.5" />
                       Editar
@@ -304,14 +304,14 @@ export default function ErpObservations() {
                     <button
                       type="button"
                       onClick={cancelForm}
-                      className="rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 cursor-pointer"
+                      className="rounded-lg px-3 py-2 text-sm font-medium text-slate-600 cursor-pointer"
                     >
                       Cancelar
                     </button>
                     <button
                       type="submit"
                       disabled={saving}
-                      className="rounded-lg bg-slate-900 px-3 py-2 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-60 cursor-pointer"
+                      className="rounded-lg bg-slate-900 px-3 py-2 text-sm font-semibold text-white disabled:opacity-60 cursor-pointer"
                     >
                       {saving ? "Guardando…" : mode === "edit" ? "Guardar" : "Agregar"}
                     </button>
@@ -325,7 +325,7 @@ export default function ErpObservations() {
                   <button
                     type="button"
                     onClick={startCreate}
-                    className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 cursor-pointer"
+                    className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 cursor-pointer"
                   >
                     <Plus className="h-4 w-4" />
                     Agregar
@@ -347,7 +347,7 @@ export default function ErpObservations() {
                             type="button"
                             onClick={() => startEdit(item)}
                             aria-label="Editar observación"
-                            className="rounded-lg p-1.5 text-slate-400 hover:bg-white hover:text-slate-800 cursor-pointer"
+                            className="rounded-lg p-1.5 text-slate-400 cursor-pointer"
                           >
                             <Pencil className="h-3.5 w-3.5" />
                           </button>
@@ -355,7 +355,7 @@ export default function ErpObservations() {
                             type="button"
                             onClick={() => void handleDelete(item)}
                             aria-label="Eliminar observación"
-                            className="rounded-lg p-1.5 text-slate-400 hover:bg-rose-50 hover:text-rose-700 cursor-pointer"
+                            className="rounded-lg p-1.5 text-slate-400 cursor-pointer"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
                           </button>

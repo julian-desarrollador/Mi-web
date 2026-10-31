@@ -20,7 +20,7 @@ export default function ErpNoFumar() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50 cursor-pointer"
+        className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition cursor-pointer"
       >
         <Ban className="h-4 w-4" />
         No fumar
@@ -48,7 +48,7 @@ export default function ErpNoFumar() {
                 type="button"
                 onClick={() => setOpen(false)}
                 aria-label="Cerrar"
-                className="shrink-0 rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 cursor-pointer"
+                className="shrink-0 rounded-lg p-1.5 text-slate-400 transition cursor-pointer"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -81,7 +81,7 @@ export default function ErpNoFumar() {
                   target="_blank"
                   rel="noopener noreferrer"
                   title="Dejar cannabis"
-                  className="font-medium text-slate-900 underline decoration-slate-300 underline-offset-2 hover:decoration-slate-900"
+                  className="font-medium text-slate-900 underline decoration-slate-300 underline-offset-2"
                 >
                   dejar el cannabis
                 </a>{" "}

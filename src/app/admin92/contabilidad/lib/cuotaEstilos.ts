@@ -27,21 +27,21 @@ export const cuotaEstadoStyles: Record<
   }
 > = {
   pendiente: {
-    row: "border-orange-100 bg-orange-50/30 hover:bg-orange-50/50",
+    row: "border-orange-100 bg-orange-50/30",
     rowSub: "border-orange-100 bg-orange-50/20",
     card: "border-orange-200 bg-orange-50/40",
     badge: "bg-orange-100 text-orange-800",
     amount: "text-orange-700",
   },
   recordada: {
-    row: "border-blue-200 bg-blue-50/40 hover:bg-blue-50/60",
+    row: "border-blue-200 bg-blue-50/40",
     rowSub: "border-blue-100 bg-blue-50/25",
     card: "border-blue-200 bg-blue-50/50",
     badge: "bg-blue-100 text-blue-800",
     amount: "text-blue-700",
   },
   pagada: {
-    row: "border-green-200 bg-green-50/40 hover:bg-green-50/60",
+    row: "border-green-200 bg-green-50/40",
     rowSub: "border-green-100 bg-green-50/25",
     card: "border-green-200 bg-green-50/50",
     badge: "bg-green-100 text-green-800",

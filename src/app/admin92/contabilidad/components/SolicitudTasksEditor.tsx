@@ -314,7 +314,7 @@ export default function SolicitudTasksEditor({
             type="button"
             disabled={busy}
             onClick={() => void handleConfirmTaskComplete()}
-            className="rounded-md bg-amber-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-amber-700 cursor-pointer disabled:opacity-50"
+            className="rounded-md bg-amber-600 px-3 py-1.5 text-xs font-medium text-white cursor-pointer disabled:opacity-50"
           >
             Confirmar
           </button>
@@ -322,7 +322,7 @@ export default function SolicitudTasksEditor({
             type="button"
             disabled={busy}
             onClick={() => setPendingTaskComplete(null)}
-            className="rounded-md border border-slate-300 px-3 py-1.5 text-xs text-slate-600 hover:bg-white cursor-pointer"
+            className="rounded-md border border-slate-300 px-3 py-1.5 text-xs text-slate-600 cursor-pointer"
           >
             Cancelar
           </button>
@@ -355,7 +355,7 @@ export default function SolicitudTasksEditor({
           type="button"
           disabled={busy || !newTaskText.trim()}
           onClick={() => void handleAddTask()}
-          className="inline-flex items-center gap-1 rounded border border-slate-300 bg-white px-2 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50 cursor-pointer disabled:opacity-50"
+          className="inline-flex items-center gap-1 rounded border border-slate-300 bg-white px-2 py-1 text-xs font-medium text-slate-700 cursor-pointer disabled:opacity-50"
         >
           <Plus className="h-3.5 w-3.5" />
           Agregar
@@ -378,7 +378,7 @@ export default function SolicitudTasksEditor({
                 type="button"
                 disabled={busy}
                 onClick={() => setTaskPendingDelete(null)}
-                className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50 cursor-pointer disabled:opacity-50"
+                className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-600 cursor-pointer disabled:opacity-50"
               >
                 Cancelar
               </button>
@@ -386,7 +386,7 @@ export default function SolicitudTasksEditor({
                 type="button"
                 disabled={busy}
                 onClick={() => void handleRemoveTask(taskPendingDelete.id)}
-                className="rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700 cursor-pointer disabled:opacity-50"
+                className="rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white cursor-pointer disabled:opacity-50"
               >
                 Eliminar
               </button>

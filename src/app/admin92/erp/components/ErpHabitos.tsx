@@ -1,211 +1,161 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Check, ListChecks, Pencil, Trash2, X } from "lucide-react";
-import DatePickerField from "@/app/admin92/contabilidad/components/DatePickerField";
-import { todayYmd } from "@/app/admin92/contabilidad/lib/utils";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { ListChecks, X } from "lucide-react";
+import { shiftDate, todayYmd } from "@/app/admin92/contabilidad/lib/utils";
 import {
-  CUATRO_HORAS_NOTA_MAX,
-  HABITO_MAX,
-  MOOD_MAX,
   type CuatroHorasMark,
   type ErpHabito,
   type ErpMood,
 } from "@/app/admin92/erp/lib/erpHabitos";
+import type { ErpDayLog } from "@/app/admin92/erp/lib/erpTypes";
+import { AlarmSection, type AlarmRow } from "@/app/admin92/erp/components/habitos/AlarmSection";
+import { CuatroHorasSection } from "@/app/admin92/erp/components/habitos/CuatroHorasSection";
+import { HabitosList } from "@/app/admin92/erp/components/habitos/HabitosList";
+import { MoodSection } from "@/app/admin92/erp/components/habitos/MoodSection";
+import { TodayStrip } from "@/app/admin92/erp/components/habitos/TodayStrip";
 
-function formatDayMonth(dateStr: string): string {
-  const [, month, day] = dateStr.split("-");
-  return `${day}/${month}`;
+type HabitosTab = "hoy" | "mood" | "habitos";
+
+const TABS: { id: HabitosTab; label: string }[] = [
+  { id: "hoy", label: "Hoy" },
+  { id: "mood", label: "Mood" },
+  { id: "habitos", label: "Hábitos" },
+];
+
+function clockNow(date: Date): string {
+  return `${date.getHours()}:${String(date.getMinutes()).padStart(2, "0")}`;
 }
 
-function nowClock(): string {
-  const now = new Date();
-  return `${now.getHours()}:${String(now.getMinutes()).padStart(2, "0")}`;
+function formatTodayHeading(ymd: string): string {
+  const [year, month, day] = ymd.split("-").map(Number);
+  const date = new Date(year, month - 1, day);
+  const weekday = date.toLocaleDateString("es-AR", { weekday: "long" });
+  const label = weekday.charAt(0).toUpperCase() + weekday.slice(1);
+  return `${label} ${String(day).padStart(2, "0")}/${String(month).padStart(2, "0")}`;
 }
 
-function MoodEntry({
-  entry,
-  onRemove,
-  removing,
-}: {
-  entry: ErpMood;
-  onRemove?: () => void;
-  removing?: boolean;
-}) {
-  return (
-    <div className="rounded-xl border border-[#c5d4e8] border-l-4 border-l-[#1d4e89] bg-white px-3 py-2">
-      <div className="flex items-start gap-2">
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-1.5">
-            <span className="rounded-md bg-[#1d4e89] px-1.5 py-0.5 text-[11px] font-bold text-white">
-              {entry.startedAt}
-            </span>
-            <span className="text-[11px] font-semibold uppercase tracking-wide text-[#1d4e89]">
-              Arranco
-            </span>
-            <span className="rounded-lg bg-[#e4eef8] px-2 py-1 text-xs font-medium text-[#0f2744]">
-              {entry.mood}
-            </span>
-          </div>
-          {entry.endedAt ? (
-            <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-              <span className="rounded-md bg-[#3d5270] px-1.5 py-0.5 text-[11px] font-bold text-white">
-                {entry.endedAt}
-              </span>
-              <span className="text-[11px] font-semibold uppercase tracking-wide text-[#3d5270]">
-                Pausa
-              </span>
-            </div>
-          ) : null}
-        </div>
-        {onRemove ? (
-          <button
-            type="button"
-            aria-label={`Quitar ${entry.mood}`}
-            disabled={removing}
-            onClick={onRemove}
-            className="shrink-0 rounded-lg p-1.5 text-[#3d5270] hover:bg-[#e4eef8] hover:text-[#0f2744] cursor-pointer disabled:opacity-50"
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-          </button>
-        ) : null}
-      </div>
-    </div>
-  );
-}
-
-function DayMarks({
-  fulfilled,
-  note,
-  disabled,
-  label,
-  showNote = true,
-  onSet,
-  onNote,
-}: {
-  fulfilled: boolean | null;
-  note: string;
-  disabled?: boolean;
-  label: string;
-  showNote?: boolean;
-  onSet: (fulfilled: boolean | null) => void;
-  onNote: (note: string) => void;
-}) {
-  const yes = fulfilled === true;
-  const no = fulfilled === false;
-  const [draft, setDraft] = useState(note);
-
-  useEffect(() => {
-    setDraft(note);
-  }, [note]);
-
-  return (
-    <div>
-      <div className="flex items-center gap-2 text-sm text-[#0f2744]">
-        <button
-          type="button"
-          aria-pressed={yes}
-          aria-label={`${label}: cumplí`}
-          disabled={disabled}
-          onClick={() => onSet(yes ? null : true)}
-          className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border cursor-pointer disabled:opacity-50 ${
-            yes
-              ? "border-[#1d4e89] bg-[#1d4e89] text-white"
-              : "border-[#1d4e89] bg-white text-[#1d4e89]"
-          }`}
-        >
-          <Check className="h-3.5 w-3.5" strokeWidth={3} />
-        </button>
-        <button
-          type="button"
-          aria-pressed={no}
-          aria-label={`${label}: no cumplí`}
-          disabled={disabled}
-          onClick={() => onSet(no ? null : false)}
-          className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border cursor-pointer disabled:opacity-50 ${
-            no
-              ? "border-[#9f1239] bg-[#9f1239] text-white"
-              : "border-[#9f1239] bg-white text-[#9f1239]"
-          }`}
-        >
-          <X className="h-3.5 w-3.5" strokeWidth={3} />
-        </button>
-        <span>{label}</span>
-      </div>
-      {showNote ? (
-        <input
-          type="text"
-          value={draft}
-          disabled={disabled}
-          maxLength={CUATRO_HORAS_NOTA_MAX}
-          placeholder="Nota opcional"
-          aria-label={`${label}: nota`}
-          onChange={(event) => setDraft(event.target.value.slice(0, CUATRO_HORAS_NOTA_MAX))}
-          onBlur={(event) => {
-            const next = event.currentTarget.value.trim().slice(0, CUATRO_HORAS_NOTA_MAX);
-            if (next !== note.trim()) onNote(next);
-          }}
-          onKeyDown={(event) => {
-            if (event.key === "Enter") event.currentTarget.blur();
-          }}
-          className="mt-1.5 w-full rounded-lg border border-[#c5d4e8] bg-white px-2.5 py-1.5 text-xs text-[#0f2744] placeholder:text-[#3d5270] disabled:opacity-50"
-        />
-      ) : null}
-    </div>
-  );
+function paneClass(active: boolean): string {
+  return `${active ? "flex" : "hidden md:flex"} min-h-0 flex-col`;
 }
 
 export default function ErpHabitos() {
   const [open, setOpen] = useState(false);
+  const [tab, setTab] = useState<HabitosTab>("hoy");
   const [items, setItems] = useState<ErpHabito[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [draft, setDraft] = useState("");
+  const [adding, setAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editDraft, setEditDraft] = useState("");
   const [marks, setMarks] = useState<CuatroHorasMark[]>([]);
   const [moods, setMoods] = useState<ErpMood[]>([]);
   const [moodDraft, setMoodDraft] = useState("");
-  const [otherDate, setOtherDate] = useState("");
+  const [alarmRows, setAlarmRows] = useState<AlarmRow[]>([]);
+  const [now, setNow] = useState(() => new Date());
+  const openButtonRef = useRef<HTMLButtonElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const wasOpenRef = useRef(false);
   const today = todayYmd();
+  const nowLabel = clockNow(now);
 
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false);
-    };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [open]);
-
-  useEffect(() => {
-    if (!open) return;
-    void loadItems();
-  }, [open]);
-
-  const loadItems = async () => {
+  const loadItems = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
-      const response = await fetch("/api/admin/erp-habitos", { cache: "no-store" });
-      const data = (await response.json()) as { habitos?: ErpHabito[]; error?: string };
-      if (!response.ok) throw new Error(data.error || "No se pudieron cargar los hábitos.");
-      setItems(data.habitos ?? []);
-      const marksResponse = await fetch("/api/admin/erp-habitos/cuatro-horas", { cache: "no-store" });
-      const marksData = (await marksResponse.json()) as { marks?: CuatroHorasMark[]; error?: string };
-      if (!marksResponse.ok) throw new Error(marksData.error || "No se pudo cargar el historial.");
+      const [habitosRes, marksRes, moodsRes, logsRes] = await Promise.all([
+        fetch("/api/admin/erp-habitos", { cache: "no-store" }),
+        fetch("/api/admin/erp-habitos/cuatro-horas", { cache: "no-store" }),
+        fetch("/api/admin/erp-moods", { cache: "no-store" }),
+        fetch(`/api/admin/erp-logs?from=${shiftDate(today, -59)}&to=${today}`, { cache: "no-store" }),
+      ]);
+      const [habitosData, marksData, moodsData, logsData] = (await Promise.all([
+        habitosRes.json(),
+        marksRes.json(),
+        moodsRes.json(),
+        logsRes.json(),
+      ])) as [
+        { habitos?: ErpHabito[]; error?: string },
+        { marks?: CuatroHorasMark[]; error?: string },
+        { moods?: ErpMood[]; error?: string },
+        { logs?: ErpDayLog[]; error?: string },
+      ];
+      if (!habitosRes.ok) throw new Error(habitosData.error || "No se pudieron cargar los hábitos.");
+      if (!marksRes.ok) throw new Error(marksData.error || "No se pudo cargar el historial.");
+      if (!moodsRes.ok) throw new Error(moodsData.error || "No se pudieron cargar los moods.");
+      if (!logsRes.ok) throw new Error(logsData.error || "No se pudieron cargar las alarmas.");
+      setItems(habitosData.habitos ?? []);
       setMarks(marksData.marks ?? []);
-      const moodsResponse = await fetch("/api/admin/erp-moods", { cache: "no-store" });
-      const moodsData = (await moodsResponse.json()) as { moods?: ErpMood[]; error?: string };
-      if (!moodsResponse.ok) throw new Error(moodsData.error || "No se pudieron cargar los moods.");
       setMoods(moodsData.moods ?? []);
+      setAlarmRows(
+        (logsData.logs ?? [])
+          .map((log) => ({
+            date: log.date,
+            rangAt: log.alarm?.rangAt ?? null,
+            startedWorkAt: log.alarm?.startedWorkAt ?? null,
+          }))
+          .filter((row) => row.rangAt !== null || row.startedWorkAt !== null)
+          .sort((a, b) => (a.date < b.date ? 1 : -1)),
+      );
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudieron cargar los hábitos.");
     } finally {
       setLoading(false);
     }
-  };
+  }, [today]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      if (adding || editingId) {
+        event.preventDefault();
+        if (adding) {
+          setAdding(false);
+          setDraft("");
+        }
+        if (editingId) {
+          setEditingId(null);
+          setEditDraft("");
+        }
+        return;
+      }
+      setOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open, adding, editingId]);
+
+  useEffect(() => {
+    if (!open) {
+      setAdding(false);
+      setEditingId(null);
+      setEditDraft("");
+      setDraft("");
+      if (wasOpenRef.current) openButtonRef.current?.focus();
+      return;
+    }
+    wasOpenRef.current = true;
+    closeButtonRef.current?.focus();
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    void loadItems();
+  }, [open, loadItems]);
+
+  useEffect(() => {
+    if (!open) return;
+    setNow(new Date());
+    const id = window.setInterval(() => setNow(new Date()), 60_000);
+    return () => window.clearInterval(id);
+  }, [open]);
+
+  const todayAlarm = alarmRows.find((row) => row.date === today) ?? null;
+  const todayMark = marks.find((row) => row.date === today);
+  const openMood = moods.find((row) => row.date === today && row.endedAt === null) ?? null;
 
   const createHabito = async () => {
     const text = draft.trim();
@@ -224,6 +174,7 @@ export default function ErpHabitos() {
       }
       setItems((prev) => [...prev, data.habito as ErpHabito]);
       setDraft("");
+      setAdding(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo crear el hábito.");
     } finally {
@@ -286,18 +237,6 @@ export default function ErpHabitos() {
     }
   };
 
-  const markFor = (date: string): boolean | null => {
-    const row = marks.find((item) => item.date === date);
-    return row ? row.fulfilled : null;
-  };
-  const noteFor = (date: string) => marks.find((item) => item.date === date)?.note ?? "";
-  const history = marks.filter((row) => row.date !== today);
-  const todayMoods = moods.filter((row) => row.date === today);
-  const openMood = todayMoods.find((row) => row.endedAt === null) ?? null;
-  const pastMoodDates = Array.from(
-    new Set(moods.filter((row) => row.date !== today).map((row) => row.date)),
-  );
-
   const startMood = async () => {
     const mood = moodDraft.trim();
     if (!mood || openMood) return;
@@ -307,12 +246,13 @@ export default function ErpHabitos() {
       const response = await fetch("/api/admin/erp-moods", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ date: today, mood, startedAt: nowClock() }),
+        body: JSON.stringify({ date: today, mood, startedAt: clockNow(new Date()) }),
       });
       const data = (await response.json()) as { mood?: ErpMood; error?: string };
       if (!response.ok || !data.mood) throw new Error(data.error || "No se pudo arrancar el mood.");
       const saved = data.mood;
       setMoods((prev) => [...prev.filter((row) => row._id !== saved._id), saved]);
+      setNow(new Date());
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo arrancar el mood.");
     } finally {
@@ -328,12 +268,13 @@ export default function ErpHabitos() {
       const response = await fetch("/api/admin/erp-moods", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: openMood._id, endedAt: nowClock() }),
+        body: JSON.stringify({ id: openMood._id, endedAt: clockNow(new Date()) }),
       });
       const data = (await response.json()) as { mood?: ErpMood; error?: string };
       if (!response.ok || !data.mood) throw new Error(data.error || "No se pudo pausar el mood.");
       const saved = data.mood;
       setMoods((prev) => prev.map((row) => (row._id === saved._id ? saved : row)));
+      setNow(new Date());
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo pausar el mood.");
     } finally {
@@ -378,12 +319,23 @@ export default function ErpHabitos() {
     }
   };
 
+  const cancelAdd = () => {
+    setAdding(false);
+    setDraft("");
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditDraft("");
+  };
+
   return (
     <>
       <button
+        ref={openButtonRef}
         type="button"
         onClick={() => setOpen(true)}
-        className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50 cursor-pointer"
+        className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition cursor-pointer"
       >
         <ListChecks className="h-4 w-4" />
         Hábitos
@@ -401,242 +353,126 @@ export default function ErpHabitos() {
             role="dialog"
             aria-modal="true"
             aria-labelledby="erp-habitos-title"
-            className="flex max-h-[min(40rem,90vh)] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-[#c5d4e8] bg-white p-6"
+            className="flex max-h-[90vh] w-full max-w-7xl flex-col overflow-hidden rounded-2xl border border-[#c5d4e8] bg-white p-4 md:p-6"
           >
-            <div className="mb-1 flex items-start justify-between gap-3">
-              <h2 id="erp-habitos-title" className="text-lg font-semibold text-[#0f2744]">
-                Hábitos
-              </h2>
-              <button
-                type="button"
-                onClick={() => setOpen(false)}
-                aria-label="Cerrar"
-                className="shrink-0 rounded-lg p-1.5 text-[#3d5270] transition hover:bg-[#e4eef8] hover:text-[#0f2744] cursor-pointer"
-              >
-                <X className="h-4 w-4" />
-              </button>
+            <div className="mb-3 flex items-start justify-between gap-3">
+              <div>
+                <h2 id="erp-habitos-title" className="text-lg font-semibold text-[#0f2744]">
+                  Hábitos
+                </h2>
+                <p className="text-sm font-medium text-[#0f2744]">Para lograr el sueño.</p>
+                <p className="text-xs text-[#3d5270]">{formatTodayHeading(today)}</p>
+              </div>
+              <div className="flex items-center gap-2">
+                {saving ? <span className="text-xs font-medium text-[#3d5270]">Guardando…</span> : null}
+                <button
+                  ref={closeButtonRef}
+                  type="button"
+                  onClick={() => setOpen(false)}
+                  aria-label="Cerrar"
+                  className="shrink-0 rounded-lg p-1.5 text-[#3d5270] transition cursor-pointer"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
             </div>
-            <p className="mb-4 text-sm font-medium text-[#0f2744]">Para lograr el sueño.</p>
 
-            <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 md:grid-cols-2">
-            <section className="min-h-0 overflow-y-auto rounded-xl border border-[#c5d4e8] bg-white p-3">
-              <h3 className="text-sm font-semibold text-[#0f2744]">Mood</h3>
-              <label className="mt-2 block text-xs font-medium text-[#3d5270]">
-                Mood
-                <input
-                  type="text"
-                  value={moodDraft}
-                  maxLength={MOOD_MAX}
-                  placeholder="pomodoro with paul"
-                  onChange={(event) => setMoodDraft(event.target.value.slice(0, MOOD_MAX))}
-                  className="mt-1 w-full rounded-lg border border-[#c5d4e8] bg-white px-2.5 py-1.5 text-sm font-normal text-[#0f2744] placeholder:text-[#3d5270]"
-                />
-              </label>
-              <div className="mt-2 flex flex-wrap gap-2">
+            {error ? (
+              <div
+                role="alert"
+                className="mb-3 flex items-start justify-between gap-2 rounded-lg border border-[#9f1239]/20 bg-[#9f1239]/5 px-3 py-2 text-sm text-[#9f1239]"
+              >
+                <p>{error}</p>
                 <button
                   type="button"
-                  disabled={saving || !moodDraft.trim() || Boolean(openMood)}
-                  onClick={() => void startMood()}
-                  className="rounded-lg bg-[#1d4e89] px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-[#163d6b] cursor-pointer disabled:opacity-50"
+                  aria-label="Cerrar aviso"
+                  onClick={() => setError("")}
+                  className="shrink-0 rounded-lg p-1 cursor-pointer"
                 >
-                  Arrancar
-                </button>
-                <button
-                  type="button"
-                  disabled={saving || !openMood}
-                  onClick={() => void pauseMood()}
-                  className="rounded-lg border border-[#c5d4e8] bg-white px-2.5 py-1.5 text-xs font-semibold text-[#0f2744] hover:bg-[#e4eef8] cursor-pointer disabled:opacity-50"
-                >
-                  Pausa
+                  <X className="h-4 w-4" />
                 </button>
               </div>
-              <div className="mt-3 space-y-2">
-                <p className="text-xs font-semibold text-[#0f2744]">Hoy · {formatDayMonth(today)}</p>
-                {todayMoods.length === 0 ? (
-                  <p className="text-xs text-[#3d5270]">Todavía no hay moods hoy.</p>
-                ) : (
-                  todayMoods.map((entry) => (
-                    <MoodEntry
-                      key={entry._id}
-                      entry={entry}
-                      removing={saving}
-                      onRemove={() => void removeMood(entry._id)}
-                    />
-                  ))
-                )}
-              </div>
-              {pastMoodDates.length > 0 ? (
-                <div className="mt-4 space-y-3">
-                  <p className="text-xs font-semibold text-[#0f2744]">Días anteriores</p>
-                  {pastMoodDates.map((date) => (
-                    <div key={date}>
-                      <p className="text-xs font-semibold text-[#3d5270]">{formatDayMonth(date)}</p>
-                      {moods
-                        .filter((entry) => entry.date === date)
-                        .map((entry) => <MoodEntry key={entry._id} entry={entry} />)}
-                    </div>
-                  ))}
-                </div>
-              ) : null}
-            </section>
+            ) : null}
 
-            <div className="flex min-h-0 flex-col">
-            <div className="min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
-              <section className="rounded-xl border border-[#c5d4e8] bg-white p-3">
-                <h3 className="text-sm font-semibold text-[#0f2744]">4 hs antes del almuerzo</h3>
-                <div className="mt-2">
-                  <DayMarks
-                    fulfilled={markFor(today)}
-                    note={noteFor(today)}
-                    disabled={saving}
-                    label={`Hoy · ${formatDayMonth(today)}`}
-                    onSet={(fulfilled) => {
-                      void persistDay(today, fulfilled, noteFor(today));
-                    }}
-                    onNote={(note) => {
-                      void persistDay(today, markFor(today), note);
-                    }}
-                  />
-                </div>
-                <div className="mt-3 flex flex-wrap items-center gap-2">
-                  <DatePickerField
-                    value={otherDate}
-                    onChange={setOtherDate}
-                    allowClear
-                    placement="center"
-                    aria-label="Elegir otro día"
-                    className="rounded-lg border border-[#c5d4e8] bg-white px-2.5 py-1.5 text-xs text-[#0f2744]"
-                  />
-                  <DayMarks
-                    fulfilled={otherDate ? markFor(otherDate) : null}
-                    note={otherDate ? noteFor(otherDate) : ""}
-                    disabled={saving || !otherDate}
-                    showNote={Boolean(otherDate)}
-                    label="Este día"
-                    onSet={(fulfilled) => {
-                      void persistDay(otherDate, fulfilled, noteFor(otherDate));
-                    }}
-                    onNote={(note) => {
-                      void persistDay(otherDate, markFor(otherDate), note);
-                    }}
-                  />
-                </div>
-                <div className="mt-3 space-y-2">
-                  <p className="text-xs font-semibold text-[#0f2744]">Historial</p>
-                  {history.length === 0 ? (
-                    <p className="text-xs text-[#3d5270]">Todavía no hay días anteriores.</p>
-                  ) : (
-                    history.map((row) => (
-                      <DayMarks
-                        key={row.date}
-                        fulfilled={row.fulfilled}
-                        note={row.note}
-                        disabled={saving}
-                        label={formatDayMonth(row.date)}
-                        onSet={(fulfilled) => {
-                          void persistDay(row.date, fulfilled, row.note);
-                        }}
-                        onNote={(note) => {
-                          void persistDay(row.date, row.fulfilled, note);
-                        }}
-                      />
-                    ))
-                  )}
-                </div>
-              </section>
-              {loading ? <p className="text-sm text-[#3d5270]">Cargando…</p> : null}
-              {!loading && items.length === 0 ? (
-                <p className="text-sm text-[#3d5270]">Todavía no hay hábitos.</p>
-              ) : null}
-              {items.map((item) => (
-                <div key={item._id} className="rounded-xl border border-[#c5d4e8] bg-white p-3">
-                  {editingId === item._id ? (
-                    <div className="space-y-2">
-                      <textarea
-                        value={editDraft}
-                        onChange={(event) => setEditDraft(event.target.value.slice(0, HABITO_MAX))}
-                        rows={4}
-                        maxLength={HABITO_MAX}
-                        className="w-full resize-y rounded-lg border border-[#c5d4e8] bg-white px-2.5 py-2 text-sm text-[#0f2744]"
-                      />
-                      <div className="flex flex-wrap gap-2">
-                        <button
-                          type="button"
-                          disabled={saving || !editDraft.trim()}
-                          onClick={() => void saveEdit()}
-                          className="rounded-lg bg-[#1d4e89] px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-[#163d6b] cursor-pointer disabled:opacity-50"
-                        >
-                          Guardar
-                        </button>
-                        <button
-                          type="button"
-                          disabled={saving}
-                          onClick={() => {
-                            setEditingId(null);
-                            setEditDraft("");
-                          }}
-                          className="rounded-lg border border-[#c5d4e8] bg-white px-2.5 py-1.5 text-xs font-medium text-[#0f2744] hover:bg-[#e4eef8] cursor-pointer"
-                        >
-                          Cancelar
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex items-start gap-2">
-                      <p className="min-w-0 flex-1 whitespace-pre-wrap text-sm leading-relaxed text-[#0f2744]">
-                        {item.text}
-                      </p>
-                      <button
-                        type="button"
-                        aria-label="Editar hábito"
-                        disabled={saving}
-                        onClick={() => {
-                          setEditingId(item._id);
-                          setEditDraft(item.text);
-                        }}
-                        className="shrink-0 rounded-lg p-1.5 text-[#3d5270] hover:bg-[#e4eef8] hover:text-[#0f2744] cursor-pointer"
-                      >
-                        <Pencil className="h-3.5 w-3.5" />
-                      </button>
-                      <button
-                        type="button"
-                        aria-label="Eliminar hábito"
-                        disabled={saving}
-                        onClick={() => void removeHabito(item)}
-                        className="shrink-0 rounded-lg p-1.5 text-[#3d5270] hover:bg-[#e4eef8] hover:text-[#0f2744] cursor-pointer"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                  )}
-                </div>
+            <TodayStrip
+              loading={loading}
+              alarm={todayAlarm}
+              openMood={openMood}
+              nowLabel={nowLabel}
+              cuatroHoras={todayMark ? todayMark.fulfilled : null}
+            />
+
+            <div className="mb-3 flex gap-1 rounded-lg bg-[#e4eef8] p-1 md:hidden" role="tablist">
+              {TABS.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={tab === item.id}
+                  onClick={() => setTab(item.id)}
+                  className={`flex-1 rounded-md px-2 py-1.5 text-xs font-semibold cursor-pointer ${
+                    tab === item.id ? "bg-[#1d4e89] text-white" : "text-[#0f2744]"
+                  }`}
+                >
+                  {item.label}
+                </button>
               ))}
             </div>
 
-            {error ? <p className="mt-3 text-sm text-red-700">{error}</p> : null}
-
-            <div className="mt-4 space-y-2 border-t border-[#c5d4e8] pt-4">
-              <label className="block text-sm font-semibold text-[#0f2744]">
-                Agregar hábito
-                <textarea
-                  value={draft}
-                  onChange={(event) => setDraft(event.target.value.slice(0, HABITO_MAX))}
-                  rows={3}
-                  maxLength={HABITO_MAX}
-                  placeholder="Un hábito nuevo…"
-                  className="mt-1.5 w-full resize-y rounded-lg border border-[#c5d4e8] bg-white px-2.5 py-2 text-sm font-normal text-[#0f2744] placeholder:text-[#3d5270]"
+            <div className="grid min-h-0 flex-1 grid-cols-1 grid-rows-[minmax(0,1fr)] gap-4 md:grid-cols-[minmax(0,18rem)_minmax(0,1fr)_minmax(0,1fr)]">
+              <div className={`${paneClass(tab === "hoy")} overflow-hidden`}>
+                <AlarmSection today={today} rows={alarmRows} loading={loading} hasError={Boolean(error)} />
+              </div>
+              <div className={`${paneClass(tab === "mood")} overflow-hidden`}>
+                <MoodSection
+                  today={today}
+                  moods={moods}
+                  openMood={openMood}
+                  draft={moodDraft}
+                  saving={saving}
+                  loading={loading}
+                  hasError={Boolean(error)}
+                  nowLabel={nowLabel}
+                  onDraft={setMoodDraft}
+                  onStart={() => void startMood()}
+                  onPause={() => void pauseMood()}
+                  onRemove={(id) => void removeMood(id)}
                 />
-              </label>
-              <button
-                type="button"
-                disabled={saving || !draft.trim()}
-                onClick={() => void createHabito()}
-                className="rounded-lg bg-[#1d4e89] px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-[#163d6b] cursor-pointer disabled:opacity-50"
-              >
-                {saving ? "Guardando…" : "Agregar"}
-              </button>
-            </div>
-            </div>
+              </div>
+              <div className={`${paneClass(tab === "habitos")} gap-3 overflow-y-auto`}>
+                <HabitosList
+                  items={items}
+                  loading={loading}
+                  saving={saving}
+                  hasError={Boolean(error)}
+                  adding={adding}
+                  draft={draft}
+                  editingId={editingId}
+                  editDraft={editDraft}
+                  onStartAdd={() => setAdding(true)}
+                  onCancelAdd={cancelAdd}
+                  onDraft={setDraft}
+                  onCreate={() => void createHabito()}
+                  onStartEdit={(item) => {
+                    setEditingId(item._id);
+                    setEditDraft(item.text);
+                  }}
+                  onCancelEdit={cancelEdit}
+                  onEditDraft={setEditDraft}
+                  onSaveEdit={() => void saveEdit()}
+                  onRemove={(item) => void removeHabito(item)}
+                />
+                <CuatroHorasSection
+                  today={today}
+                  marks={marks}
+                  loading={loading}
+                  saving={saving}
+                  hasError={Boolean(error)}
+                  onPersist={(date, fulfilled, note) => {
+                    void persistDay(date, fulfilled, note);
+                  }}
+                />
+              </div>
             </div>
           </article>
         </div>

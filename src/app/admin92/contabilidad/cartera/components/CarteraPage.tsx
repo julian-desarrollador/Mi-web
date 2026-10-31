@@ -110,7 +110,7 @@ function FormSelect<T extends string>({
                   className={`block w-full px-3 py-2 text-left text-sm font-medium cursor-pointer ${
                     active
                       ? "bg-sky-100 text-slate-950"
-                      : "bg-white text-slate-900 hover:bg-slate-100"
+                      : "bg-white text-slate-900"
                   }`}
                 >
                   {option.label}
@@ -200,7 +200,7 @@ export default function CarteraPage({
             <Link
               href="/admin92/contabilidad"
               aria-label="Volver a contabilidad"
-              className="rounded-xl border border-slate-200 bg-white p-2.5 text-slate-500 shadow-sm transition hover:bg-slate-50 hover:text-slate-900"
+              className="rounded-xl border border-slate-200 bg-white p-2.5 text-slate-500 shadow-sm transition hover:text-slate-900"
             >
               <ArrowLeft className="h-5 w-5" />
             </Link>
@@ -216,7 +216,7 @@ export default function CarteraPage({
           <button
             type="button"
             onClick={showForm && !editingId ? () => { resetForm(); setShowForm(false); } : startCreate}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 cursor-pointer"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition-colors cursor-pointer"
           >
             <Plus className="h-4 w-4" />
             {showForm && !editingId ? "Ocultar formulario" : "Agregar activo"}
@@ -396,7 +396,7 @@ export default function CarteraPage({
                 <button
                   type="submit"
                   disabled={saving}
-                  className="w-full rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-60 cursor-pointer"
+                  className="w-full rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition disabled:opacity-60 cursor-pointer"
                 >
                   {saving ? "Guardando…" : editingId ? "Guardar cambios" : "Agregar"}
                 </button>
@@ -482,7 +482,7 @@ export default function CarteraPage({
                               type="button"
                               onClick={() => startEdit(holding)}
                               aria-label={`Editar ${holding.name}`}
-                              className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-900 cursor-pointer"
+                              className="rounded-lg p-2 text-slate-500 hover:text-slate-900 cursor-pointer"
                             >
                               <Pencil className="h-4 w-4" />
                             </button>
@@ -490,7 +490,7 @@ export default function CarteraPage({
                               type="button"
                               onClick={() => void handleDelete(holding)}
                               aria-label={`Eliminar ${holding.name}`}
-                              className="rounded-lg p-2 text-slate-500 hover:bg-rose-50 hover:text-rose-700 cursor-pointer"
+                              className="rounded-lg p-2 text-slate-500 hover:text-rose-700 cursor-pointer"
                             >
                               <Trash2 className="h-4 w-4" />
                             </button>

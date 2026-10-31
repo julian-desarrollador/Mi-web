@@ -423,8 +423,8 @@ export default function CuotaOperativaPanel({
                 onClick={handleStatsClick}
                 className={`inline-flex items-center gap-1 rounded-md border px-2 py-1 font-medium transition-colors cursor-pointer disabled:opacity-50 ${
                   cobro.estadisticasEnviadas
-                    ? "border-violet-300 bg-violet-50 text-violet-800 hover:bg-violet-100"
-                    : "border-slate-300 bg-white text-slate-600 hover:bg-slate-50"
+                    ? "border-violet-300 bg-violet-50 text-violet-800"
+                    : "border-slate-300 bg-white text-slate-600"
                 }`}
               >
                 {cobro.estadisticasEnviadas ? <Check className="h-3 w-3" /> : null}
@@ -463,7 +463,7 @@ export default function CuotaOperativaPanel({
             type="button"
             disabled={saving}
             onClick={handleConfirmStats}
-            className="rounded-md bg-violet-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-violet-700 cursor-pointer disabled:opacity-50"
+            className="rounded-md bg-violet-600 px-3 py-1.5 text-xs font-medium text-white cursor-pointer disabled:opacity-50"
           >
             Confirmar
           </button>
@@ -471,7 +471,7 @@ export default function CuotaOperativaPanel({
             type="button"
             disabled={saving}
             onClick={() => setPendingStats(false)}
-            className="rounded-md border border-slate-300 px-3 py-1.5 text-xs text-slate-600 hover:bg-white cursor-pointer"
+            className="rounded-md border border-slate-300 px-3 py-1.5 text-xs text-slate-600 cursor-pointer"
           >
             Cancelar
           </button>
@@ -575,7 +575,7 @@ export default function CuotaOperativaPanel({
                     disabled={saving}
                     onClick={() => void handleRestoreTaskToColaActiva(t.id)}
                     title="Volver a mostrar en Cambios pendientes"
-                    className="shrink-0 rounded border border-slate-300 bg-white px-1.5 py-0.5 text-[10px] font-medium text-slate-600 hover:bg-slate-50 cursor-pointer disabled:opacity-50"
+                    className="shrink-0 rounded border border-slate-300 bg-white px-1.5 py-0.5 text-[10px] font-medium text-slate-600 cursor-pointer disabled:opacity-50"
                   >
                     Subir
                   </button>
@@ -615,7 +615,7 @@ export default function CuotaOperativaPanel({
                 type="button"
                 disabled={saving}
                 onClick={() => void handleConfirmTaskComplete()}
-                className="rounded-md bg-amber-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-amber-700 cursor-pointer disabled:opacity-50"
+                className="rounded-md bg-amber-600 px-3 py-1.5 text-xs font-medium text-white cursor-pointer disabled:opacity-50"
               >
                 Confirmar
               </button>
@@ -623,7 +623,7 @@ export default function CuotaOperativaPanel({
                 type="button"
                 disabled={saving}
                 onClick={() => setPendingTaskComplete(null)}
-                className="rounded-md border border-slate-300 px-3 py-1.5 text-xs text-slate-600 hover:bg-white cursor-pointer"
+                className="rounded-md border border-slate-300 px-3 py-1.5 text-xs text-slate-600 cursor-pointer"
               >
                 Cancelar
               </button>
@@ -656,7 +656,7 @@ export default function CuotaOperativaPanel({
               type="button"
               disabled={saving || !newTaskText.trim()}
               onClick={handleAddTask}
-              className="inline-flex items-center gap-1 rounded border border-slate-300 bg-white px-2 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50 cursor-pointer disabled:opacity-50"
+              className="inline-flex items-center gap-1 rounded border border-slate-300 bg-white px-2 py-1 text-xs font-medium text-slate-700 cursor-pointer disabled:opacity-50"
             >
               <Plus className="h-3.5 w-3.5" />
               Agregar
@@ -698,7 +698,7 @@ export default function CuotaOperativaPanel({
                 type="button"
                 disabled={saving}
                 onClick={() => setTaskPendingDelete(null)}
-                className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50 cursor-pointer disabled:opacity-50"
+                className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-600 cursor-pointer disabled:opacity-50"
               >
                 Cancelar
               </button>
@@ -706,7 +706,7 @@ export default function CuotaOperativaPanel({
                 type="button"
                 disabled={saving}
                 onClick={() => void handleRemoveTask(taskPendingDelete.id)}
-                className="rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700 cursor-pointer disabled:opacity-50"
+                className="rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white cursor-pointer disabled:opacity-50"
               >
                 {saving ? "Eliminando…" : "Eliminar"}
               </button>

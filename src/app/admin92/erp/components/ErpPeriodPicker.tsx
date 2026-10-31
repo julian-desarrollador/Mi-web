@@ -157,7 +157,7 @@ export default function ErpPeriodPicker({
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         aria-haspopup="dialog"
-        className="inline-flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+        className="inline-flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1 text-sm font-medium text-slate-700 transition"
       >
         <Calendar className="h-4 w-4 text-slate-400" />
         <span className="max-w-[11rem] truncate sm:max-w-none">{rangeLabel}</span>
@@ -184,7 +184,7 @@ export default function ErpPeriodPicker({
               type="button"
               onClick={navPrev}
               aria-label={period === "month" ? "Año anterior" : "Mes anterior"}
-              className="rounded-lg p-1.5 text-slate-500 transition hover:bg-slate-50 hover:text-slate-900 cursor-pointer"
+              className="rounded-lg p-1.5 text-slate-500 transition cursor-pointer"
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
@@ -195,7 +195,7 @@ export default function ErpPeriodPicker({
               type="button"
               onClick={navNext}
               aria-label={period === "month" ? "Año siguiente" : "Mes siguiente"}
-              className="rounded-lg p-1.5 text-slate-500 transition hover:bg-slate-50 hover:text-slate-900 cursor-pointer"
+              className="rounded-lg p-1.5 text-slate-500 transition cursor-pointer"
             >
               <ChevronRight className="h-4 w-4" />
             </button>
@@ -216,8 +216,8 @@ export default function ErpPeriodPicker({
                       selected
                         ? "bg-blue-600 text-white shadow-sm"
                         : isCurrent
-                          ? "bg-blue-50 text-blue-700 ring-1 ring-blue-200 hover:bg-blue-100"
-                          : "text-slate-700 hover:bg-slate-50"
+                          ? "bg-blue-50 text-blue-700 ring-1 ring-blue-200"
+                          : "text-slate-700"
                     }`}
                   >
                     {name.slice(0, 3)}
@@ -271,10 +271,10 @@ export default function ErpPeriodPicker({
                             : inHoverWeek
                               ? "bg-slate-50 text-blue-700"
                               : !cell.inMonth
-                                ? "text-slate-300 hover:bg-slate-50"
+                                ? "text-slate-300"
                                 : isToday
                                   ? "text-blue-700 ring-1 ring-blue-200"
-                                  : "text-slate-800 hover:bg-slate-50"
+                                  : "text-slate-800"
                       }`}
                     >
                       {dayNum}
@@ -303,7 +303,7 @@ export default function ErpPeriodPicker({
             <button
               type="button"
               onClick={goToday}
-              className="cursor-pointer rounded-lg bg-slate-50 px-2.5 py-1 text-xs font-semibold text-blue-700 transition hover:bg-blue-50"
+              className="cursor-pointer rounded-lg bg-slate-50 px-2.5 py-1 text-xs font-semibold text-blue-700 transition"
             >
               Hoy
             </button>

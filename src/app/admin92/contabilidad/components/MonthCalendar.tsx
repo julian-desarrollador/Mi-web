@@ -160,7 +160,7 @@ export default function MonthCalendar({
         <button
           type="button"
           onClick={onPrevMonth}
-          className="rounded-lg border border-slate-200 p-2 text-slate-600 hover:bg-slate-50 cursor-pointer"
+          className="rounded-lg border border-slate-200 p-2 text-slate-600 cursor-pointer"
           aria-label="Mes anterior"
         >
           <ChevronLeft className="h-4 w-4" />
@@ -169,7 +169,7 @@ export default function MonthCalendar({
         <button
           type="button"
           onClick={onNextMonth}
-          className="rounded-lg border border-slate-200 p-2 text-slate-600 hover:bg-slate-50 cursor-pointer"
+          className="rounded-lg border border-slate-200 p-2 text-slate-600 cursor-pointer"
           aria-label="Mes siguiente"
         >
           <ChevronRight className="h-4 w-4" />
@@ -212,8 +212,8 @@ export default function MonthCalendar({
                   : isToday
                     ? "border-[#84b9ed]/50 bg-slate-50 text-slate-900"
                     : inMonth
-                      ? "border-transparent text-slate-900 hover:bg-slate-50"
-                      : "border-transparent text-slate-300 hover:bg-slate-50/50"
+                      ? "border-transparent text-slate-900"
+                      : "border-transparent text-slate-300"
               }`}
             >
               <span>{parseInt(date.slice(8, 10), 10)}</span>
@@ -316,8 +316,8 @@ export default function MonthCalendar({
               title={showLegend ? "Ocultar referencias" : "Mostrar referencias"}
               className={`rounded-lg border p-2 transition-colors cursor-pointer ${
                 showLegend
-                  ? "border-[#84b9ed]/40 bg-[#84b9ed]/10 text-[#4a7fb8] hover:bg-[#84b9ed]/20"
-                  : "border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-700"
+                  ? "border-[#84b9ed]/40 bg-[#84b9ed]/10 text-[#4a7fb8]"
+                  : "border-slate-200 text-slate-500 hover:text-slate-700"
               }`}
             >
               <Settings className="h-4 w-4" />
@@ -331,7 +331,7 @@ export default function MonthCalendar({
               className={`rounded-lg border p-2 transition-colors cursor-pointer ${
                 cuotaTimersOpen
                   ? "border-[#1d4ed8] bg-[#1d4ed8] text-white"
-                  : "border-slate-300 bg-white text-slate-800 hover:bg-slate-50"
+                  : "border-slate-300 bg-white text-slate-800"
               }`}
             >
               <Timer className="h-4 w-4" />

@@ -12,12 +12,15 @@ import {
   Star,
   Trash2,
 } from "lucide-react";
+import CuotasTimerStrip from "@/app/admin92/erp/components/CuotasTimerStrip";
 import {
-  elapsedActiveSeconds,
+  activeCuotaClients,
+  elapsedSessionSeconds,
   newWorkTimerItemId,
   normalizeActiveWorkTimer,
   normalizeWorkTimers,
   readTimerDestino,
+  setActiveCuotasOnLog,
   startActiveWorkTimerOnLog,
   stopActiveWorkTimerOnLog,
   UNNAMED_WORK_TIMER,
@@ -54,6 +57,10 @@ type Props = {
   dayLogs: ErpDayLog[];
   onPersist: (log: ErpDayLog) => Promise<void>;
   persisting: boolean;
+  /** Período elegido abajo (Día / Semana / Mes): totales de los chips de cuotas */
+  periodFrom: string;
+  periodTo: string;
+  periodLabel: string;
 };
 
 function categoriesToScan(category: WorkCategoryKey | null): WorkCategoryKey[] {
@@ -151,6 +158,9 @@ export default function ErpLiveTimer({
   dayLogs,
   onPersist,
   persisting,
+  periodFrom,
+  periodTo,
+  periodLabel,
 }: Props) {
   const active = useMemo(
     () => normalizeActiveWorkTimer(todayLog.activeWorkTimer ?? null),
@@ -160,9 +170,7 @@ export default function ErpLiveTimer({
   const [category, setCategory] = useState<WorkCategoryKey | null>("software");
   const [name, setName] = useState("");
   const [destino, setDestino] = useState<"" | "cuota" | ErpTimeKind>("");
-  const [pickedCuotas, setPickedCuotas] = useState<string[]>([]);
-  const [cuotasOpen, setCuotasOpen] = useState(false);
-  const [cuotaClients, setCuotaClients] = useState<string[]>([]);
+  const openCuotas = useMemo(() => activeCuotaClients(active), [active]);
   const [nowMs, setNowMs] = useState(() => Date.now());
   const [itemDraft, setItemDraft] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -243,37 +251,11 @@ export default function ErpLiveTimer({
   }, [active?.startedAt, active?.name]);
 
   useEffect(() => {
-    let cancelled = false;
-    void fetch("/api/admin/cobros")
-      .then((res) => res.json())
-      .then((data: { cobros?: { clientName?: string }[] }) => {
-        if (cancelled || !Array.isArray(data.cobros)) return;
-        const names = new Set<string>();
-        for (const cobro of data.cobros) {
-          const client = cobro.clientName?.trim();
-          if (client) names.add(client);
-        }
-        setCuotaClients([...names].sort((a, b) => a.localeCompare(b, "es")));
-      })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  useEffect(() => {
     if (!active) return;
-    if (active.share === "repartido" && active.cuotaClients && active.cuotaClients.length >= 2) {
+    if (activeCuotaClients(active).length > 0) {
       setDestino("cuota");
-      setPickedCuotas(active.cuotaClients);
       return;
     }
-    if (active.cuotaClient) {
-      setDestino("cuota");
-      setPickedCuotas([active.cuotaClient]);
-      return;
-    }
-    setPickedCuotas([]);
     setDestino(active.timeKind ?? "");
   }, [active?.startedAt, active?.cuotaClient, active?.cuotaClients, active?.share, active?.timeKind]);
 
@@ -313,7 +295,7 @@ export default function ErpLiveTimer({
     };
   }, []);
 
-  const elapsed = active ? elapsedActiveSeconds(active, nowMs) : 0;
+  const elapsed = active ? elapsedSessionSeconds(active, nowMs) : 0;
 
   const persist = async (next: ErpDayLog) => {
     setError(null);
@@ -404,37 +386,60 @@ export default function ErpLiveTimer({
   };
 
   const currentDestino = (): ErpTimerDestino => {
-    if (destino === "cuota") return readTimerDestino({ cuotaClients: pickedCuotas });
     if (destino === "promesa" || destino === "conocimiento") return { timeKind: destino };
     return {};
   };
 
-  const togglePickedCuota = (client: string) => {
-    const exists = pickedCuotas.some((name) => name.trim().toLowerCase() === client.trim().toLowerCase());
-    const nextNames = exists
-      ? pickedCuotas.filter((name) => name.trim().toLowerCase() !== client.trim().toLowerCase())
-      : [...pickedCuotas, client];
-    const ordered = cuotaClients.filter((name) =>
-      nextNames.some((picked) => picked.trim().toLowerCase() === name.trim().toLowerCase()),
-    );
-    for (const name of nextNames) {
-      if (!ordered.some((picked) => picked.trim().toLowerCase() === name.trim().toLowerCase())) {
-        ordered.push(name);
-      }
+  /** Play/pausa de una cuota: corta el tramo y abre otro con el nuevo conjunto. */
+  const toggleCuota = async (client: string) => {
+    const key = client.trim().toLowerCase();
+    const exists = openCuotas.some((name) => name.trim().toLowerCase() === key);
+    const nextClients = exists
+      ? openCuotas.filter((name) => name.trim().toLowerCase() !== key)
+      : [...openCuotas, client];
+    const next = setActiveCuotasOnLog(todayLog, nextClients, {
+      category: category ?? "software",
+      name,
+      nowMs: Date.now(),
+    });
+    if (!next.activeWorkTimer) {
+      setName("");
+      setDestino("");
+    } else {
+      setDestino("cuota");
     }
-    setPickedCuotas(ordered);
-    if (active) void writeActiveDestino(readTimerDestino({ cuotaClients: ordered }));
+    setNowMs(Date.now());
+    await persist(next);
   };
 
   const writeActiveDestino = async (next: ErpTimerDestino) => {
     if (!active) return;
     const clean = readTimerDestino(next);
+    const sessionStartedAt = active.sessionStartedAt ?? active.startedAt;
+    if (openCuotas.length > 0) {
+      // Tenía cuotas: cerrar ese tramo y seguir la sesión con el nuevo destino
+      const started = startActiveWorkTimerOnLog(
+        todayLog,
+        active.category,
+        active.name,
+        Date.now(),
+        clean,
+      );
+      await persist({
+        ...started,
+        activeWorkTimer: started.activeWorkTimer
+          ? { ...started.activeWorkTimer, sessionStartedAt }
+          : null,
+      });
+      return;
+    }
     await persist({
       ...todayLog,
       activeWorkTimer: {
         category: active.category,
         name: active.name,
         startedAt: active.startedAt,
+        sessionStartedAt: active.sessionStartedAt,
         items: active.items,
         ...clean,
       },
@@ -536,7 +541,7 @@ export default function ErpLiveTimer({
                   <button
                     type="button"
                     onClick={() => void pickName(fav)}
-                    className="flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg px-2 py-2 text-left text-sm font-semibold text-slate-950 hover:bg-slate-50"
+                    className="flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg px-2 py-2 text-left text-sm font-semibold text-slate-950"
                   >
                     <span className="inline-flex min-w-0 items-center gap-2">
                       <span
@@ -585,7 +590,7 @@ export default function ErpLiveTimer({
                   <button
                     type="button"
                     onClick={() => void pickRecent(entry)}
-                    className="flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg px-2 py-2 text-left text-sm font-semibold text-slate-950 hover:bg-slate-50"
+                    className="flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg px-2 py-2 text-left text-sm font-semibold text-slate-950"
                   >
                     <span className="min-w-0 truncate font-semibold text-slate-950">
                       {entry.name}
@@ -644,6 +649,17 @@ export default function ErpLiveTimer({
         )}
       </div>
 
+      <CuotasTimerStrip
+        todayLog={todayLog}
+        openClients={openCuotas}
+        periodFrom={periodFrom}
+        periodTo={periodTo}
+        periodLabel={periodLabel}
+        nowMs={nowMs}
+        persisting={persisting}
+        onToggle={(client) => void toggleCuota(client)}
+      />
+
       <div className="flex flex-col gap-3 lg:flex-row lg:items-end">
         <div className="relative min-w-0 flex-1" ref={categoryRootRef}>
           <p className="text-xs font-semibold text-slate-800">Categoría</p>
@@ -693,7 +709,7 @@ export default function ErpLiveTimer({
                       <button
                         type="button"
                         onClick={() => void selectCategory(option.key)}
-                        className="flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg px-2 py-2 text-left text-sm font-semibold text-slate-950 hover:bg-slate-50"
+                        className="flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg px-2 py-2 text-left text-sm font-semibold text-slate-950"
                       >
                         <span className="inline-flex min-w-0 items-center gap-2">
                           {option.color ? (
@@ -741,18 +757,11 @@ export default function ErpLiveTimer({
               onChange={(e) => {
                 const next = e.target.value as "" | "cuota" | ErpTimeKind;
                 setDestino(next);
-                if (next === "cuota") setCuotasOpen(true);
-                else {
-                  setPickedCuotas([]);
-                  setCuotasOpen(false);
-                }
-                if (!active) return;
+                if (!active || next === "cuota") return;
                 if (next === "promesa" || next === "conocimiento") {
                   void writeActiveDestino({ timeKind: next });
-                } else if (next === "") {
+                } else {
                   void writeActiveDestino({});
-                } else if (pickedCuotas.length > 0) {
-                  void writeActiveDestino({ cuotaClients: pickedCuotas });
                 }
               }}
               className="mt-1 block w-full cursor-pointer rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-950"
@@ -764,52 +773,11 @@ export default function ErpLiveTimer({
             </select>
           </label>
           {destino === "cuota" ? (
-            <div className="mt-2">
-              <button
-                type="button"
-                aria-expanded={cuotasOpen}
-                onClick={() => setCuotasOpen((open) => !open)}
-                className="flex w-full cursor-pointer items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-left text-xs font-semibold text-slate-900"
-              >
-                <ChevronDown
-                  className={`h-3.5 w-3.5 shrink-0 text-slate-900 transition ${cuotasOpen ? "" : "-rotate-90"}`}
-                  aria-hidden
-                />
-                <span className="min-w-0 flex-1">
-                  <span className="block">
-                    Cuotas
-                    {pickedCuotas.length >= 2
-                      ? ` · repartido entre ${pickedCuotas.length}`
-                      : " · una es focus"}
-                  </span>
-                  <span className="block truncate font-medium">
-                    {pickedCuotas.length === 0 ? "Ninguna" : pickedCuotas.join(", ")}
-                  </span>
-                </span>
-              </button>
-              {cuotasOpen ? (
-              <ul className="mt-1 max-h-40 overflow-y-auto rounded-xl border border-slate-200 bg-white p-1">
-                {cuotaClients.map((client) => {
-                  const checked = pickedCuotas.some(
-                    (name) => name.trim().toLowerCase() === client.trim().toLowerCase(),
-                  );
-                  return (
-                    <li key={client}>
-                      <label className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium text-slate-900 hover:bg-slate-50">
-                        <input
-                          type="checkbox"
-                          checked={checked}
-                          onChange={() => togglePickedCuota(client)}
-                          className="h-4 w-4 accent-[#1d4ed8]"
-                        />
-                        <span className="min-w-0 truncate">{client}</span>
-                      </label>
-                    </li>
-                  );
-                })}
-              </ul>
-              ) : null}
-            </div>
+            <p className="mt-2 truncate rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-xs font-semibold text-slate-900">
+              {openCuotas.length === 0
+                ? "Tocá un proyecto arriba para empezar"
+                : `${openCuotas.length >= 2 ? "Compartido" : "Focus"} · ${openCuotas.join(", ")}`}
+            </p>
           ) : null}
         </div>
 
@@ -863,7 +831,7 @@ export default function ErpLiveTimer({
               type="button"
               onClick={() => void handleStop()}
               disabled={persisting}
-              className="inline-flex h-[42px] items-center justify-center gap-2 rounded-xl bg-rose-600 px-5 text-sm font-semibold text-white shadow-sm hover:bg-rose-700 disabled:opacity-60 cursor-pointer"
+              className="inline-flex h-[42px] items-center justify-center gap-2 rounded-xl bg-rose-600 px-5 text-sm font-semibold text-white shadow-sm disabled:opacity-60 cursor-pointer"
             >
               <Square className="h-4 w-4 fill-current" />
               Detener
@@ -873,7 +841,7 @@ export default function ErpLiveTimer({
               type="button"
               onClick={() => void handleStart()}
               disabled={persisting}
-              className="inline-flex h-[42px] items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 disabled:opacity-60 cursor-pointer"
+              className="inline-flex h-[42px] items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 text-sm font-semibold text-white shadow-sm disabled:opacity-60 cursor-pointer"
             >
               <Play className="h-4 w-4 fill-current" />
               Iniciar
@@ -916,7 +884,7 @@ export default function ErpLiveTimer({
                   onClick={() => void removeItem(item.id)}
                   disabled={persisting}
                   aria-label="Quitar ítem"
-                  className="rounded-md p-1 text-slate-400 hover:bg-rose-50 hover:text-rose-600 cursor-pointer"
+                  className="rounded-md p-1 text-slate-400 cursor-pointer"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                 </button>
@@ -941,7 +909,7 @@ export default function ErpLiveTimer({
               type="button"
               onClick={() => void handleAddItem()}
               disabled={persisting || !itemDraft.trim()}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 disabled:opacity-50 cursor-pointer"
             >
               <Plus className="h-4 w-4" />
               Agregar

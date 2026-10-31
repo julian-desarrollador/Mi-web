@@ -424,7 +424,7 @@ export default function ErpPage() {
             <Link
               href="/admin92/contabilidad"
               aria-label="Volver a contabilidad"
-              className="rounded-xl border border-slate-200 bg-white p-2.5 text-slate-500 shadow-sm transition hover:bg-slate-50 hover:text-slate-900"
+              className="rounded-xl border border-slate-200 bg-white p-2.5 text-slate-500 shadow-sm transition"
             >
               <ArrowLeft className="h-5 w-5" />
             </Link>
@@ -435,7 +435,7 @@ export default function ErpPage() {
                 aria-expanded={titleExpanded}
                 className="group text-left cursor-pointer"
               >
-                <h1 className="text-2xl font-bold tracking-tight text-slate-950 transition group-hover:text-slate-700 sm:text-3xl">
+                <h1 className="text-2xl font-bold tracking-tight text-slate-950 transition sm:text-3xl">
                   {titleExpanded ? "Enterprise Resource Planning Personal" : "ERP Personal"}
                 </h1>
                 {titleExpanded ? (
@@ -460,7 +460,7 @@ export default function ErpPage() {
                 className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition cursor-pointer ${
                   view === "dashboard"
                     ? "bg-slate-900 text-white"
-                    : "text-slate-600 hover:bg-slate-50"
+                    : "text-slate-600"
                 }`}
               >
                 <LayoutDashboard className="h-4 w-4" />
@@ -472,7 +472,7 @@ export default function ErpPage() {
                 className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition cursor-pointer ${
                   view === "cargar"
                     ? "bg-slate-900 text-white"
-                    : "text-slate-600 hover:bg-slate-50"
+                    : "text-slate-600"
                 }`}
               >
                 <PenLine className="h-4 w-4" />
@@ -494,6 +494,9 @@ export default function ErpPage() {
             dayLogs={dayLogs}
             onPersist={handlePersistLiveTimer}
             persisting={timerSaving}
+            periodFrom={dates[0] ?? today}
+            periodTo={dates[dates.length - 1] ?? today}
+            periodLabel={rangeLabel}
           />
         </div>
 
@@ -509,7 +512,7 @@ export default function ErpPage() {
                     className={`rounded-lg px-3.5 py-2 text-sm font-medium transition cursor-pointer ${
                       period === opt.key
                         ? "bg-blue-600 text-white"
-                        : "text-slate-600 hover:bg-slate-50"
+                        : "text-slate-600"
                     }`}
                   >
                     {opt.label}
@@ -522,7 +525,7 @@ export default function ErpPage() {
                     type="button"
                     onClick={goPrev}
                     aria-label="Período anterior"
-                    className="rounded-lg p-1.5 text-slate-500 transition hover:bg-slate-50 hover:text-slate-900 cursor-pointer"
+                    className="rounded-lg p-1.5 text-slate-500 transition cursor-pointer"
                   >
                     <ChevronLeft className="h-4 w-4" />
                   </button>
@@ -539,7 +542,7 @@ export default function ErpPage() {
                     type="button"
                     onClick={goNext}
                     aria-label="Período siguiente"
-                    className="rounded-lg p-1.5 text-slate-500 transition hover:bg-slate-50 hover:text-slate-900 cursor-pointer"
+                    className="rounded-lg p-1.5 text-slate-500 transition cursor-pointer"
                   >
                     <ChevronRight className="h-4 w-4" />
                   </button>

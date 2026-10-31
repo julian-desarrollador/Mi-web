@@ -172,7 +172,7 @@ function WeekPicker({
         type="button"
         onClick={() => onShift(-1)}
         aria-label={`${title}: semana anterior`}
-        className="rounded-lg p-1.5 text-slate-500 transition hover:bg-white hover:text-slate-900 cursor-pointer"
+        className="rounded-lg p-1.5 text-slate-500 transition cursor-pointer"
       >
         <ChevronLeft className="h-4 w-4" />
       </button>
@@ -186,7 +186,7 @@ function WeekPicker({
         type="button"
         onClick={() => onShift(1)}
         aria-label={`${title}: semana siguiente`}
-        className="rounded-lg p-1.5 text-slate-500 transition hover:bg-white hover:text-slate-900 cursor-pointer"
+        className="rounded-lg p-1.5 text-slate-500 transition cursor-pointer"
       >
         <ChevronRight className="h-4 w-4" />
       </button>
@@ -531,7 +531,7 @@ function TrainingKpiCard({
             }}
             aria-label="Calendario de entrenamiento y comidas"
             title="Entrenamiento y comidas"
-            className="absolute top-[calc(100%+0.35rem)] right-9 inline-flex h-7 w-7 items-center justify-center rounded-lg border border-[#c5d4e8] bg-white text-[#1d4e89] transition hover:bg-[#e4eef8] cursor-pointer"
+            className="absolute top-[calc(100%+0.35rem)] right-9 inline-flex h-7 w-7 items-center justify-center rounded-lg border border-[#c5d4e8] bg-white text-[#1d4e89] transition cursor-pointer"
           >
             <Calendar className="h-3.5 w-3.5" />
           </button>
@@ -544,7 +544,7 @@ function TrainingKpiCard({
             className={`absolute top-[calc(100%+0.35rem)] right-0 inline-flex h-7 w-7 items-center justify-center rounded-lg border transition cursor-pointer ${
               open
                 ? "border-violet-300 bg-violet-100 text-violet-700"
-                : "border-slate-200 bg-white text-slate-500 hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700"
+                : "border-slate-200 bg-white text-slate-500"
             }`}
           >
             <Wallet className="h-3.5 w-3.5" />
@@ -651,7 +651,7 @@ function TrainingKpiCard({
                         className={`min-w-[4.6rem] shrink-0 rounded-xl border px-2 py-2 text-left transition cursor-pointer ${
                           active
                             ? "border-violet-400 bg-violet-50 ring-1 ring-violet-200"
-                            : "border-slate-200 bg-white hover:bg-slate-50"
+                            : "border-slate-200 bg-white"
                         }`}
                       >
                         <p
@@ -1048,7 +1048,7 @@ export default function ErpDashboard({
                 className={`cursor-pointer rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
                   categoriesTab === tab.key
                     ? "bg-white text-slate-950 shadow-sm"
-                    : "text-slate-500 hover:text-slate-800"
+                    : "text-slate-500"
                 }`}
               >
                 {tab.label}

@@ -31,7 +31,7 @@ export type Cobro = {
 
 export const typeLabels: Record<AccountingType, string> = {
   ingreso: "Ingreso",
-  gasto: "Gasto",
+  gasto: "Salida",
   inversion: "Inversión",
 };
 

@@ -435,7 +435,7 @@ export default function ErpDayForm({
               className={`min-w-[64px] rounded-xl border px-3 py-2 text-center transition cursor-pointer ${
                 active
                   ? "border-blue-500 bg-blue-50 text-blue-800 ring-2 ring-blue-200"
-                  : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+                  : "border-slate-200 bg-white text-slate-600"
               }`}
             >
               <span className="block text-[10px] font-semibold uppercase tracking-wide">
@@ -571,7 +571,7 @@ export default function ErpDayForm({
               type="button"
               onClick={handleParsePaste}
               disabled={!pasteText.trim()}
-              className="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
+              className="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
             >
               Parsear
             </button>
@@ -579,14 +579,14 @@ export default function ErpDayForm({
               type="button"
               onClick={handleApplyPaste}
               disabled={!pasteResult?.ok}
-              className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
+              className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
             >
               Aplicar al día
             </button>
             <button
               type="button"
               onClick={handleClearPaste}
-              className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-50 cursor-pointer"
+              className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 transition cursor-pointer"
             >
               Limpiar
             </button>
@@ -778,7 +778,7 @@ export default function ErpDayForm({
                   className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold transition cursor-pointer ${
                     meal.done
                       ? "bg-amber-100 text-amber-900 ring-1 ring-amber-200"
-                      : "bg-slate-50 text-slate-600 ring-1 ring-slate-200 hover:text-slate-800"
+                      : "bg-slate-50 text-slate-600 ring-1 ring-slate-200"
                   }`}
                 >
                   {label}
@@ -797,7 +797,7 @@ export default function ErpDayForm({
                         className={`h-7 w-7 rounded-lg text-xs font-bold transition cursor-pointer ${
                           meal.quality === n
                             ? "bg-amber-500 text-white"
-                            : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                            : "bg-slate-100 text-slate-600"
                         }`}
                       >
                         {n}
@@ -827,7 +827,7 @@ export default function ErpDayForm({
             className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition cursor-pointer ${
               draft.english.done
                 ? "bg-emerald-100 text-emerald-800 ring-1 ring-emerald-200"
-                : "bg-white text-slate-600 ring-1 ring-slate-200 hover:text-slate-800"
+                : "bg-white text-slate-600 ring-1 ring-slate-200"
             }`}
           >
             <BookOpen className="h-4 w-4" />
@@ -876,7 +876,7 @@ export default function ErpDayForm({
             className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition cursor-pointer ${
               draft.creatine
                 ? "bg-cyan-100 text-cyan-800 ring-1 ring-cyan-200"
-                : "bg-white text-slate-600 ring-1 ring-slate-200 hover:text-slate-800"
+                : "bg-white text-slate-600 ring-1 ring-slate-200"
             }`}
           >
             <FlaskConical className="h-4 w-4" />
@@ -904,7 +904,7 @@ export default function ErpDayForm({
           type="button"
           onClick={() => void handleSave()}
           disabled={saving || loading}
-          className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
+          className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
         >
           {saving && <LoaderCircle className="h-4 w-4 animate-spin" />}
           {saving ? "Guardando…" : "Guardar día"}
@@ -915,7 +915,7 @@ export default function ErpDayForm({
           disabled={saving || loading}
           aria-label="Cerrar sin guardar"
           title="Cerrar sin guardar"
-          className="inline-flex h-[42px] w-[42px] items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 shadow-sm hover:bg-slate-50 hover:text-slate-800 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
+          className="inline-flex h-[42px] w-[42px] items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 shadow-sm disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
         >
           <X className="h-4 w-4" />
         </button>
@@ -924,7 +924,7 @@ export default function ErpDayForm({
             type="button"
             onClick={() => void handleDelete()}
             disabled={saving || loading}
-            className="inline-flex items-center gap-2 rounded-xl border border-rose-200 bg-white px-4 py-2.5 text-sm font-semibold text-rose-700 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
+            className="inline-flex items-center gap-2 rounded-xl border border-rose-200 bg-white px-4 py-2.5 text-sm font-semibold text-rose-700 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
           >
             <Trash2 className="h-4 w-4" />
             Eliminar día
