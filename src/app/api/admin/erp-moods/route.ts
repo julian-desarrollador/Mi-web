@@ -37,7 +37,8 @@ export async function POST(req: NextRequest) {
     if (!parsed.ok) {
       return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
-    const open = await findOpenErpMood(parsed.value.date);
+    // Un mood ya cerrado (puntuado al pausar) no choca con el abierto.
+    const open = parsed.value.endedAt ? null : await findOpenErpMood(parsed.value.date);
     if (open) {
       return NextResponse.json({ error: "Hay un mood abierto. Primero hacé pausa." }, { status: 409 });
     }
@@ -57,9 +58,11 @@ export async function PATCH(req: NextRequest) {
     if (!parsed.ok) {
       return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
-    const mood = await pauseErpMood(parsed.value.id, parsed.value.endedAt);
+    const { id, endedAt, patch } = parsed.value;
+    const mood = await pauseErpMood(id, endedAt, patch);
     if (!mood) {
-      return NextResponse.json({ error: "No hay un mood abierto para pausar" }, { status: 404 });
+      const error = endedAt ? "No hay un mood abierto para pausar" : "No se encontró el mood";
+      return NextResponse.json({ error }, { status: 404 });
     }
     return NextResponse.json({ ok: true, mood });
   } catch (error) {

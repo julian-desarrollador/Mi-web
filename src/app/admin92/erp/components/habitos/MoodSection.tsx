@@ -3,6 +3,7 @@
 import { Activity, Trash2 } from "lucide-react";
 import {
   MOOD_MAX,
+  averageMoodScore,
   formatClock,
   formatDayMonth,
   formatDuration,
@@ -29,8 +30,21 @@ function MoodEntry({
     <div className="rounded-xl border border-[#c5d4e8] border-l-4 border-l-[#1d4e89] bg-white px-3 py-2">
       <div className="flex items-start gap-2">
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium text-[#0f2744]">{entry.mood}</p>
+          <p className="flex items-center gap-2 text-sm font-medium text-[#0f2744]">
+            <span className="min-w-0 truncate">{entry.mood}</span>
+            {entry.score ? (
+              <span
+                className="shrink-0 tracking-[0.15em] text-[#1d4e89]"
+                aria-label={`Mente ${entry.score} de 5`}
+                title={`Mente ${entry.score}/5`}
+              >
+                {"●".repeat(entry.score)}
+                <span className="text-[#c5d4e8]">{"●".repeat(5 - entry.score)}</span>
+              </span>
+            ) : null}
+          </p>
           <p className="mt-0.5 text-xs text-[#3d5270]">{range}</p>
+          {entry.note ? <p className="mt-1 text-xs italic text-[#3d5270]">{entry.note}</p> : null}
         </div>
         {onRemove ? (
           <button
@@ -83,9 +97,10 @@ export function MoodSection({
   onPause: () => void;
   onRemove: (id: string) => void;
 }) {
+  // El más reciente primero
   const todayMoods = moods
     .filter((row) => row.date === today)
-    .sort((a, b) => (minutesBetween("0:00", a.startedAt) ?? 0) - (minutesBetween("0:00", b.startedAt) ?? 0));
+    .sort((a, b) => (minutesBetween("0:00", b.startedAt) ?? 0) - (minutesBetween("0:00", a.startedAt) ?? 0));
   const finishedToday = todayMoods.filter((row) => row._id !== openMood?._id);
   const pastDates = Array.from(new Set(moods.filter((row) => row.date !== today).map((row) => row.date))).sort(
     (a, b) => (a < b ? 1 : -1),
@@ -176,14 +191,16 @@ export function MoodSection({
             const entries = moods
               .filter((entry) => entry.date === date)
               .sort(
-                (a, b) => (minutesBetween("0:00", a.startedAt) ?? 0) - (minutesBetween("0:00", b.startedAt) ?? 0),
+                (a, b) => (minutesBetween("0:00", b.startedAt) ?? 0) - (minutesBetween("0:00", a.startedAt) ?? 0),
               );
             const total = dayDuration(entries);
             const countLabel = entries.length === 1 ? "1 mood" : `${entries.length} moods`;
+            const avg = averageMoodScore(entries);
             return (
               <details key={date} className="rounded-lg border border-[#c5d4e8] px-2.5 py-1.5">
                 <summary className="cursor-pointer text-xs font-semibold text-[#3d5270]">
                   {formatDayMonth(date)} · {countLabel} · {formatDuration(total)}
+                  {avg !== null ? ` · mente ${avg.toFixed(1)}` : ""}
                 </summary>
                 <div className="mt-2 space-y-2">
                   {entries.map((entry) => (

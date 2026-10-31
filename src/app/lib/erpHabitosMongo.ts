@@ -4,7 +4,10 @@ import {
   HABITOS_INICIALES,
   type CuatroHorasMark,
   type ErpHabito,
+  parseMoodScore,
   type ErpMood,
+  type MoodPatch,
+  type MoodStartInput,
 } from "@/app/admin92/erp/lib/erpHabitos";
 
 const COLLECTION = "erp_habitos";
@@ -201,6 +204,8 @@ function toMood(doc: WithId<Document>): ErpMood | null {
     mood: doc.mood,
     startedAt: doc.startedAt,
     endedAt: typeof doc.endedAt === "string" ? doc.endedAt : null,
+    score: parseMoodScore(doc.score),
+    note: typeof doc.note === "string" ? doc.note : "",
   };
 }
 
@@ -224,18 +229,16 @@ export async function findOpenErpMood(date: string): Promise<ErpMood | null> {
   return doc ? toMood(doc) : null;
 }
 
-export async function insertErpMood(input: {
-  date: string;
-  mood: string;
-  startedAt: string;
-}): Promise<ErpMood> {
+export async function insertErpMood(input: MoodStartInput): Promise<ErpMood> {
   const collection = await getMoodsCollection();
   const now = new Date();
   const result = await collection.insertOne({
     date: input.date,
     mood: input.mood,
     startedAt: input.startedAt,
-    endedAt: null,
+    endedAt: input.endedAt,
+    score: input.score,
+    note: input.note,
     createdAt: now,
     updatedAt: now,
   });
@@ -244,16 +247,28 @@ export async function insertErpMood(input: {
     date: input.date,
     mood: input.mood,
     startedAt: input.startedAt,
-    endedAt: null,
+    endedAt: input.endedAt,
+    score: input.score,
+    note: input.note,
   };
 }
 
-export async function pauseErpMood(id: string, endedAt: string): Promise<ErpMood | null> {
+/**
+ * Con `endedAt`: cierra el mood (solo si está abierto) y aplica el patch.
+ * Sin `endedAt`: edita mood/score/note de cualquier mood.
+ */
+export async function pauseErpMood(
+  id: string,
+  endedAt: string | null,
+  patch: MoodPatch = {},
+): Promise<ErpMood | null> {
   if (!ObjectId.isValid(id)) return null;
   const collection = await getMoodsCollection();
+  const filter: Document = { _id: new ObjectId(id) };
+  if (endedAt) filter.endedAt = null;
   const result = await collection.findOneAndUpdate(
-    { _id: new ObjectId(id), endedAt: null },
-    { $set: { endedAt, updatedAt: new Date() } },
+    filter,
+    { $set: { ...patch, ...(endedAt ? { endedAt } : {}), updatedAt: new Date() } },
     { returnDocument: "after" },
   );
   return result ? toMood(result) : null;

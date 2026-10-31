@@ -5,6 +5,7 @@ import {
   Check,
   ChevronDown,
   Clock3,
+  Headphones,
   LoaderCircle,
   Play,
   Plus,
@@ -32,6 +33,17 @@ import {
   type WorkCategoryKey,
 } from "@/app/admin92/erp/lib/erpTypes";
 import { formatSecondsAsClock } from "@/app/admin92/erp/lib/parseWorkTimersPaste";
+import MoodPromptModal from "@/app/admin92/erp/components/MoodPromptModal";
+import { formatDuration, minutesBetween, type MoodScore } from "@/app/admin92/erp/lib/erpHabitos";
+import { clockNow, useErpMoods } from "@/app/admin92/erp/lib/useErpMoods";
+
+/**
+ * start: al arrancar la sesión (o "+ mood").
+ * close: al detener la sesión (stop) o al cambiar de mood en medio de la racha (switch).
+ */
+type MoodPrompt =
+  | { kind: "start" }
+  | { kind: "close"; reason: "stop" | "switch"; sessionStart: string | null };
 
 type RecentTimer = {
   name: string;
@@ -297,14 +309,91 @@ export default function ErpLiveTimer({
 
   const elapsed = active ? elapsedSessionSeconds(active, nowMs) : 0;
 
+  const moodsApi = useErpMoods();
+  const { openMood } = moodsApi;
+  const [moodPrompt, setMoodPrompt] = useState<MoodPrompt | null>(null);
+  /** Remonta el modal en cada apertura para que arranque limpio. */
+  const [moodPromptKey, setMoodPromptKey] = useState(0);
+  const [moodBusy, setMoodBusy] = useState(false);
+  const [moodError, setMoodError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!moodsApi.loaded) void moodsApi.reload().catch(() => undefined);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- carga inicial
+  }, []);
+
+  const openMoodPrompt = (prompt: MoodPrompt) => {
+    setMoodError(null);
+    setMoodPromptKey((key) => key + 1);
+    setMoodPrompt(prompt);
+  };
+
+  const runMood = async (action: () => Promise<unknown>, after: MoodPrompt | null = null) => {
+    setMoodBusy(true);
+    setMoodError(null);
+    try {
+      await action();
+      if (after) openMoodPrompt(after);
+      else setMoodPrompt(null);
+    } catch (err) {
+      setMoodError(err instanceof Error ? err.message : "No se pudo guardar el mood");
+    } finally {
+      setMoodBusy(false);
+    }
+  };
+
+  const pickMood = (name: string) => {
+    const same = openMood && openMood.mood.trim().toLowerCase() === name.trim().toLowerCase();
+    if (same) {
+      setMoodPrompt(null);
+      return;
+    }
+    // Mood colgado de antes: se cierra sin puntaje y arranca el nuevo a la misma hora.
+    void runMood(() => (openMood ? moodsApi.switchTo(openMood, {}, name) : moodsApi.start(name)));
+  };
+
+  const saveClosingMood = (
+    prompt: Extract<MoodPrompt, { kind: "close" }>,
+    value: { mood: string; score: MoodScore | null; note: string },
+  ) => {
+    const next: MoodPrompt | null = prompt.reason === "switch" ? { kind: "start" } : null;
+    void runMood(
+      () =>
+        openMood
+          ? moodsApi.close(openMood, value)
+          : moodsApi.createClosed({ ...value, startedAt: prompt.sessionStart ?? clockNow() }),
+      next,
+    );
+  };
+
+  const skipClosingMood = (prompt: Extract<MoodPrompt, { kind: "close" }>) => {
+    const next: MoodPrompt | null = prompt.reason === "switch" ? { kind: "start" } : null;
+    if (!openMood) {
+      setMoodPrompt(next);
+      return;
+    }
+    void runMood(() => moodsApi.close(openMood), next);
+  };
+
+  /** Guarda el timer y, si la sesión arrancó o terminó, pregunta por el mood. */
   const persist = async (next: ErpDayLog) => {
     setError(null);
+    const wasActive = Boolean(active);
+    const sessionStart = active
+      ? clockNow(new Date(active.sessionStartedAt ?? active.startedAt))
+      : null;
     try {
       await onPersist(next);
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo guardar el timer");
+      return;
     }
+    const isActive = Boolean(next.activeWorkTimer);
+    if (!wasActive && isActive) openMoodPrompt({ kind: "start" });
+    else if (wasActive && !isActive) openMoodPrompt({ kind: "close", reason: "stop", sessionStart });
   };
+
+  const moodMinutes = openMood ? minutesBetween(openMood.startedAt, clockNow(new Date(nowMs))) : null;
 
   const openPicker = () => {
     if (blurTimer.current) window.clearTimeout(blurTimer.current);
@@ -813,6 +902,35 @@ export default function ErpLiveTimer({
         </div>
 
         <div className="flex shrink-0 items-end gap-2 sm:gap-3">
+          {active || openMood ? (
+            <button
+              type="button"
+              onClick={() =>
+                openMoodPrompt(
+                  openMood ? { kind: "close", reason: "switch", sessionStart: null } : { kind: "start" },
+                )
+              }
+              title={openMood ? "Cambiar de mood (puntuás el actual)" : "Elegir mood"}
+              className={`inline-flex h-[42px] max-w-[14rem] cursor-pointer items-center gap-2 rounded-xl border px-3 text-left text-sm font-semibold ${
+                openMood
+                  ? "border-blue-200 bg-blue-50 text-blue-900"
+                  : "border-dashed border-slate-300 bg-white text-slate-500"
+              }`}
+            >
+              <Headphones className="h-4 w-4 shrink-0" />
+              {openMood ? (
+                <span className="min-w-0 truncate">
+                  {openMood.mood}
+                  {moodMinutes !== null ? (
+                    <span className="font-medium text-blue-700"> · {formatDuration(moodMinutes)}</span>
+                  ) : null}
+                </span>
+              ) : (
+                <span>+ mood</span>
+              )}
+            </button>
+          ) : null}
+
           <div className="min-w-[8rem] rounded-xl border border-slate-200 bg-white px-3 py-2 text-right shadow-sm">
             <p className="text-[10px] font-bold uppercase tracking-wide text-slate-600">
               Tiempo
@@ -920,6 +1038,32 @@ export default function ErpLiveTimer({
 
       {error && <p className="mt-3 text-sm font-medium text-rose-700">{error}</p>}
       </section>
+
+      {moodPrompt?.kind === "start" ? (
+        <MoodPromptModal
+          key={moodPromptKey}
+          mode="start"
+          openMoodName={openMood?.mood ?? null}
+          recentNames={moodsApi.recentNames}
+          busy={moodBusy}
+          error={moodError}
+          onPick={pickMood}
+          onSkip={() => setMoodPrompt(null)}
+        />
+      ) : null}
+      {moodPrompt?.kind === "close" ? (
+        <MoodPromptModal
+          key={moodPromptKey}
+          mode="close"
+          initialName={openMood?.mood ?? ""}
+          durationLabel={moodMinutes !== null ? formatDuration(moodMinutes) : null}
+          saveLabel={moodPrompt.reason === "switch" ? "Guardar y elegir otro" : "Guardar"}
+          busy={moodBusy}
+          error={moodError}
+          onSave={(value) => saveClosingMood(moodPrompt, value)}
+          onSkip={() => skipClosingMood(moodPrompt)}
+        />
+      ) : null}
     </div>
   );
 }

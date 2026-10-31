@@ -3,11 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ListChecks, X } from "lucide-react";
 import { shiftDate, todayYmd } from "@/app/admin92/contabilidad/lib/utils";
-import {
-  type CuatroHorasMark,
-  type ErpHabito,
-  type ErpMood,
-} from "@/app/admin92/erp/lib/erpHabitos";
+import { type CuatroHorasMark, type ErpHabito } from "@/app/admin92/erp/lib/erpHabitos";
+import { clockNow, useErpMoods } from "@/app/admin92/erp/lib/useErpMoods";
 import type { ErpDayLog } from "@/app/admin92/erp/lib/erpTypes";
 import { AlarmSection, type AlarmRow } from "@/app/admin92/erp/components/habitos/AlarmSection";
 import { CuatroHorasSection } from "@/app/admin92/erp/components/habitos/CuatroHorasSection";
@@ -22,10 +19,6 @@ const TABS: { id: HabitosTab; label: string }[] = [
   { id: "mood", label: "Mood" },
   { id: "habitos", label: "Hábitos" },
 ];
-
-function clockNow(date: Date): string {
-  return `${date.getHours()}:${String(date.getMinutes()).padStart(2, "0")}`;
-}
 
 function formatTodayHeading(ymd: string): string {
   const [year, month, day] = ymd.split("-").map(Number);
@@ -51,7 +44,8 @@ export default function ErpHabitos() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editDraft, setEditDraft] = useState("");
   const [marks, setMarks] = useState<CuatroHorasMark[]>([]);
-  const [moods, setMoods] = useState<ErpMood[]>([]);
+  const moodsApi = useErpMoods();
+  const { moods, openMood } = moodsApi;
   const [moodDraft, setMoodDraft] = useState("");
   const [alarmRows, setAlarmRows] = useState<AlarmRow[]>([]);
   const [now, setNow] = useState(() => new Date());
@@ -65,30 +59,26 @@ export default function ErpHabitos() {
     setLoading(true);
     setError("");
     try {
-      const [habitosRes, marksRes, moodsRes, logsRes] = await Promise.all([
+      const [habitosRes, marksRes, logsRes] = await Promise.all([
         fetch("/api/admin/erp-habitos", { cache: "no-store" }),
         fetch("/api/admin/erp-habitos/cuatro-horas", { cache: "no-store" }),
-        fetch("/api/admin/erp-moods", { cache: "no-store" }),
         fetch(`/api/admin/erp-logs?from=${shiftDate(today, -59)}&to=${today}`, { cache: "no-store" }),
+        moodsApi.reload(),
       ]);
-      const [habitosData, marksData, moodsData, logsData] = (await Promise.all([
+      const [habitosData, marksData, logsData] = (await Promise.all([
         habitosRes.json(),
         marksRes.json(),
-        moodsRes.json(),
         logsRes.json(),
       ])) as [
         { habitos?: ErpHabito[]; error?: string },
         { marks?: CuatroHorasMark[]; error?: string },
-        { moods?: ErpMood[]; error?: string },
         { logs?: ErpDayLog[]; error?: string },
       ];
       if (!habitosRes.ok) throw new Error(habitosData.error || "No se pudieron cargar los hábitos.");
       if (!marksRes.ok) throw new Error(marksData.error || "No se pudo cargar el historial.");
-      if (!moodsRes.ok) throw new Error(moodsData.error || "No se pudieron cargar los moods.");
       if (!logsRes.ok) throw new Error(logsData.error || "No se pudieron cargar las alarmas.");
       setItems(habitosData.habitos ?? []);
       setMarks(marksData.marks ?? []);
-      setMoods(moodsData.moods ?? []);
       setAlarmRows(
         (logsData.logs ?? [])
           .map((log) => ({
@@ -104,7 +94,7 @@ export default function ErpHabitos() {
     } finally {
       setLoading(false);
     }
-  }, [today]);
+  }, [today, moodsApi.reload]);
 
   useEffect(() => {
     if (!open) return;
@@ -155,7 +145,6 @@ export default function ErpHabitos() {
 
   const todayAlarm = alarmRows.find((row) => row.date === today) ?? null;
   const todayMark = marks.find((row) => row.date === today);
-  const openMood = moods.find((row) => row.date === today && row.endedAt === null) ?? null;
 
   const createHabito = async () => {
     const text = draft.trim();
@@ -243,15 +232,8 @@ export default function ErpHabitos() {
     setSaving(true);
     setError("");
     try {
-      const response = await fetch("/api/admin/erp-moods", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ date: today, mood, startedAt: clockNow(new Date()) }),
-      });
-      const data = (await response.json()) as { mood?: ErpMood; error?: string };
-      if (!response.ok || !data.mood) throw new Error(data.error || "No se pudo arrancar el mood.");
-      const saved = data.mood;
-      setMoods((prev) => [...prev.filter((row) => row._id !== saved._id), saved]);
+      await moodsApi.start(mood);
+      setMoodDraft("");
       setNow(new Date());
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo arrancar el mood.");
@@ -265,15 +247,7 @@ export default function ErpHabitos() {
     setSaving(true);
     setError("");
     try {
-      const response = await fetch("/api/admin/erp-moods", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: openMood._id, endedAt: clockNow(new Date()) }),
-      });
-      const data = (await response.json()) as { mood?: ErpMood; error?: string };
-      if (!response.ok || !data.mood) throw new Error(data.error || "No se pudo pausar el mood.");
-      const saved = data.mood;
-      setMoods((prev) => prev.map((row) => (row._id === saved._id ? saved : row)));
+      await moodsApi.close(openMood);
       setNow(new Date());
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo pausar el mood.");
@@ -286,12 +260,7 @@ export default function ErpHabitos() {
     setSaving(true);
     setError("");
     try {
-      const response = await fetch(`/api/admin/erp-moods?id=${encodeURIComponent(id)}`, {
-        method: "DELETE",
-      });
-      const data = (await response.json()) as { error?: string };
-      if (!response.ok) throw new Error(data.error || "No se pudo quitar el mood.");
-      setMoods((prev) => prev.filter((row) => row._id !== id));
+      await moodsApi.remove(id);
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo quitar el mood.");
     } finally {
@@ -440,6 +409,16 @@ export default function ErpHabitos() {
                 />
               </div>
               <div className={`${paneClass(tab === "habitos")} gap-3 overflow-y-auto`}>
+                <CuatroHorasSection
+                  today={today}
+                  marks={marks}
+                  loading={loading}
+                  saving={saving}
+                  hasError={Boolean(error)}
+                  onPersist={(date, fulfilled, note) => {
+                    void persistDay(date, fulfilled, note);
+                  }}
+                />
                 <HabitosList
                   items={items}
                   loading={loading}
@@ -461,16 +440,6 @@ export default function ErpHabitos() {
                   onEditDraft={setEditDraft}
                   onSaveEdit={() => void saveEdit()}
                   onRemove={(item) => void removeHabito(item)}
-                />
-                <CuatroHorasSection
-                  today={today}
-                  marks={marks}
-                  loading={loading}
-                  saving={saving}
-                  hasError={Boolean(error)}
-                  onPersist={(date, fulfilled, note) => {
-                    void persistDay(date, fulfilled, note);
-                  }}
                 />
               </div>
             </div>
