@@ -57,12 +57,16 @@ function clientKey(name: string): string {
   return name.trim().toLowerCase();
 }
 
-/** Por cliente: la cuota cuya ventana contiene hoy; si no, la próxima; si no, la última. */
-function pickCurrentCuotas(cobros: CobroLite[], today: string): CobroLite[] {
+/**
+ * Mismas cuotas que el calendario de contabilidad: las que vencen en el mes activo (el de hoy).
+ * Si un cliente tuviera más de una en el mes, queda una sola (la cuya ventana contiene hoy).
+ */
+function pickCuotasDelMes(cobros: CobroLite[], today: string): CobroLite[] {
+  const month = today.slice(0, 7);
   const byClient = new Map<string, CobroLite[]>();
   for (const cobro of cobros) {
     const key = clientKey(cobro.clientName);
-    if (!key || !YMD.test(cobro.dueDate)) continue;
+    if (!key || !YMD.test(cobro.dueDate) || cobro.dueDate.slice(0, 7) !== month) continue;
     byClient.set(key, [...(byClient.get(key) ?? []), cobro]);
   }
   const out: CobroLite[] = [];
@@ -72,7 +76,7 @@ function pickCurrentCuotas(cobros: CobroLite[], today: string): CobroLite[] {
       const window = cuotaTimerWindow(c.dueDate);
       return today >= window.from && today <= window.to;
     });
-    out.push(current ?? sorted.find((c) => c.dueDate >= today) ?? sorted[sorted.length - 1]);
+    out.push(current ?? sorted[0]);
   }
   return out;
 }
@@ -157,7 +161,7 @@ export default function CuotasTimerStrip({
     };
   }, []);
 
-  const cuotas = useMemo(() => pickCurrentCuotas(cobros, today), [cobros, today]);
+  const cuotas = useMemo(() => pickCuotasDelMes(cobros, today), [cobros, today]);
 
   useEffect(() => {
     if (!YMD.test(periodFrom) || !YMD.test(periodTo) || periodFrom > periodTo) return;
@@ -251,7 +255,7 @@ export default function CuotasTimerStrip({
         <>
           {loadError && <p className="mb-2 text-xs font-medium text-rose-700">{loadError}</p>}
           {chips.length === 0 && !loadError ? (
-            <p className="text-xs text-slate-400">Sin cuotas cargadas</p>
+            <p className="text-xs text-slate-400">Sin cuotas este mes</p>
           ) : (
             <ul className="grid grid-cols-[repeat(auto-fill,minmax(11rem,1fr))] gap-2">
               {chips.map((chip) => {
