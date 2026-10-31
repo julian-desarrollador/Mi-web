@@ -5,7 +5,8 @@ import Link from "next/link";
 import { ArrowLeft, ChevronLeft, ChevronRight, LayoutDashboard, PenLine } from "lucide-react";
 import ErpDashboard from "@/app/admin92/erp/components/ErpDashboard";
 import ErpDayForm from "@/app/admin92/erp/components/ErpDayForm";
-import ErpLiveTimer from "@/app/admin92/erp/components/ErpLiveTimer";
+import ErpLiveTimer, { type MoodSessionSignal } from "@/app/admin92/erp/components/ErpLiveTimer";
+import { clockNow } from "@/app/admin92/erp/lib/useErpMoods";
 import ErpEntregables from "@/app/admin92/erp/components/ErpEntregables";
 import ErpHabitos from "@/app/admin92/erp/components/ErpHabitos";
 import ErpNoFumar from "@/app/admin92/erp/components/ErpNoFumar";
@@ -61,6 +62,8 @@ export default function ErpPage() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [timerSaving, setTimerSaving] = useState(false);
+  /** Inicio/fin de sesión del timer (desde cualquier panel): el timer live pregunta el mood. */
+  const [moodSignal, setMoodSignal] = useState<MoodSessionSignal | null>(null);
   const [workEditSaving, setWorkEditSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [titleExpanded, setTitleExpanded] = useState(false);
@@ -357,6 +360,11 @@ export default function ErpPage() {
   };
 
   const handlePersistLiveTimer = async (log: ErpDayLog): Promise<void> => {
+    const prevActive =
+      log.date === todayLog.date ? normalizeActiveWorkTimer(todayLog.activeWorkTimer ?? null) : null;
+    const sessionStart = prevActive
+      ? clockNow(new Date(prevActive.sessionStartedAt ?? prevActive.startedAt))
+      : null;
     setTimerSaving(true);
     try {
       const response = await fetch(`/api/admin/erp-logs/${log.date}`, {
@@ -372,6 +380,14 @@ export default function ErpPage() {
         throw new Error(data.error || "No se pudo guardar el timer.");
       }
       upsertLocalLog(data.log);
+      if (log.date === todayLog.date) {
+        const isActive = Boolean(data.log.activeWorkTimer);
+        if (!prevActive && isActive) {
+          setMoodSignal((prev) => ({ kind: "start", id: (prev?.id ?? 0) + 1 }));
+        } else if (prevActive && !isActive) {
+          setMoodSignal((prev) => ({ kind: "stop", sessionStart, id: (prev?.id ?? 0) + 1 }));
+        }
+      }
     } finally {
       setTimerSaving(false);
     }
@@ -493,6 +509,7 @@ export default function ErpPage() {
             todayLog={todayLog}
             dayLogs={dayLogs}
             onPersist={handlePersistLiveTimer}
+            moodSignal={moodSignal}
             persisting={timerSaving}
             periodFrom={dates[0] ?? today}
             periodTo={dates[dates.length - 1] ?? today}

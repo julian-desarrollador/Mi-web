@@ -8,7 +8,10 @@ import {
   buildProyectoByClientMap,
   getCuotaOperativaBorder,
   getProyectoForClient,
+  getTaskSortDate,
+  type CuotaOperativaBorder,
   type ProyectoOperativo,
+  type SolicitudTask,
 } from "@/app/admin92/contabilidad/lib/cuotaOperativa";
 import { cuotaTimerWindow } from "@/app/admin92/contabilidad/lib/cuotaTimers";
 import { todayYmd } from "@/app/admin92/contabilidad/lib/utils";
@@ -29,7 +32,18 @@ type CobroLite = {
   estadisticasEnviadas?: boolean;
   cambioPendiente?: boolean;
   requiereEstadisticas?: boolean;
+  solicitudTasks?: SolicitudTask[];
 };
+
+/** Cuándo se pidió el cambio: la tarea pendiente más antigua (o la más antigua, si están todas hechas). */
+function cambioRequestDate(cobro: CobroLite): string {
+  const tasks = cobro.solicitudTasks ?? [];
+  const pending = tasks.filter((task) => !task.done);
+  const dates = (pending.length > 0 ? pending : tasks).map((task) =>
+    getTaskSortDate(task, cobro.dueDate),
+  );
+  return dates.length > 0 ? dates.reduce((min, d) => (d < min ? d : min)) : cobro.dueDate;
+}
 
 type Props = {
   todayLog: ErpDayLog;
@@ -51,6 +65,14 @@ const ESTADO_ORDER: Record<CuotaEstado, number> = {
   pendiente: 0,
   recordada: 1,
   pagada: 2,
+};
+
+/** Dentro de las pagadas: primero con cambios, luego con estadísticas, al final sin nada. */
+const PAGADA_BORDER_ORDER: Record<CuotaOperativaBorder, number> = {
+  both: 0,
+  cambio: 0,
+  stats: 1,
+  none: 2,
 };
 
 function clientKey(name: string): string {
@@ -223,6 +245,13 @@ export default function CuotasTimerStrip({
         (a, b) =>
           Number(b.running) - Number(a.running) ||
           ESTADO_ORDER[a.estado] - ESTADO_ORDER[b.estado] ||
+          (a.estado === "pagada" && b.estado === "pagada"
+            ? PAGADA_BORDER_ORDER[a.border] - PAGADA_BORDER_ORDER[b.border] ||
+              // Pagadas con cambio: el pedido más antiguo primero
+              (PAGADA_BORDER_ORDER[a.border] === 0
+                ? cambioRequestDate(a.cobro).localeCompare(cambioRequestDate(b.cobro))
+                : 0)
+            : 0) ||
           a.cobro.clientName.localeCompare(b.cobro.clientName, "es"),
       );
   }, [cuotas, periodLogs, nowMs, today, proyectoByClient, todayLog, openKeys]);

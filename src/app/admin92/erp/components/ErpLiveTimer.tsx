@@ -20,7 +20,6 @@ import {
   newWorkTimerItemId,
   normalizeActiveWorkTimer,
   normalizeWorkTimers,
-  readTimerDestino,
   setActiveCuotasOnLog,
   startActiveWorkTimerOnLog,
   stopActiveWorkTimerOnLog,
@@ -28,8 +27,6 @@ import {
   WORK_CATEGORY_META,
   type ErpActiveWorkTimer,
   type ErpDayLog,
-  type ErpTimeKind,
-  type ErpTimerDestino,
   type WorkCategoryKey,
 } from "@/app/admin92/erp/lib/erpTypes";
 import { formatSecondsAsClock } from "@/app/admin92/erp/lib/parseWorkTimersPaste";
@@ -44,6 +41,14 @@ import { clockNow, useErpMoods } from "@/app/admin92/erp/lib/useErpMoods";
 type MoodPrompt =
   | { kind: "start" }
   | { kind: "close"; reason: "stop" | "switch"; sessionStart: string | null };
+
+/**
+ * La página avisa cuando la sesión del timer arrancó o terminó, venga de donde venga
+ * (este timer, Categorías de trabajo…). `id` cambia en cada aviso.
+ */
+export type MoodSessionSignal =
+  | { kind: "start"; id: number }
+  | { kind: "stop"; sessionStart: string | null; id: number };
 
 type RecentTimer = {
   name: string;
@@ -69,6 +74,7 @@ type Props = {
   dayLogs: ErpDayLog[];
   onPersist: (log: ErpDayLog) => Promise<void>;
   persisting: boolean;
+  moodSignal: MoodSessionSignal | null;
   /** Período elegido abajo (Día / Semana / Mes): totales de los chips de cuotas */
   periodFrom: string;
   periodTo: string;
@@ -170,6 +176,7 @@ export default function ErpLiveTimer({
   dayLogs,
   onPersist,
   persisting,
+  moodSignal,
   periodFrom,
   periodTo,
   periodLabel,
@@ -181,7 +188,6 @@ export default function ErpLiveTimer({
 
   const [category, setCategory] = useState<WorkCategoryKey | null>("software");
   const [name, setName] = useState("");
-  const [destino, setDestino] = useState<"" | "cuota" | ErpTimeKind>("");
   const openCuotas = useMemo(() => activeCuotaClients(active), [active]);
   const [nowMs, setNowMs] = useState(() => Date.now());
   const [itemDraft, setItemDraft] = useState("");
@@ -262,14 +268,6 @@ export default function ErpLiveTimer({
     setName(active.name);
   }, [active?.startedAt, active?.name]);
 
-  useEffect(() => {
-    if (!active) return;
-    if (activeCuotaClients(active).length > 0) {
-      setDestino("cuota");
-      return;
-    }
-    setDestino(active.timeKind ?? "");
-  }, [active?.startedAt, active?.cuotaClient, active?.cuotaClients, active?.share, active?.timeKind]);
 
   useEffect(() => {
     if (!pickerOpen) return;
@@ -375,22 +373,20 @@ export default function ErpLiveTimer({
     void runMood(() => moodsApi.close(openMood), next);
   };
 
-  /** Guarda el timer y, si la sesión arrancó o terminó, pregunta por el mood. */
+  // La página detecta inicio/fin de sesión (de este timer o de Categorías de trabajo).
+  useEffect(() => {
+    if (!moodSignal) return;
+    if (moodSignal.kind === "start") openMoodPrompt({ kind: "start" });
+    else openMoodPrompt({ kind: "close", reason: "stop", sessionStart: moodSignal.sessionStart });
+  }, [moodSignal]);
+
   const persist = async (next: ErpDayLog) => {
     setError(null);
-    const wasActive = Boolean(active);
-    const sessionStart = active
-      ? clockNow(new Date(active.sessionStartedAt ?? active.startedAt))
-      : null;
     try {
       await onPersist(next);
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo guardar el timer");
-      return;
     }
-    const isActive = Boolean(next.activeWorkTimer);
-    if (!wasActive && isActive) openMoodPrompt({ kind: "start" });
-    else if (wasActive && !isActive) openMoodPrompt({ kind: "close", reason: "stop", sessionStart });
   };
 
   const moodMinutes = openMood ? minutesBetween(openMood.startedAt, clockNow(new Date(nowMs))) : null;
@@ -446,13 +442,7 @@ export default function ErpLiveTimer({
       setError("Elegí una categoría o un nombre de la lista");
       return;
     }
-    const next = startActiveWorkTimerOnLog(
-      todayLog,
-      nextCategory,
-      nextName,
-      Date.now(),
-      currentDestino(),
-    );
+    const next = startActiveWorkTimerOnLog(todayLog, nextCategory, nextName, Date.now());
     setCategory(nextCategory);
     setName(nextName.trim());
     setPickerOpen(false);
@@ -474,11 +464,6 @@ export default function ErpLiveTimer({
     });
   };
 
-  const currentDestino = (): ErpTimerDestino => {
-    if (destino === "promesa" || destino === "conocimiento") return { timeKind: destino };
-    return {};
-  };
-
   /** Play/pausa de una cuota: corta el tramo y abre otro con el nuevo conjunto. */
   const toggleCuota = async (client: string) => {
     const key = client.trim().toLowerCase();
@@ -491,48 +476,9 @@ export default function ErpLiveTimer({
       name,
       nowMs: Date.now(),
     });
-    if (!next.activeWorkTimer) {
-      setName("");
-      setDestino("");
-    } else {
-      setDestino("cuota");
-    }
+    if (!next.activeWorkTimer) setName("");
     setNowMs(Date.now());
     await persist(next);
-  };
-
-  const writeActiveDestino = async (next: ErpTimerDestino) => {
-    if (!active) return;
-    const clean = readTimerDestino(next);
-    const sessionStartedAt = active.sessionStartedAt ?? active.startedAt;
-    if (openCuotas.length > 0) {
-      // Tenía cuotas: cerrar ese tramo y seguir la sesión con el nuevo destino
-      const started = startActiveWorkTimerOnLog(
-        todayLog,
-        active.category,
-        active.name,
-        Date.now(),
-        clean,
-      );
-      await persist({
-        ...started,
-        activeWorkTimer: started.activeWorkTimer
-          ? { ...started.activeWorkTimer, sessionStartedAt }
-          : null,
-      });
-      return;
-    }
-    await persist({
-      ...todayLog,
-      activeWorkTimer: {
-        category: active.category,
-        name: active.name,
-        startedAt: active.startedAt,
-        sessionStartedAt: active.sessionStartedAt,
-        items: active.items,
-        ...clean,
-      },
-    });
   };
 
   const commitName = async () => {
@@ -836,38 +782,6 @@ export default function ErpLiveTimer({
               </ul>
             </div>
           )}
-        </div>
-
-        <div className="min-w-0 flex-1">
-          <label className="block text-xs font-semibold text-slate-800">
-            Destino
-            <select
-              value={destino}
-              onChange={(e) => {
-                const next = e.target.value as "" | "cuota" | ErpTimeKind;
-                setDestino(next);
-                if (!active || next === "cuota") return;
-                if (next === "promesa" || next === "conocimiento") {
-                  void writeActiveDestino({ timeKind: next });
-                } else {
-                  void writeActiveDestino({});
-                }
-              }}
-              className="mt-1 block w-full cursor-pointer rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-950"
-            >
-              <option value="">Sin marcar</option>
-              <option value="cuota">Cuota</option>
-              <option value="promesa">Promesa</option>
-              <option value="conocimiento">Conocimiento</option>
-            </select>
-          </label>
-          {destino === "cuota" ? (
-            <p className="mt-2 truncate rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-xs font-semibold text-slate-900">
-              {openCuotas.length === 0
-                ? "Tocá un proyecto arriba para empezar"
-                : `${openCuotas.length >= 2 ? "Compartido" : "Focus"} · ${openCuotas.join(", ")}`}
-            </p>
-          ) : null}
         </div>
 
         <div className="relative min-w-0 flex-[1.5]" ref={pickerRootRef}>
