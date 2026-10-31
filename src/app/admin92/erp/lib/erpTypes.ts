@@ -60,6 +60,11 @@ export type ErpActiveWorkTimer = {
   startedAt: string;
   /** ISO: inicio de la sesión continua (sobrevive al rotar tramos entre cuotas) */
   sessionStartedAt?: string;
+  /**
+   * Orden en que se abrieron las cuotas en curso (la última, al final). Solo para mostrar:
+   * `cuotaClients` sigue alfabético para reconocer los tramos repetidos.
+   */
+  openOrder?: string[];
   items: ErpWorkTimerItem[];
 };
 
@@ -371,14 +376,40 @@ export function normalizeActiveWorkTimer(raw: unknown): ErpActiveWorkTimer | nul
     row.sessionStartedAt <= startedAt
       ? row.sessionStartedAt
       : undefined;
+  const openOrder = orderOpenCuotas(destinoCuotaClients(destino), uniqueCuotaNames(row.openOrder));
   return {
     category,
     name,
     ...destino,
     startedAt,
     ...(sessionStartedAt ? { sessionStartedAt } : {}),
+    ...(openOrder.length >= 2 ? { openOrder } : {}),
     items: normalizeWorkTimerItems(row.items),
   };
+}
+
+function destinoCuotaClients(destino: ErpTimerDestino | null | undefined): string[] {
+  if (isMultiCuotaDestino(destino)) return destino.cuotaClients;
+  return destino?.cuotaClient ? [destino.cuotaClient] : [];
+}
+
+/**
+ * Ordena `clients` según `previous` (orden de apertura); las que no estaban se suman al final,
+ * en el orden en que vienen en `clients`.
+ */
+function orderOpenCuotas(clients: string[], previous: string[]): string[] {
+  const key = (name: string) => name.trim().toLowerCase();
+  const current = new Map(clients.map((name) => [key(name), name]));
+  const ordered: string[] = [];
+  const seen = new Set<string>();
+  for (const name of [...previous, ...clients]) {
+    const k = key(name);
+    const real = current.get(k);
+    if (!real || seen.has(k)) continue;
+    seen.add(k);
+    ordered.push(real);
+  }
+  return ordered;
 }
 
 export function elapsedActiveSeconds(
@@ -635,6 +666,8 @@ export function setActiveCuotasOnLog(
     set.length === 1
       ? { cuotaClient: set[0], share: "focus" }
       : { cuotaClients: set, share: "paralelo" };
+  // Las que ya corrían conservan su lugar; las nuevas van al final
+  const openOrder = orderOpenCuotas(set, [...activeCuotaClients(active), ...uniqueCuotaNames(clients)]);
   const nowIso = new Date(nowMs).toISOString();
   return {
     ...stopped,
@@ -644,16 +677,17 @@ export function setActiveCuotasOnLog(
       ...destino,
       startedAt: nowIso,
       sessionStartedAt: active ? (active.sessionStartedAt ?? active.startedAt) : nowIso,
+      ...(openOrder.length >= 2 ? { openOrder } : {}),
       items: active ? [...active.items] : [],
     },
   };
 }
 
-/** Cuotas abiertas en el timer en curso. */
+/** Cuotas abiertas en el timer en curso, en el orden en que se abrieron. */
 export function activeCuotaClients(active: ErpActiveWorkTimer | null | undefined): string[] {
   if (!active) return [];
-  if (isMultiCuotaDestino(active)) return active.cuotaClients;
-  return active.cuotaClient ? [active.cuotaClient] : [];
+  const clients = destinoCuotaClients(active);
+  return active.openOrder ? orderOpenCuotas(clients, active.openOrder) : clients;
 }
 
 /** Tiempo del día en una cuota (tramos guardados + el que corre). Reloj play/pausa del chip. */

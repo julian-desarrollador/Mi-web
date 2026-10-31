@@ -224,6 +224,11 @@ export default function CuotasTimerStrip({
   const proyectoByClient = useMemo(() => buildProyectoByClientMap(proyectos), [proyectos]);
 
   const openKeys = useMemo(() => new Set(openClients.map(clientKey)), [openClients]);
+  /** Posición de cada cuota en curso según el orden en que se abrió. */
+  const openIndex = useMemo(
+    () => new Map(openClients.map((name, index) => [clientKey(name), index])),
+    [openClients],
+  );
   const parallel = openKeys.size >= 2;
 
   const chips = useMemo(() => {
@@ -251,6 +256,11 @@ export default function CuotasTimerStrip({
       .sort(
         (a, b) =>
           Number(b.running) - Number(a.running) ||
+          // En curso: en el orden en que se abrieron (la última, al final)
+          (a.running && b.running
+            ? (openIndex.get(clientKey(a.cobro.clientName)) ?? 0) -
+              (openIndex.get(clientKey(b.cobro.clientName)) ?? 0)
+            : 0) ||
           ESTADO_ORDER[a.estado] - ESTADO_ORDER[b.estado] ||
           (a.estado === "pagada" && b.estado === "pagada"
             ? PAGADA_BORDER_ORDER[a.border] - PAGADA_BORDER_ORDER[b.border] ||
@@ -261,7 +271,7 @@ export default function CuotasTimerStrip({
             : 0) ||
           a.cobro.clientName.localeCompare(b.cobro.clientName, "es"),
       );
-  }, [cuotas, periodLogs, nowMs, today, proyectoByClient, todayLog, openKeys]);
+  }, [cuotas, periodLogs, nowMs, today, proyectoByClient, todayLog, openKeys, openIndex]);
 
   return (
     <div className="mb-4">
