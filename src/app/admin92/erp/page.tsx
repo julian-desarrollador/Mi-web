@@ -57,7 +57,7 @@ export default function ErpPage() {
   const [view, setView] = useState<ViewTab>("dashboard");
   const [dayLogs, setDayLogs] = useState<ErpDayLog[]>([]);
   const [selectedDate, setSelectedDate] = useState(() => todayYmd());
-  const [period, setPeriod] = useState<ErpPeriod>("week");
+  const [period, setPeriod] = useState<ErpPeriod>("day");
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);

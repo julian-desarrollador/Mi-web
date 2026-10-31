@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Eye, EyeOff, Pause, Play } from "lucide-react";
 import CuotaCalendarDot from "@/app/admin92/contabilidad/components/CuotaCalendarDot";
+import CuotaCalendarioModal from "@/app/admin92/contabilidad/components/CuotaCalendarioModal";
 import { getCuotaEstado, type CuotaEstado } from "@/app/admin92/contabilidad/lib/cuotaEstilos";
 import {
   buildProyectoByClientMap,
@@ -152,14 +153,20 @@ export default function CuotasTimerStrip({
     });
   };
 
+  const [calendarCobro, setCalendarCobro] = useState<{ id: string; dueDate: string } | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
+  const reloadCuotas = useCallback(() => setReloadKey((key) => key + 1), []);
+  const closeCalendar = useCallback(() => setCalendarCobro(null), []);
+
   useEffect(() => {
     let cancelled = false;
     void Promise.all([
-      fetch("/api/admin/cobros").then((res) => res.json()),
-      fetch("/api/admin/proyectos").then((res) => res.json()),
+      fetch("/api/admin/cobros", { cache: "no-store" }).then((res) => res.json()),
+      fetch("/api/admin/proyectos", { cache: "no-store" }).then((res) => res.json()),
     ])
       .then(([cobrosData, proyectosData]) => {
         if (cancelled) return;
+        setLoadError(null);
         const rawCobros: (CobroLite & { _id?: string })[] = Array.isArray(cobrosData?.cobros)
           ? cobrosData.cobros
           : [];
@@ -181,7 +188,7 @@ export default function CuotasTimerStrip({
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [reloadKey]);
 
   const cuotas = useMemo(() => pickCuotasDelMes(cobros, today), [cobros, today]);
 
@@ -302,7 +309,27 @@ export default function CuotasTimerStrip({
                     }`}
                   >
                     <span className="flex items-center gap-2">
-                      <CuotaCalendarDot estado={chip.estado} border={chip.border} />
+                      {/* El puntito abre el calendario; el resto del cuadro es play/pausa */}
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        aria-label={`Ver ${chip.cobro.clientName} en el calendario`}
+                        title="Ver en el calendario"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          event.preventDefault();
+                          setCalendarCobro({ id: chip.cobro.id, dueDate: chip.cobro.dueDate });
+                        }}
+                        onKeyDown={(event) => {
+                          if (event.key !== "Enter" && event.key !== " ") return;
+                          event.stopPropagation();
+                          event.preventDefault();
+                          setCalendarCobro({ id: chip.cobro.id, dueDate: chip.cobro.dueDate });
+                        }}
+                        className="-m-1 inline-flex shrink-0 cursor-pointer rounded-full p-1"
+                      >
+                        <CuotaCalendarDot estado={chip.estado} border={chip.border} />
+                      </span>
                       <span className="min-w-0 flex-1 truncate text-sm font-semibold text-slate-950">
                         {chip.cobro.clientName}
                       </span>
@@ -353,6 +380,15 @@ export default function CuotasTimerStrip({
           )}
         </>
       )}
+
+      {calendarCobro ? (
+        <CuotaCalendarioModal
+          cobroId={calendarCobro.id}
+          dueDate={calendarCobro.dueDate}
+          onClose={closeCalendar}
+          onChanged={reloadCuotas}
+        />
+      ) : null}
     </div>
   );
 }
