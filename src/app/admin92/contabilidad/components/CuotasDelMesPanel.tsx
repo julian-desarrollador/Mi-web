@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { Calendar, Check, Copy, FileText, Pencil, Search, Trash2, X } from "lucide-react";
 import { getRemindersToday, getRemindersWeekBefore, getStatsOverdue, getStatsToday } from "@/app/lib/cobrosWorkflow";
 import { formatRecordatorioMensaje, MENSAJE_ESTADISTICAS, MENSAJE_RECORDATORIO_PAGO } from "@/app/lib/cobrosMensajes";
@@ -1116,8 +1116,10 @@ export default function CuotasDelMesPanel<C extends CuotaDelMes>({
                       </tr>
                     ) : (
                       filteredCobros.map((c) => {
+                        const copyOpen = copyRow?.id === c.id;
                         return (
-                        <tr key={c.id} className="border-b border-slate-100 bg-white">
+                        <Fragment key={c.id}>
+                        <tr className={`bg-white ${copyOpen ? "" : "border-b border-slate-100"}`}>
                           <td className="py-3 px-2 font-medium text-slate-900">{c.clientName}</td>
                           <td className="py-3 px-2 text-slate-600">{c.servicio || "—"}</td>
                           <td className="py-3 px-2">
@@ -1199,38 +1201,13 @@ export default function CuotasDelMesPanel<C extends CuotaDelMes>({
                                 }
                                 title="Copiar a otro mes"
                                 aria-label="Copiar a otro mes"
-                                className="p-2 rounded-lg text-slate-600 hover:text-[#84b9ed] transition-colors cursor-pointer"
+                                aria-expanded={copyOpen}
+                                className={`p-2 rounded-lg transition-colors cursor-pointer ${
+                                  copyOpen ? "bg-[#84b9ed]/15 text-[#84b9ed]" : "text-slate-600 hover:text-[#84b9ed]"
+                                }`}
                               >
                                 <Copy className="w-4 h-4" />
                               </button>
-                              {copyRow?.id === c.id ? (
-                                <span className="inline-flex items-center gap-1">
-                                  <select
-                                    value={copyRow.month}
-                                    onChange={(e) =>
-                                      setCopyRow({ id: c.id, month: e.target.value })
-                                    }
-                                    aria-label="Mes destino"
-                                    className="rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs text-slate-800 cursor-pointer"
-                                  >
-                                    {cobroMonthOptions
-                                      .filter((ym) => ym !== getMonthKeySafe(c.dueDate))
-                                      .map((ym) => (
-                                        <option key={ym} value={ym}>
-                                          {formatMonthLabel(ym)}
-                                        </option>
-                                      ))}
-                                  </select>
-                                  <button
-                                    type="button"
-                                    disabled={cobroSubmitting}
-                                    onClick={() => void handleCopyCobroToMonth(c, copyRow.month)}
-                                    className="rounded-lg bg-[#84b9ed] px-2 py-1 text-xs font-semibold text-white cursor-pointer disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500"
-                                  >
-                                    Pegar
-                                  </button>
-                                </span>
-                              ) : null}
                               <button
                                 type="button"
                                 onClick={() => handleEditCobro(c)}
@@ -1252,6 +1229,47 @@ export default function CuotasDelMesPanel<C extends CuotaDelMes>({
                             </div>
                           </td>
                         </tr>
+                        {copyRow && copyOpen ? (
+                          <tr className="border-b border-slate-100 bg-[#84b9ed]/5">
+                            <td colSpan={9} className="px-2 pb-3 pt-1">
+                              <div className="flex flex-wrap items-center justify-end gap-2">
+                                <span className="text-xs text-slate-600">
+                                  Copiar cuota de <span className="font-medium text-slate-800">{c.clientName}</span> a:
+                                </span>
+                                <select
+                                  value={copyRow.month}
+                                  onChange={(e) => setCopyRow({ id: c.id, month: e.target.value })}
+                                  aria-label="Mes destino"
+                                  className="rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs text-slate-800 cursor-pointer"
+                                >
+                                  {cobroMonthOptions
+                                    .filter((ym) => ym !== getMonthKeySafe(c.dueDate))
+                                    .map((ym) => (
+                                      <option key={ym} value={ym}>
+                                        {formatMonthLabel(ym)}
+                                      </option>
+                                    ))}
+                                </select>
+                                <button
+                                  type="button"
+                                  disabled={cobroSubmitting}
+                                  onClick={() => void handleCopyCobroToMonth(c, copyRow.month)}
+                                  className="rounded-lg bg-[#84b9ed] px-3 py-1 text-xs font-semibold text-white cursor-pointer disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500"
+                                >
+                                  {cobroSubmitting ? "Pegando..." : "Pegar"}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setCopyRow(null)}
+                                  className="rounded-lg px-2 py-1 text-xs font-medium text-slate-600 cursor-pointer"
+                                >
+                                  Cancelar
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ) : null}
+                        </Fragment>
                       );
                       })
                     )}
