@@ -9,12 +9,15 @@ export type Desarrollo50SolicitudTask = {
   fechaRealizada?: string;
 };
 
+export type Desarrollo50Prueba = "14d" | "1m";
+
 export type Desarrollo50Doc = {
   _id?: string;
   clientName: string;
   name: string;
   servicio?: string;
-  fechaCobro50: string;
+  /** Fecha del 1.er 50%; vacío si el lead todavía no pagó (p. ej. prueba gratis SaaS) */
+  fechaCobro50?: string;
   montoCobrado50?: number;
   accountingRecordId?: string;
   fechaCobro50Final?: string;
@@ -25,6 +28,14 @@ export type Desarrollo50Doc = {
   cambioPendiente?: boolean;
   /** Tareas operativas del desarrollo (misma shape que cuotas) */
   solicitudTasks?: Desarrollo50SolicitudTask[];
+  /** Lead: teléfono / WhatsApp */
+  telefono?: string;
+  /** Lead: de dónde vino (texto libre) */
+  origen?: string;
+  /** Lead: prueba gratis del SaaS */
+  prueba?: Desarrollo50Prueba;
+  /** Lead: inicio de la prueba gratis (YYYY-MM-DD) */
+  pruebaInicio?: string;
   createdAt?: Date;
   updatedAt?: Date;
 };
@@ -93,6 +104,11 @@ export async function updateDesarrollo50(
       | "servicio"
       | "fechaCobro50"
       | "montoCobrado50"
+      | "accountingRecordId"
+      | "telefono"
+      | "origen"
+      | "prueba"
+      | "pruebaInicio"
       | "fechaCobro50Final"
       | "montoCobrado50Final"
       | "accountingRecordIdFinal"

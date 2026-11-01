@@ -22,6 +22,9 @@ import CuotaCalendarDot from "@/app/admin92/contabilidad/components/CuotaCalenda
 import CuotaOperativaPanel from "@/app/admin92/contabilidad/components/CuotaOperativaPanel";
 import CuotaNotaEditor from "@/app/admin92/contabilidad/components/CuotaNotaEditor";
 import CuotasDelMesPanel from "@/app/admin92/contabilidad/components/CuotasDelMesPanel";
+import RealContableResumen, {
+  type RealContableRecord,
+} from "@/app/admin92/contabilidad/components/RealContableResumen";
 import { buildCalendarMarkers } from "@/app/admin92/contabilidad/lib/calendarMarkers";
 import {
   CUOTA_ESTADO_LABEL,
@@ -37,6 +40,8 @@ import {
 } from "@/app/admin92/contabilidad/lib/cuotaOperativa";
 import {
   formatLocalDate,
+  formatMonthLabel,
+  getMonthKey,
   getMonthKeySafe,
   shiftDate,
   shiftMonth,
@@ -89,6 +94,8 @@ export default function CuotaCalendarioModal({ cobroId, dueDate, onClose, onChan
   const [cobros, setCobros] = useState<CobroFull[]>([]);
   const [proyectos, setProyectos] = useState<ProyectoOperativo[]>([]);
   const [desarrollos, setDesarrollos] = useState<Desarrollo50Item[]>([]);
+  const [records, setRecords] = useState<RealContableRecord[]>([]);
+  const [includeChamba, setIncludeChamba] = useState(false);
   const [sortMode, setSortMode] = useState<CambiosSortMode>("tareas");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -96,16 +103,21 @@ export default function CuotaCalendarioModal({ cobroId, dueDate, onClose, onChan
 
   const load = useCallback(async () => {
     try {
-      const [cobrosRes, proyectosRes, desarrollosRes] = await Promise.all([
+      const [cobrosRes, proyectosRes, desarrollosRes, accountingRes] = await Promise.all([
         fetch("/api/admin/cobros", { cache: "no-store" }),
         fetch("/api/admin/proyectos", { cache: "no-store" }),
         fetch("/api/admin/desarrollos-50", { cache: "no-store" }),
+        fetch("/api/admin/accounting", { cache: "no-store" }),
       ]);
-      const [cobrosData, proyectosData, desarrollosData] = await Promise.all([
+      const [cobrosData, proyectosData, desarrollosData, accountingData] = await Promise.all([
         cobrosRes.json(),
         proyectosRes.json(),
         desarrollosRes.json(),
+        accountingRes.json().catch(() => null),
       ]);
+      if (accountingRes.ok && Array.isArray(accountingData?.records)) {
+        setRecords(accountingData.records);
+      }
       if (desarrollosRes.ok && Array.isArray(desarrollosData?.desarrollos)) {
         setDesarrollos(sortDesarrollos50(desarrollosData.desarrollos.map(mapDesarrollo50Doc)));
       }
@@ -188,6 +200,10 @@ export default function CuotaCalendarioModal({ cobroId, dueDate, onClose, onChan
   const cobrosDelMes = useMemo(
     () => cobros.filter((c) => getMonthKeySafe(c.dueDate) === month),
     [cobros, month],
+  );
+  const recordsDelMes = useMemo(
+    () => records.filter((r) => getMonthKey(r.date) === month),
+    [records, month],
   );
   const proyectoByClient = useMemo(() => buildProyectoByClientMap(proyectos), [proyectos]);
   const requiereStatsByClient = useMemo(() => {
@@ -368,6 +384,14 @@ export default function CuotaCalendarioModal({ cobroId, dueDate, onClose, onChan
               {error}
             </p>
           ) : null}
+
+          {/* Real contable + Flujo de caja del mes del calendario, como en Contabilidad */}
+          <RealContableResumen
+            records={recordsDelMes}
+            monthLabel={formatMonthLabel(month)}
+            includeChamba={includeChamba}
+            onToggleChamba={() => setIncludeChamba((v) => !v)}
+          />
 
           {/* Calendario + cola de cambios, como en Contabilidad */}
           <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[1fr_minmax(260px,300px)]">

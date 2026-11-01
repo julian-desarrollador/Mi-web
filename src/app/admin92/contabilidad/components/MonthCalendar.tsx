@@ -293,8 +293,11 @@ export default function MonthCalendar({
           )}
           <div className="flex shrink-0 items-start gap-2">
             <div className="flex flex-col items-end gap-0.5">
-              <span className="text-xs font-medium text-slate-600">
-                {cuotasDelMes} cuota{cuotasDelMes === 1 ? "" : "s"}
+              <span
+                className="text-xs font-semibold text-fuchsia-400"
+                style={{ textShadow: "0 0 4px rgba(232, 121, 249, 0.35), 0 0 8px rgba(217, 70, 239, 0.15)" }}
+              >
+                <span className="font-bold">{cuotasDelMes}</span> cuota{cuotasDelMes === 1 ? "" : "s"}
               </span>
               <button
                 type="button"

@@ -1,3 +1,4 @@
+import { normalizePrueba, type LeadPrueba } from "@/app/admin92/contabilidad/lib/leads";
 import {
   getTaskSortDate,
   type SolicitudTask,
@@ -13,6 +14,12 @@ export type Desarrollo50Item = {
   accountingRecordId?: string;
   cambioPendiente?: boolean;
   solicitudTasks?: SolicitudTask[];
+  /** Servicio tal cual está guardado (type muestra "—" si falta) */
+  servicio?: string;
+  telefono?: string;
+  origen?: string;
+  prueba?: LeadPrueba;
+  pruebaInicio?: string;
 };
 
 /** Punto en el calendario: cobro histórico y/o alerta por Ped. abierta */
@@ -32,6 +39,10 @@ export function mapDesarrollo50Doc(raw: {
   accountingRecordId?: string;
   cambioPendiente?: boolean;
   solicitudTasks?: SolicitudTask[];
+  telefono?: string | null;
+  origen?: string | null;
+  prueba?: string | null;
+  pruebaInicio?: string | null;
 }): Desarrollo50Item {
   return {
     id: raw._id ?? raw.id ?? "",
@@ -43,6 +54,11 @@ export function mapDesarrollo50Doc(raw: {
     accountingRecordId: raw.accountingRecordId,
     cambioPendiente: Boolean(raw.cambioPendiente),
     solicitudTasks: Array.isArray(raw.solicitudTasks) ? raw.solicitudTasks : undefined,
+    servicio: raw.servicio || undefined,
+    telefono: raw.telefono || undefined,
+    origen: raw.origen || undefined,
+    prueba: normalizePrueba(raw.prueba),
+    pruebaInicio: raw.pruebaInicio || undefined,
   };
 }
 

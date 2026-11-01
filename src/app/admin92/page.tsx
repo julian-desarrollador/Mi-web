@@ -4,14 +4,14 @@ import { Fragment, Suspense, useEffect, useMemo, useRef, useState } from "react"
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { Pencil, Trash2, Check, BarChart3, FolderKanban, Wrench, Smile, Handshake } from "lucide-react";
+import { Pencil, Trash2, Check, BarChart3, FolderKanban } from "lucide-react";
 import ChambaToggle from "@/app/admin92/contabilidad/components/ChambaToggle";
 import CuotasDelMesPanel from "@/app/admin92/contabilidad/components/CuotasDelMesPanel";
 import HerramientasPanel from "@/app/admin92/contabilidad/components/HerramientasPanel";
 import StackModal from "@/app/admin92/contabilidad/components/StackModal";
 import CuotaNotaEditor from "@/app/admin92/contabilidad/components/CuotaNotaEditor";
 import CalendarioDiaNota from "@/app/admin92/contabilidad/components/CalendarioDiaNota";
-import FlujoCajaModal from "@/app/admin92/contabilidad/components/FlujoCajaModal";
+import RealContableResumen from "@/app/admin92/contabilidad/components/RealContableResumen";
 import CuotaOperativaPanel from "@/app/admin92/contabilidad/components/CuotaOperativaPanel";
 import Desarrollo50TasksBlock from "@/app/admin92/contabilidad/components/Desarrollo50TasksBlock";
 import CambiosPendientesSidebar from "@/app/admin92/contabilidad/components/CambiosPendientesSidebar";
@@ -88,18 +88,6 @@ type WebhookEvent = {
 type AccountingType = "ingreso" | "gasto" | "inversion";
 
 const GASTO_CATEGORIAS = ["Herramientas", "Placer", "Servicio"] as const;
-
-function isGastoPlacer(category?: string): boolean {
-  return (category || "").trim().toLowerCase() === "placer";
-}
-
-function isGastoHerramientas(category?: string): boolean {
-  return (category || "").trim().toLowerCase() === "herramientas";
-}
-
-function isGastoServicio(category?: string): boolean {
-  return (category || "").trim().toLowerCase() === "servicio";
-}
 
 function gastoCategoryOptions(current: string): string[] {
   const trimmed = current.trim();
@@ -256,7 +244,6 @@ function Admin92PageContent() {
   const [cuotaTimersError, setCuotaTimersError] = useState("");
   const [cuotaTimersNow, setCuotaTimersNow] = useState(() => Date.now());
   const [includeChamba, setIncludeChamba] = useState(false);
-  const [flujoCajaOpen, setFlujoCajaOpen] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [pendingStatsCobro, setPendingStatsCobro] = useState<Cobro | null>(null);
   const [statsFechaEnvio, setStatsFechaEnvio] = useState("");
@@ -1205,28 +1192,6 @@ function Admin92PageContent() {
     }
   };
 
-  const totalIngresos = filteredRecords
-    .filter((r) => r.type === "ingreso" && (includeChamba || r.chamba !== true))
-    .reduce((sum, r) => sum + r.amount, 0);
-  const gastosDelMes = filteredRecords.filter((r) => r.type === "gasto");
-  const totalGastos = gastosDelMes.reduce((sum, r) => sum + r.amount, 0);
-  const totalHerramientas = gastosDelMes
-    .filter((r) => isGastoHerramientas(r.category))
-    .reduce((sum, r) => sum + r.amount, 0);
-  const totalPlacer = gastosDelMes
-    .filter((r) => isGastoPlacer(r.category))
-    .reduce((sum, r) => sum + r.amount, 0);
-  const totalServicio = gastosDelMes
-    .filter((r) => isGastoServicio(r.category))
-    .reduce((sum, r) => sum + r.amount, 0);
-  const totalInversion = filteredRecords
-    .filter((r) => r.type === "inversion")
-    .reduce((sum, r) => sum + r.amount, 0);
-  const resultado =
-    totalIngresos -
-    gastosDelMes.filter((r) => !isGastoPlacer(r.category)).reduce((sum, r) => sum + r.amount, 0) -
-    totalInversion;
-
   const formatCurrency = (n: number) =>
     `$${n.toLocaleString("es-AR")} ARS`;
 
@@ -1528,78 +1493,12 @@ function Admin92PageContent() {
             </div>
 
             {/* Resumen contable */}
-            <div>
-              <div className="mb-2 flex items-center justify-between gap-3">
-                <div className="flex flex-wrap items-center gap-3">
-                  <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Real contable</p>
-                  <ChambaToggle
-                    icon
-                    pressed={includeChamba}
-                    onClick={() => setIncludeChamba((v) => !v)}
-                  />
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setFlujoCajaOpen(true)}
-                  className="rounded-lg border border-[#1d4e89] bg-white px-3 py-1.5 text-xs font-semibold text-[#1d4e89] transition-colors cursor-pointer"
-                >
-                  Flujo de caja
-                </button>
-              </div>
-              {flujoCajaOpen ? (
-                <FlujoCajaModal
-                  monthLabel={formatMonthLabel(contabilidadMonth)}
-                  ingresos={filteredRecords.filter(
-                    (record) => record.type === "ingreso" && (includeChamba || record.chamba !== true),
-                  )}
-                  gastos={filteredRecords.filter((record) => record.type === "gasto")}
-                  onClose={() => setFlujoCajaOpen(false)}
-                />
-              ) : null}
-              <div className="grid grid-cols-1 min-[520px]:grid-cols-2 gap-4">
-              <div className="rounded-xl border border-slate-200 bg-white p-4">
-                <p className="text-xs font-medium text-slate-600 mb-1">Ingresos</p>
-                <p className="text-xl font-bold text-green-700">{formatCurrency(totalIngresos)}</p>
-              </div>
-              <div className="rounded-xl border border-slate-200 bg-white p-4">
-                <p className="text-xs font-medium text-slate-600 mb-1">Salidas</p>
-                <p className="text-xl font-bold text-red-700">{formatCurrency(totalGastos)}</p>
-                <div className="mt-1 grid grid-cols-3 gap-2">
-                  <div className="min-w-0">
-                    <p className="flex items-center gap-1 text-xs font-medium text-slate-900">
-                      <Wrench className="h-3.5 w-3.5 shrink-0" aria-hidden />
-                      <span className="whitespace-nowrap">Herramientas</span>
-                    </p>
-                    <p className="text-sm font-semibold text-slate-900">{formatCurrency(totalHerramientas)}</p>
-                  </div>
-                  <div className="min-w-0">
-                    <p className="flex items-center gap-1 text-xs font-medium text-slate-900">
-                      <Smile className="h-3.5 w-3.5 shrink-0" aria-hidden />
-                      <span className="whitespace-nowrap">Placer</span>
-                    </p>
-                    <p className="text-sm font-semibold text-slate-900">{formatCurrency(totalPlacer)}</p>
-                  </div>
-                  <div className="min-w-0">
-                    <p className="flex items-center gap-1 text-xs font-medium text-slate-900">
-                      <Handshake className="h-3.5 w-3.5 shrink-0" aria-hidden />
-                      <span className="whitespace-nowrap">Servicio</span>
-                    </p>
-                    <p className="text-sm font-semibold text-slate-900">{formatCurrency(totalServicio)}</p>
-                  </div>
-                </div>
-              </div>
-              <div className="rounded-xl border border-slate-200 bg-white p-4">
-                <p className="text-xs font-medium text-slate-600 mb-1">Inversión</p>
-                <p className="text-xl font-bold text-blue-700">{formatCurrency(totalInversion)}</p>
-              </div>
-              <div className="rounded-xl border border-slate-200 bg-white p-4">
-                <p className="text-xs font-medium text-slate-600 mb-1">Resultado</p>
-                <p className={`text-xl font-bold ${resultado >= 0 ? "text-green-700" : "text-red-700"}`}>
-                  {formatCurrency(resultado)}
-                </p>
-              </div>
-              </div>
-            </div>
+            <RealContableResumen
+              records={filteredRecords}
+              monthLabel={formatMonthLabel(contabilidadMonth)}
+              includeChamba={includeChamba}
+              onToggleChamba={() => setIncludeChamba((v) => !v)}
+            />
 
             {/* Cobranza del mes */}
             <div>

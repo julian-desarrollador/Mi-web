@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { deleteAccountingRecord } from "@/app/lib/accountingMongo";
+import { parseLeadFields } from "@/app/admin92/contabilidad/lib/leads";
 import {
   deleteDesarrollo50,
   getDesarrollo50ById,
@@ -48,6 +49,13 @@ export async function PATCH(
       }
       patch.fechaCobro50 = v;
     }
+    const { fields: leadFields, error: leadError } = parseLeadFields(body);
+    if (leadError) {
+      return NextResponse.json({ error: leadError }, { status: 400 });
+    }
+    Object.assign(patch, leadFields);
+    // Sin prueba gratis no tiene sentido guardar su inicio
+    if (body.prueba !== undefined && !leadFields.prueba) patch.pruebaInicio = undefined;
     if (body.activo !== undefined) {
       patch.activo = Boolean(body.activo);
     }
