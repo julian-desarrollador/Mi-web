@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Eye, EyeOff, Pause, Play } from "lucide-react";
+import { ChevronLeft, ChevronRight, Eye, EyeOff, Pause, Play, Undo2 } from "lucide-react";
 import CuotaCalendarDot from "@/app/admin92/contabilidad/components/CuotaCalendarDot";
 import CuotaCalendarioModal from "@/app/admin92/contabilidad/components/CuotaCalendarioModal";
 import { getCuotaEstado, type CuotaEstado } from "@/app/admin92/contabilidad/lib/cuotaEstilos";
@@ -15,7 +15,7 @@ import {
   type SolicitudTask,
 } from "@/app/admin92/contabilidad/lib/cuotaOperativa";
 import { cuotaTimerWindow } from "@/app/admin92/contabilidad/lib/cuotaTimers";
-import { todayYmd } from "@/app/admin92/contabilidad/lib/utils";
+import { formatMonthLabel, shiftMonth, todayYmd } from "@/app/admin92/contabilidad/lib/utils";
 import {
   formatHoursAsHm,
   todaySecondsForCuota,
@@ -81,11 +81,11 @@ function clientKey(name: string): string {
 }
 
 /**
- * Mismas cuotas que el calendario de contabilidad: las que vencen en el mes activo (el de hoy).
- * Si un cliente tuviera más de una en el mes, queda una sola (la cuya ventana contiene hoy).
+ * Mismas cuotas que el calendario de contabilidad: las que vencen en el mes elegido
+ * (por defecto, el de hoy). Si un cliente tuviera más de una en el mes, queda una sola
+ * (la cuya ventana contiene hoy, o la primera).
  */
-function pickCuotasDelMes(cobros: CobroLite[], today: string): CobroLite[] {
-  const month = today.slice(0, 7);
+function pickCuotasDelMes(cobros: CobroLite[], month: string, today: string): CobroLite[] {
   const byClient = new Map<string, CobroLite[]>();
   for (const cobro of cobros) {
     const key = clientKey(cobro.clientName);
@@ -132,6 +132,10 @@ export default function CuotasTimerStrip({
   const [logs, setLogs] = useState<ErpDayLog[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
   const today = todayYmd();
+  /** Meses de desplazamiento respecto del actual (0 = sigue al mes de hoy, aunque cambie). */
+  const [monthOffset, setMonthOffset] = useState(0);
+  const currentMonth = today.slice(0, 7);
+  const viewMonth = shiftMonth(currentMonth, monthOffset);
 
   useEffect(() => {
     try {
@@ -190,7 +194,7 @@ export default function CuotasTimerStrip({
     };
   }, [reloadKey]);
 
-  const cuotas = useMemo(() => pickCuotasDelMes(cobros, today), [cobros, today]);
+  const cuotas = useMemo(() => pickCuotasDelMes(cobros, viewMonth, today), [cobros, viewMonth, today]);
 
   useEffect(() => {
     if (!YMD.test(periodFrom) || !YMD.test(periodTo) || periodFrom > periodTo) return;
@@ -299,9 +303,43 @@ export default function CuotasTimerStrip({
 
       {visible && (
         <>
+          <div className="mb-2 flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => setMonthOffset((offset) => offset - 1)}
+              aria-label="Mes anterior"
+              title="Mes anterior"
+              className="rounded-md p-1 text-slate-500 hover:bg-slate-100 cursor-pointer"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            <span className="min-w-[5.5rem] text-center text-xs font-semibold capitalize text-blue-700">
+              {formatMonthLabel(viewMonth).split(" ")[0]}
+            </span>
+            <button
+              type="button"
+              onClick={() => setMonthOffset((offset) => offset + 1)}
+              aria-label="Mes siguiente"
+              title="Mes siguiente"
+              className="rounded-md p-1 text-slate-500 hover:bg-slate-100 cursor-pointer"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+            {monthOffset !== 0 && (
+              <button
+                type="button"
+                onClick={() => setMonthOffset(0)}
+                aria-label={`Volver a ${formatMonthLabel(currentMonth)}`}
+                title={`Volver a ${formatMonthLabel(currentMonth)}`}
+                className="ml-1 flex h-6 w-6 items-center justify-center rounded-full border border-blue-200 bg-blue-50 text-blue-700 shadow-sm transition hover:bg-blue-100 hover:border-blue-300 active:scale-95 cursor-pointer"
+              >
+                <Undo2 className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
           {loadError && <p className="mb-2 text-xs font-medium text-rose-700">{loadError}</p>}
           {chips.length === 0 && !loadError ? (
-            <p className="text-xs text-slate-400">Sin cuotas este mes</p>
+            <p className="text-xs text-slate-400">Sin cuotas en {formatMonthLabel(viewMonth)}</p>
           ) : (
             <ul className="grid grid-cols-[repeat(auto-fill,minmax(11rem,1fr))] gap-2">
               {chips.map((chip) => {
