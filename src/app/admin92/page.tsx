@@ -1548,8 +1548,8 @@ function Admin92PageContent() {
               </div>
               {!editingRecord && !showNewRecordForm ? (
                 <p className="text-sm text-slate-600">
-                  Cuotas: marcá pagada en el día del calendario. Desarrollos 50%: panel en el pie del
-                  calendario.
+                  Cuotas: marcá pagada en el día del calendario. Desarrollos 50% y pruebas gratis:
+                  botón «Leads» en el pie del calendario.
                 </p>
               ) : (
                 <form onSubmit={handleSubmitRecord} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
