@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Calendar, Check, Copy, FileText, Pencil, Trash2 } from "lucide-react";
+import { Calendar, Check, Copy, FileText, Pencil, Search, Trash2, X } from "lucide-react";
 import { getRemindersToday, getRemindersWeekBefore, getStatsOverdue, getStatsToday } from "@/app/lib/cobrosWorkflow";
 import { formatRecordatorioMensaje, MENSAJE_ESTADISTICAS, MENSAJE_RECORDATORIO_PAGO } from "@/app/lib/cobrosMensajes";
 import ChambaToggle from "@/app/admin92/contabilidad/components/ChambaToggle";
@@ -33,6 +33,7 @@ export type CuotaDelMes = {
   paidAt?: string;
   fechaCobro?: string;
   servicio?: string;
+  descripcionCuota?: string;
   origen?: "manual" | "suscripcion_mp";
   estadisticasEnviadas?: boolean;
   fechaEnvioEstadisticas?: string;
@@ -56,6 +57,11 @@ type Props<C extends CuotaDelMes> = {
   onTogglePaid?: (c: C) => void;
   onToggleEstadisticas?: (c: C) => void;
 };
+
+/** Minúsculas y sin acentos, para buscar sin importar cómo se escribió. */
+function normalizeSearch(text: string): string {
+  return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+}
 
 function formatCurrency(n: number): string {
   return `$${n.toLocaleString("es-AR")} ARS`;
@@ -120,6 +126,7 @@ export default function CuotasDelMesPanel<C extends CuotaDelMes>({
   const [cobroFilterClient, setCobroFilterClient] = useState("");
   const [cobroFilterPaid, setCobroFilterPaid] = useState<"" | "paid" | "pending">("");
   const [cobroFilterOrigen, setCobroFilterOrigen] = useState<"" | "manual" | "suscripcion_mp">("");
+  const [cobroSearch, setCobroSearch] = useState("");
   const [copiedId, setCopiedId] = useState<string | null>(null);
   // Confirmaciones propias (solo si el contenedor no las maneja)
   const [pendingPaidCobro, setPendingPaidCobro] = useState<C | null>(null);
@@ -153,8 +160,27 @@ export default function CuotasDelMesPanel<C extends CuotaDelMes>({
     if (cobroFilterPaid === "paid") list = list.filter((c) => c.paid);
     if (cobroFilterPaid === "pending") list = list.filter((c) => !c.paid);
     if (cobroFilterOrigen) list = list.filter((c) => (c.origen ?? "manual") === cobroFilterOrigen);
+    const terms = normalizeSearch(cobroSearch).split(/\s+/).filter(Boolean);
+    if (terms.length > 0) {
+      list = list.filter((c) => {
+        const haystack = normalizeSearch(
+          [
+            c.clientName,
+            c.servicio,
+            c.descripcionCuota,
+            c.dueDate,
+            formatLocalDate(c.dueDate),
+            String(c.amount),
+            c.amount.toLocaleString("es-AR"),
+          ]
+            .filter(Boolean)
+            .join(" "),
+        );
+        return terms.every((t) => haystack.includes(t));
+      });
+    }
     return [...list].sort((a, b) => a.dueDate.localeCompare(b.dueDate));
-  }, [cobros, cobroFilterClient, month, cobroFilterPaid, cobroFilterOrigen]);
+  }, [cobros, cobroFilterClient, month, cobroFilterPaid, cobroFilterOrigen, cobroSearch]);
 
   const totalCobrosFiltrados = useMemo(
     () => filteredCobros.reduce((sum, c) => sum + c.amount, 0),
@@ -977,6 +1003,36 @@ export default function CuotasDelMesPanel<C extends CuotaDelMes>({
               {cobroFormMode !== "actions" && (
                 <>
                   <div className="flex flex-wrap items-center gap-3 mb-4">
+                    <div className="relative w-full sm:w-64">
+                      <Search
+                        className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
+                        aria-hidden
+                      />
+                      <input
+                        type="search"
+                        value={cobroSearch}
+                        onChange={(e) => setCobroSearch(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Escape" && cobroSearch) {
+                            e.stopPropagation();
+                            setCobroSearch("");
+                          }
+                        }}
+                        placeholder="Buscar cliente, servicio, monto…"
+                        aria-label="Buscar cuotas del mes"
+                        className="w-full rounded-lg border border-slate-300 py-1.5 pl-8 pr-8 text-sm focus:ring-2 focus:ring-[#84b9ed] focus:border-transparent [&::-webkit-search-cancel-button]:hidden"
+                      />
+                      {cobroSearch ? (
+                        <button
+                          type="button"
+                          onClick={() => setCobroSearch("")}
+                          aria-label="Limpiar búsqueda"
+                          className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded p-1 text-slate-400 cursor-pointer"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      ) : null}
+                    </div>
                     <label className="text-sm font-medium text-slate-700">Filtros:</label>
                     <select
                       value={cobroFilterClient}
@@ -1053,7 +1109,9 @@ export default function CuotasDelMesPanel<C extends CuotaDelMes>({
                     ) : filteredCobros.length === 0 ? (
                       <tr>
                         <td colSpan={9} className="py-8 text-center text-slate-500">
-                          No hay cuotas. Agregá una cuota única o generá cuotas recurrentes.
+                          {cobroSearch.trim()
+                            ? `No hay cuotas que coincidan con "${cobroSearch.trim()}".`
+                            : "No hay cuotas. Agregá una cuota única o generá cuotas recurrentes."}
                         </td>
                       </tr>
                     ) : (

@@ -38,6 +38,7 @@ import {
 import {
   formatLocalDate,
   getMonthKeySafe,
+  shiftDate,
   shiftMonth,
   todayYmd,
 } from "@/app/admin92/contabilidad/lib/utils";
@@ -144,6 +145,45 @@ export default function CuotaCalendarioModal({ cobroId, dueDate, onClose, onChan
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, [onClose]);
+
+  /** Flechas del teclado cambian el día seleccionado (← → ±1 día, ↑ ↓ ±1 semana), como en Contabilidad */
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      const dayDelta =
+        e.key === "ArrowLeft"
+          ? -1
+          : e.key === "ArrowRight"
+            ? 1
+            : e.key === "ArrowUp"
+              ? -7
+              : e.key === "ArrowDown"
+                ? 7
+                : null;
+      if (dayDelta === null) return;
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.tagName === "SELECT" ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+
+      e.preventDefault();
+      const base =
+        selectedDate ?? (getMonthKeySafe(todayYmd()) === month ? todayYmd() : `${month}-01`);
+      const next = shiftDate(base, dayDelta);
+      const nextMonth = getMonthKeySafe(next);
+      if (nextMonth !== month) setMonth(nextMonth);
+      setSelectedDate(next);
+      setFocusedId(null);
+    };
+
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [month, selectedDate]);
 
   const cobrosDelMes = useMemo(
     () => cobros.filter((c) => getMonthKeySafe(c.dueDate) === month),
