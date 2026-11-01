@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight, Eye, EyeOff, Pause, Play, Undo2 } from "lucide-react";
+import { CalendarDays, ChevronLeft, ChevronRight, Eye, EyeOff, Pause, Play, Undo2 } from "lucide-react";
 import CuotaCalendarDot from "@/app/admin92/contabilidad/components/CuotaCalendarDot";
 import CuotaCalendarioModal from "@/app/admin92/contabilidad/components/CuotaCalendarioModal";
 import { getCuotaEstado, type CuotaEstado } from "@/app/admin92/contabilidad/lib/cuotaEstilos";
@@ -158,7 +158,7 @@ export default function CuotasTimerStrip({
     });
   };
 
-  const [calendarCobro, setCalendarCobro] = useState<{ id: string; dueDate: string } | null>(null);
+  const [calendarCobro, setCalendarCobro] = useState<{ id?: string; dueDate: string } | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
   const reloadCuotas = useCallback(() => setReloadKey((key) => key + 1), []);
   const closeCalendar = useCallback(() => setCalendarCobro(null), []);
@@ -392,15 +392,29 @@ export default function CuotasTimerStrip({
           )}
           <span className="font-medium text-slate-500"> · totales: {periodLabel}</span>
         </p>
-        <button
-          type="button"
-          onClick={toggleVisible}
-          aria-label={visible ? "Ocultar cuotas" : "Mostrar cuotas"}
-          title={visible ? "Ocultar cuotas" : "Mostrar cuotas"}
-          className="rounded-md p-1 text-amber-500 cursor-pointer"
-        >
-          {visible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-        </button>
+        <div className="flex shrink-0 flex-col items-center gap-0.5">
+          <button
+            type="button"
+            onClick={() =>
+              // Abre en el mes que se está mirando (hoy si es el mes actual)
+              setCalendarCobro({ dueDate: viewMonth === currentMonth ? today : `${viewMonth}-01` })
+            }
+            aria-label="Abrir calendario de cuotas"
+            title="Calendario de cuotas"
+            className="rounded-md p-1 text-blue-600 cursor-pointer"
+          >
+            <CalendarDays className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            onClick={toggleVisible}
+            aria-label={visible ? "Ocultar cuotas" : "Mostrar cuotas"}
+            title={visible ? "Ocultar cuotas" : "Mostrar cuotas"}
+            className="rounded-md p-1 text-amber-500 cursor-pointer"
+          >
+            {visible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </button>
+        </div>
       </div>
 
       {visible && (

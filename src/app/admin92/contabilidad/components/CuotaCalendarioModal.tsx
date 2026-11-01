@@ -58,7 +58,8 @@ type CobroFull = Cobro & {
 };
 
 type Props = {
-  cobroId: string;
+  /** Cuota a resaltar al abrir (opcional: sin ella se abre solo en la fecha) */
+  cobroId?: string;
   dueDate: string;
   onClose: () => void;
   /** Se guardó algo (tareas, cambio, stats, nota): quien abrió el modal puede recargar. */
@@ -90,7 +91,7 @@ export default function CuotaCalendarioModal({ cobroId, dueDate, onClose, onChan
   const initialDate = YMD.test(dueDate) ? dueDate : todayYmd();
   const [month, setMonth] = useState(() => getMonthKeySafe(initialDate));
   const [selectedDate, setSelectedDate] = useState<string | null>(initialDate);
-  const [focusedId, setFocusedId] = useState<string | null>(cobroId);
+  const [focusedId, setFocusedId] = useState<string | null>(cobroId || null);
   const [cobros, setCobros] = useState<CobroFull[]>([]);
   const [proyectos, setProyectos] = useState<ProyectoOperativo[]>([]);
   const [desarrollos, setDesarrollos] = useState<Desarrollo50Item[]>([]);
