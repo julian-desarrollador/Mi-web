@@ -12,6 +12,7 @@ import StackModal from "@/app/admin92/contabilidad/components/StackModal";
 import CuotaNotaEditor from "@/app/admin92/contabilidad/components/CuotaNotaEditor";
 import CalendarioDiaNota from "@/app/admin92/contabilidad/components/CalendarioDiaNota";
 import RealContableResumen from "@/app/admin92/contabilidad/components/RealContableResumen";
+import { computeCobranzaKpis } from "@/app/admin92/contabilidad/lib/cobranza";
 import CuotaOperativaPanel from "@/app/admin92/contabilidad/components/CuotaOperativaPanel";
 import Desarrollo50TasksBlock from "@/app/admin92/contabilidad/components/Desarrollo50TasksBlock";
 import CambiosPendientesSidebar from "@/app/admin92/contabilidad/components/CambiosPendientesSidebar";
@@ -786,26 +787,16 @@ function Admin92PageContent() {
     [records],
   );
 
-  const cobranzaKpis = useMemo(() => {
-    const inMonth = cobros.filter(
-      (c) => getMonthKeySafe(c.dueDate) === contabilidadMonth && (includeChamba || c.chamba !== true),
-    );
-    const esperado = inMonth.reduce((sum, c) => sum + c.amount, 0);
-    const pendiente = inMonth.filter((c) => !c.paid).reduce((sum, c) => sum + c.amount, 0);
-    const cobrado = cobros
-      .filter((c) => {
-        if (!includeChamba && c.chamba === true) return false;
-        if (!c.paid) return false;
-        if (c.accountingRecordId) {
-          const rec = recordsById.get(c.accountingRecordId);
-          if (rec) return getMonthKey(rec.date) === contabilidadMonth;
-        }
-        const fechaContable = c.fechaCobro || c.dueDate;
-        return getMonthKeySafe(fechaContable) === contabilidadMonth;
-      })
-      .reduce((sum, c) => sum + c.amount, 0);
-    return { esperado, cobrado, pendiente };
-  }, [cobros, contabilidadMonth, recordsById, includeChamba]);
+  const cobranzaKpis = useMemo(
+    () =>
+      computeCobranzaKpis(
+        cobros,
+        contabilidadMonth,
+        new Map(Array.from(recordsById, ([id, r]) => [id, r.date] as const)),
+        includeChamba,
+      ),
+    [cobros, contabilidadMonth, recordsById, includeChamba],
+  );
 
   /** Ganado vs restante del mes, según fecha contable de cobros y corte (hoy o día seleccionado). */
   const cobranzaProgreso = useMemo(() => {

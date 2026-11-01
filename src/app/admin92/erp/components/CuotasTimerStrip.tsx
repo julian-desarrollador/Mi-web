@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { CalendarDays, ChevronLeft, ChevronRight, Eye, EyeOff, Pause, Play, Undo2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Pause, Play, Undo2 } from "lucide-react";
+import ErpUpdatesModal from "@/app/admin92/erp/components/ErpUpdatesModal";
 import CuotaCalendarDot from "@/app/admin92/contabilidad/components/CuotaCalendarDot";
 import CuotaCalendarioModal from "@/app/admin92/contabilidad/components/CuotaCalendarioModal";
 import { getCuotaEstado, type CuotaEstado } from "@/app/admin92/contabilidad/lib/cuotaEstilos";
@@ -162,6 +163,32 @@ export default function CuotasTimerStrip({
   const [reloadKey, setReloadKey] = useState(0);
   const reloadCuotas = useCallback(() => setReloadKey((key) => key + 1), []);
   const closeCalendar = useCallback(() => setCalendarCobro(null), []);
+
+  /* Updates listas para entregar (ícono de caja) */
+  const [updatesOpen, setUpdatesOpen] = useState(false);
+  const [updatesCount, setUpdatesCount] = useState(0);
+  const closeUpdates = useCallback(() => setUpdatesOpen(false), []);
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/admin/erp-updates", { cache: "no-store" })
+      .then((res) => res.json())
+      .then((data) => {
+        if (!cancelled && Array.isArray(data?.updates)) {
+          // Solo las pendientes (sin tildar como entregadas)
+          setUpdatesCount(data.updates.filter((u: { entregada?: boolean }) => !u.entregada).length);
+        }
+      })
+      .catch(() => {
+        /* el badge es opcional */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+  const proyectoSuggestions = useMemo(
+    () => Array.from(new Set(cobros.map((c) => c.clientName.trim()).filter(Boolean))),
+    [cobros],
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -392,7 +419,7 @@ export default function CuotasTimerStrip({
           )}
           <span className="font-medium text-slate-500"> · totales: {periodLabel}</span>
         </p>
-        <div className="flex shrink-0 flex-col items-center gap-0.5">
+        <div className="flex shrink-0 flex-col items-end gap-0.5">
           <button
             type="button"
             onClick={() =>
@@ -401,19 +428,35 @@ export default function CuotasTimerStrip({
             }
             aria-label="Abrir calendario de cuotas"
             title="Calendario de cuotas"
-            className="rounded-md p-1 text-blue-600 cursor-pointer"
+            className="flex h-6 w-6 items-center justify-center rounded-md text-base leading-none cursor-pointer hover:bg-slate-100"
           >
-            <CalendarDays className="h-4 w-4" />
+            <span aria-hidden>📅</span>
           </button>
-          <button
-            type="button"
-            onClick={toggleVisible}
-            aria-label={visible ? "Ocultar cuotas" : "Mostrar cuotas"}
-            title={visible ? "Ocultar cuotas" : "Mostrar cuotas"}
-            className="rounded-md p-1 text-amber-500 cursor-pointer"
-          >
-            {visible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-          </button>
+          <div className="flex items-center gap-0.5">
+            <button
+              type="button"
+              onClick={() => setUpdatesOpen(true)}
+              aria-label={`Updates para entregar${updatesCount > 0 ? ` (${updatesCount})` : ""}`}
+              title="Updates para entregar"
+              className="relative flex h-6 w-6 items-center justify-center rounded-md text-base leading-none cursor-pointer hover:bg-slate-100"
+            >
+              <span aria-hidden>📦</span>
+              {updatesCount > 0 ? (
+                <span className="absolute -right-1 -top-1 min-w-[14px] rounded-full bg-amber-600 px-1 text-center text-[9px] font-bold leading-[14px] text-white">
+                  {updatesCount}
+                </span>
+              ) : null}
+            </button>
+            <button
+              type="button"
+              onClick={toggleVisible}
+              aria-label={visible ? "Ocultar cuotas" : "Mostrar cuotas"}
+              title={visible ? "Ocultar cuotas" : "Mostrar cuotas"}
+              className="flex h-6 w-6 items-center justify-center rounded-md text-base leading-none cursor-pointer hover:bg-slate-100"
+            >
+              <span aria-hidden>{visible ? "🙈" : "👁️"}</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -480,6 +523,14 @@ export default function CuotasTimerStrip({
           dueDate={calendarCobro.dueDate}
           onClose={closeCalendar}
           onChanged={reloadCuotas}
+        />
+      ) : null}
+
+      {updatesOpen ? (
+        <ErpUpdatesModal
+          onClose={closeUpdates}
+          onCountChange={setUpdatesCount}
+          proyectoSuggestions={proyectoSuggestions}
         />
       ) : null}
     </div>

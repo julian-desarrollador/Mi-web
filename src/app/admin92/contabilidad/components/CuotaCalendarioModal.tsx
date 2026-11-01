@@ -22,6 +22,7 @@ import CuotaCalendarDot from "@/app/admin92/contabilidad/components/CuotaCalenda
 import CuotaOperativaPanel from "@/app/admin92/contabilidad/components/CuotaOperativaPanel";
 import CuotaNotaEditor from "@/app/admin92/contabilidad/components/CuotaNotaEditor";
 import CuotasDelMesPanel from "@/app/admin92/contabilidad/components/CuotasDelMesPanel";
+import { computeCobranzaKpis } from "@/app/admin92/contabilidad/lib/cobranza";
 import RealContableResumen, {
   type RealContableRecord,
 } from "@/app/admin92/contabilidad/components/RealContableResumen";
@@ -205,6 +206,16 @@ export default function CuotaCalendarioModal({ cobroId, dueDate, onClose, onChan
   const recordsDelMes = useMemo(
     () => records.filter((r) => getMonthKey(r.date) === month),
     [records, month],
+  );
+  const cobranza = useMemo(
+    () =>
+      computeCobranzaKpis(
+        cobros,
+        month,
+        new Map(records.filter((r) => r._id).map((r) => [r._id as string, r.date] as const)),
+        includeChamba,
+      ),
+    [cobros, month, records, includeChamba],
   );
   const proyectoByClient = useMemo(() => buildProyectoByClientMap(proyectos), [proyectos]);
   const requiereStatsByClient = useMemo(() => {
@@ -392,6 +403,8 @@ export default function CuotaCalendarioModal({ cobroId, dueDate, onClose, onChan
             monthLabel={formatMonthLabel(month)}
             includeChamba={includeChamba}
             onToggleChamba={() => setIncludeChamba((v) => !v)}
+            cobranza={cobranza}
+            collapsible
           />
 
           {/* Calendario + cola de cambios, como en Contabilidad */}

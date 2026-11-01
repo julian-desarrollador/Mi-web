@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Handshake, Smile, Wrench } from "lucide-react";
+import { Eye, EyeOff, Handshake, Smile, Wrench } from "lucide-react";
 import ChambaToggle from "@/app/admin92/contabilidad/components/ChambaToggle";
 import FlujoCajaModal, { type FlujoCajaRecord } from "@/app/admin92/contabilidad/components/FlujoCajaModal";
+import type { CobranzaKpis } from "@/app/admin92/contabilidad/lib/cobranza";
 
 /** Registro contable tal como lo devuelve /api/admin/accounting. */
 export type RealContableRecord = FlujoCajaRecord & { chamba?: boolean };
@@ -15,7 +16,29 @@ type Props = {
   /** Sumar ingresos de chamba en los totales */
   includeChamba: boolean;
   onToggleChamba: () => void;
+  /** Si viene, se muestran también los cuadros "Cobranza del mes" */
+  cobranza?: CobranzaKpis;
+  /** Cada sección lleva un botón para mostrar/ocultar sus cuadros (arrancan ocultos) */
+  collapsible?: boolean;
 };
+
+/** Botón ojo para mostrar/ocultar los cuadros de una sección. */
+function SectionToggle({ open, label, onClick }: { open: boolean; label: string; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-expanded={open}
+      aria-label={open ? `Ocultar ${label}` : `Mostrar ${label}`}
+      title={open ? `Ocultar ${label}` : `Mostrar ${label}`}
+      className={`rounded-lg border p-1.5 transition-colors cursor-pointer ${
+        open ? "border-[#84b9ed]/40 bg-[#84b9ed]/10 text-[#4a7fb8]" : "border-slate-200 bg-white text-slate-500"
+      }`}
+    >
+      {open ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+    </button>
+  );
+}
 
 function categoryIs(category: string | undefined, name: string): boolean {
   return (category || "").trim().toLowerCase() === name;
@@ -30,8 +53,17 @@ function formatCurrency(n: number): string {
 }
 
 /** Cuadros "Real contable" (ingresos, salidas, inversión, resultado) + botón Flujo de caja. */
-export default function RealContableResumen({ records, monthLabel, includeChamba, onToggleChamba }: Props) {
+export default function RealContableResumen({
+  records,
+  monthLabel,
+  includeChamba,
+  onToggleChamba,
+  cobranza,
+  collapsible = false,
+}: Props) {
   const [flujoCajaOpen, setFlujoCajaOpen] = useState(false);
+  // Sin toggle se ven siempre; con toggle arrancan ocultos
+  const [showReal, setShowReal] = useState(!collapsible);
 
   const ingresos = records.filter((r) => r.type === "ingreso" && (includeChamba || r.chamba !== true));
   const gastos = records.filter((r) => r.type === "gasto");
@@ -47,8 +79,12 @@ export default function RealContableResumen({ records, monthLabel, includeChamba
 
   return (
     <div>
+      <div>
       <div className="mb-2 flex items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-3">
+          {collapsible ? (
+            <SectionToggle open={showReal} label="los cuadros" onClick={() => setShowReal((v) => !v)} />
+          ) : null}
           <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Real contable</p>
           <ChambaToggle icon pressed={includeChamba} onClick={onToggleChamba} />
         </div>
@@ -68,6 +104,7 @@ export default function RealContableResumen({ records, monthLabel, includeChamba
           onClose={() => setFlujoCajaOpen(false)}
         />
       ) : null}
+      {showReal ? (
       <div className="grid grid-cols-1 min-[520px]:grid-cols-2 gap-4">
         <div className="rounded-xl border border-slate-200 bg-white p-4">
           <p className="text-xs font-medium text-slate-600 mb-1">Ingresos</p>
@@ -110,6 +147,28 @@ export default function RealContableResumen({ records, monthLabel, includeChamba
             {formatCurrency(resultado)}
           </p>
         </div>
+      </div>
+      ) : null}
+      {/* Cobranza del mes: mismo grupo (se muestra/oculta con el mismo ojo) */}
+      {showReal && cobranza ? (
+        <div className="mt-4">
+          <p className="mb-2 text-[11px] font-medium uppercase tracking-wide text-slate-400">Cobranza del mes</p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="rounded-xl border border-slate-200 bg-white p-4">
+              <p className="text-xs font-medium text-slate-600 mb-1">Esperado</p>
+              <p className="text-xl font-bold text-amber-800">{formatCurrency(cobranza.esperado)}</p>
+            </div>
+            <div className="rounded-xl border border-slate-200 bg-white p-4">
+              <p className="text-xs font-medium text-slate-600 mb-1">Cobrado</p>
+              <p className="text-xl font-bold text-green-700">{formatCurrency(cobranza.cobrado)}</p>
+            </div>
+            <div className="rounded-xl border border-slate-200 bg-white p-4">
+              <p className="text-xs font-medium text-slate-600 mb-1">Pendiente</p>
+              <p className="text-xl font-bold text-orange-700">{formatCurrency(cobranza.pendiente)}</p>
+            </div>
+          </div>
+        </div>
+      ) : null}
       </div>
     </div>
   );
