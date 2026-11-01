@@ -21,6 +21,7 @@ import {
 import CuotaCalendarDot from "@/app/admin92/contabilidad/components/CuotaCalendarDot";
 import CuotaOperativaPanel from "@/app/admin92/contabilidad/components/CuotaOperativaPanel";
 import CuotaNotaEditor from "@/app/admin92/contabilidad/components/CuotaNotaEditor";
+import CuotasDelMesPanel from "@/app/admin92/contabilidad/components/CuotasDelMesPanel";
 import { buildCalendarMarkers } from "@/app/admin92/contabilidad/lib/calendarMarkers";
 import {
   CUOTA_ESTADO_LABEL,
@@ -149,6 +150,13 @@ export default function CuotaCalendarioModal({ cobroId, dueDate, onClose, onChan
     [cobros, month],
   );
   const proyectoByClient = useMemo(() => buildProyectoByClientMap(proyectos), [proyectos]);
+  const requiereStatsByClient = useMemo(() => {
+    const map = new Map<string, boolean>();
+    for (const p of proyectoByClient.values()) {
+      map.set(p.clientName.trim().toLowerCase(), Boolean(p.requiereEstadisticas));
+    }
+    return map;
+  }, [proyectoByClient]);
   const markers = useMemo(
     () => buildCalendarMarkers([], cobrosDelMes, proyectos, todayYmd()),
     [cobrosDelMes, proyectos],
@@ -431,6 +439,15 @@ export default function CuotaCalendarioModal({ cobroId, dueDate, onClose, onChan
               </div>
             </section>
           )}
+
+          {/* Mismo cuadro "Cuotas del mes" de Contabilidad, siguiendo el mes del calendario */}
+          <CuotasDelMesPanel
+            cobros={cobros}
+            month={month}
+            requiereStatsByClient={requiereStatsByClient}
+            loading={loading}
+            onReload={handleSaved}
+          />
         </div>
       </article>
     </div>
