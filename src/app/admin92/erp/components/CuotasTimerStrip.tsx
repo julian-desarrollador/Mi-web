@@ -15,7 +15,7 @@ import {
   type SolicitudTask,
 } from "@/app/admin92/contabilidad/lib/cuotaOperativa";
 import { cuotaTimerWindow } from "@/app/admin92/contabilidad/lib/cuotaTimers";
-import { formatMonthLabel, shiftMonth, todayYmd } from "@/app/admin92/contabilidad/lib/utils";
+import { formatMonthLabel, MONTH_NAMES, shiftMonth, todayYmd } from "@/app/admin92/contabilidad/lib/utils";
 import {
   formatHoursAsHm,
   todaySecondsForCuota,
@@ -61,6 +61,7 @@ type Props = {
 
 const VISIBLE_KEY = "erp-timer-cuotas-visible";
 const YMD = /^\d{4}-\d{2}-\d{2}$/;
+const GRID_CLASS = "grid grid-cols-[repeat(auto-fill,minmax(11rem,1fr))] gap-2";
 
 const ESTADO_ORDER: Record<CuotaEstado, number> = {
   pendiente: 0,
@@ -194,7 +195,10 @@ export default function CuotasTimerStrip({
     };
   }, [reloadKey]);
 
-  const cuotas = useMemo(() => pickCuotasDelMes(cobros, viewMonth, today), [cobros, viewMonth, today]);
+  const cuotas = useMemo(
+    () => pickCuotasDelMes(cobros, viewMonth, today),
+    [cobros, viewMonth, today],
+  );
 
   useEffect(() => {
     if (!YMD.test(periodFrom) || !YMD.test(periodTo) || periodFrom > periodTo) return;
@@ -277,6 +281,104 @@ export default function CuotasTimerStrip({
       );
   }, [cuotas, periodLogs, nowMs, today, proyectoByClient, todayLog, openKeys, openIndex]);
 
+  const runningChips = chips.filter((chip) => chip.running);
+  const pausedChips = chips.filter((chip) => !chip.running);
+
+  const renderChip = (chip: (typeof chips)[number]) => {
+    const breakdown = breakdownLabel(chip.focus + chip.compartido, chip.focus, chip.compartido);
+    return (
+    <li key={chip.cobro.id || chip.cobro.clientName}>
+      <button
+        type="button"
+        onClick={() => onToggle(chip.cobro.clientName)}
+        disabled={persisting}
+        aria-pressed={chip.running}
+        title={`${chip.cobro.clientName} · ${chip.running ? "Pausar" : "Iniciar"}`}
+        className={`flex h-full w-full cursor-pointer flex-col gap-1 rounded-xl border bg-white px-2.5 py-2 text-left transition disabled:cursor-wait disabled:opacity-70 ${
+          chip.running ? "border-blue-300 shadow-sm ring-1 ring-blue-200" : "border-slate-200"
+        }`}
+      >
+        <span className="flex items-center gap-2">
+          {/* El puntito abre el calendario; el resto del cuadro es play/pausa */}
+          <span
+            role="button"
+            tabIndex={0}
+            aria-label={`Ver ${chip.cobro.clientName} en el calendario`}
+            title="Ver en el calendario"
+            onClick={(event) => {
+              event.stopPropagation();
+              event.preventDefault();
+              setCalendarCobro({ id: chip.cobro.id, dueDate: chip.cobro.dueDate });
+            }}
+            onKeyDown={(event) => {
+              if (event.key !== "Enter" && event.key !== " ") return;
+              event.stopPropagation();
+              event.preventDefault();
+              setCalendarCobro({ id: chip.cobro.id, dueDate: chip.cobro.dueDate });
+            }}
+            className="-m-1 inline-flex shrink-0 cursor-pointer rounded-full p-1"
+          >
+            <CuotaCalendarDot estado={chip.estado} border={chip.border} />
+          </span>
+          <span className="min-w-0 flex-1 truncate text-sm font-semibold text-slate-950">
+            {chip.cobro.clientName}
+          </span>
+          {chip.running && (
+            <span
+              className={`rounded-full px-1.5 py-px text-[10px] font-bold uppercase ${
+                parallel ? "bg-violet-100 text-violet-700" : "bg-emerald-100 text-emerald-700"
+              }`}
+            >
+              {parallel ? "comp" : "focus"}
+            </span>
+          )}
+          <span
+            className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${
+              chip.running ? "border-blue-300 text-blue-700" : "border-slate-200 text-slate-400"
+            }`}
+          >
+            {chip.running ? (
+              <Pause className="h-3 w-3 fill-current" />
+            ) : (
+              <Play className="ml-px h-3 w-3 fill-current" />
+            )}
+          </span>
+        </span>
+        <span className="flex items-baseline justify-between gap-2">
+          <span
+            className={`font-mono text-sm font-bold tabular-nums ${
+              chip.running
+                ? "text-blue-700"
+                : chip.todaySeconds > 0
+                  ? "text-slate-900"
+                  : "text-slate-300"
+            }`}
+          >
+            {formatSecondsAsClock(chip.todaySeconds)}
+          </span>
+          <span
+            title={`Cuota que vence el ${chip.cobro.dueDate.split("-").reverse().join("/")}`}
+            className={`shrink-0 rounded px-1 text-[10px] font-semibold uppercase tracking-wide ${
+              chip.cobro.dueDate.slice(0, 7) === today.slice(0, 7)
+                ? "text-slate-500"
+                : "bg-amber-100 text-amber-700"
+            }`}
+          >
+            {MONTH_NAMES[Number(chip.cobro.dueDate.slice(5, 7)) - 1].slice(0, 3)}
+          </span>
+        </span>
+        <span
+          className={`truncate text-xs font-medium ${
+            breakdown === "—" ? "text-slate-400" : "text-slate-600"
+          }`}
+        >
+          {breakdown}
+        </span>
+      </button>
+    </li>
+    );
+  };
+
   return (
     <div className="mb-4">
       <div className="mb-2 flex items-center justify-between gap-2">
@@ -339,92 +441,21 @@ export default function CuotasTimerStrip({
           </div>
           {loadError && <p className="mb-2 text-xs font-medium text-rose-700">{loadError}</p>}
           {chips.length === 0 && !loadError ? (
-            <p className="text-xs text-slate-400">Sin cuotas en {formatMonthLabel(viewMonth)}</p>
+            <p className="text-xs text-slate-400">
+              Sin cuotas en {formatMonthLabel(viewMonth)}
+            </p>
           ) : (
-            <ul className="grid grid-cols-[repeat(auto-fill,minmax(11rem,1fr))] gap-2">
-              {chips.map((chip) => {
-                const breakdown = breakdownLabel(chip.focus + chip.compartido, chip.focus, chip.compartido);
-                return (
-                <li key={chip.cobro.id || chip.cobro.clientName}>
-                  <button
-                    type="button"
-                    onClick={() => onToggle(chip.cobro.clientName)}
-                    disabled={persisting}
-                    aria-pressed={chip.running}
-                    title={`${chip.cobro.clientName} · ${chip.running ? "Pausar" : "Iniciar"}`}
-                    className={`flex h-full w-full cursor-pointer flex-col gap-1 rounded-xl border bg-white px-2.5 py-2 text-left transition disabled:cursor-wait disabled:opacity-70 ${
-                      chip.running ? "border-blue-300 shadow-sm ring-1 ring-blue-200" : "border-slate-200"
-                    }`}
-                  >
-                    <span className="flex items-center gap-2">
-                      {/* El puntito abre el calendario; el resto del cuadro es play/pausa */}
-                      <span
-                        role="button"
-                        tabIndex={0}
-                        aria-label={`Ver ${chip.cobro.clientName} en el calendario`}
-                        title="Ver en el calendario"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          event.preventDefault();
-                          setCalendarCobro({ id: chip.cobro.id, dueDate: chip.cobro.dueDate });
-                        }}
-                        onKeyDown={(event) => {
-                          if (event.key !== "Enter" && event.key !== " ") return;
-                          event.stopPropagation();
-                          event.preventDefault();
-                          setCalendarCobro({ id: chip.cobro.id, dueDate: chip.cobro.dueDate });
-                        }}
-                        className="-m-1 inline-flex shrink-0 cursor-pointer rounded-full p-1"
-                      >
-                        <CuotaCalendarDot estado={chip.estado} border={chip.border} />
-                      </span>
-                      <span className="min-w-0 flex-1 truncate text-sm font-semibold text-slate-950">
-                        {chip.cobro.clientName}
-                      </span>
-                      {chip.running && (
-                        <span
-                          className={`rounded-full px-1.5 py-px text-[10px] font-bold uppercase ${
-                            parallel ? "bg-violet-100 text-violet-700" : "bg-emerald-100 text-emerald-700"
-                          }`}
-                        >
-                          {parallel ? "comp" : "focus"}
-                        </span>
-                      )}
-                      <span
-                        className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${
-                          chip.running ? "border-blue-300 text-blue-700" : "border-slate-200 text-slate-400"
-                        }`}
-                      >
-                        {chip.running ? (
-                          <Pause className="h-3 w-3 fill-current" />
-                        ) : (
-                          <Play className="ml-px h-3 w-3 fill-current" />
-                        )}
-                      </span>
-                    </span>
-                    <span
-                      className={`font-mono text-sm font-bold tabular-nums ${
-                        chip.running
-                          ? "text-blue-700"
-                          : chip.todaySeconds > 0
-                            ? "text-slate-900"
-                            : "text-slate-300"
-                      }`}
-                    >
-                      {formatSecondsAsClock(chip.todaySeconds)}
-                    </span>
-                    <span
-                      className={`truncate text-xs font-medium ${
-                        breakdown === "—" ? "text-slate-400" : "text-slate-600"
-                      }`}
-                    >
-                      {breakdown}
-                    </span>
-                  </button>
-                </li>
-                );
-              })}
-            </ul>
+            <>
+              {runningChips.length > 0 && (
+                <ul className={GRID_CLASS}>{runningChips.map(renderChip)}</ul>
+              )}
+              {runningChips.length > 0 && pausedChips.length > 0 && (
+                <hr className="my-3 border-t border-slate-300" />
+              )}
+              {pausedChips.length > 0 && (
+                <ul className={GRID_CLASS}>{pausedChips.map(renderChip)}</ul>
+              )}
+            </>
           )}
         </>
       )}
