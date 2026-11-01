@@ -423,6 +423,7 @@ export default function ErpDayForm({
         </label>
       </div>
 
+      <div className="flex flex-wrap items-center justify-between gap-3">
       <div className="flex flex-wrap gap-2">
         {week.map((date) => {
           const active = date === selectedDate;
@@ -450,6 +451,17 @@ export default function ErpDayForm({
             </button>
           );
         })}
+      </div>
+        {/* Atajo: mismo guardado que el botón del final */}
+        <button
+          type="button"
+          onClick={() => void handleSave()}
+          disabled={saving || loading}
+          className="ml-auto inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
+        >
+          {saving && <LoaderCircle className="h-4 w-4 animate-spin" />}
+          {saving ? "Guardando…" : "Guardar día"}
+        </button>
       </div>
 
       <section className="rounded-2xl border border-amber-200/80 bg-gradient-to-br from-amber-50 via-white to-orange-50/40 p-5">
