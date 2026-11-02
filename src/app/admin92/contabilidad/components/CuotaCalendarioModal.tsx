@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { CalendarDays, X } from "lucide-react";
+import { BellRing, CalendarDays, X } from "lucide-react";
 import MonthCalendar from "@/app/admin92/contabilidad/components/MonthCalendar";
 import CambiosPendientesSidebar from "@/app/admin92/contabilidad/components/CambiosPendientesSidebar";
 import {
@@ -502,6 +502,18 @@ export default function CuotaCalendarioModal({ cobroId, dueDate, onClose, onChan
                               {CUOTA_ESTADO_LABEL[estado]}
                             </span>
                             <span>Vence {formatLocalDate(c.dueDate)}</span>
+                            {c.recordatorioEnviado ? (
+                              <span
+                                className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 font-semibold text-amber-800 ring-1 ring-amber-200"
+                                title="Recordatorio de pago enviado"
+                              >
+                                <BellRing className="h-3 w-3" aria-hidden />
+                                Recordada
+                                {c.fechaRecordatorio && YMD.test(c.fechaRecordatorio)
+                                  ? ` el ${formatLocalDate(c.fechaRecordatorio)}`
+                                  : " (sin fecha)"}
+                              </span>
+                            ) : null}
                             {c.paid && fechaCobroYmd(c) ? (
                               <span>· Cobrada {formatLocalDate(fechaCobroYmd(c) as string)}</span>
                             ) : null}

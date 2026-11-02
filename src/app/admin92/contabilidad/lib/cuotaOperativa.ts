@@ -29,6 +29,10 @@ export type CuotaDotMarker = {
   id: string;
   estado: CuotaEstado;
   border: CuotaOperativaBorder;
+  /** Se envió el recordatorio de pago (aunque después se haya pagado) */
+  recordada?: boolean;
+  /** Fecha del recordatorio, YYYY-MM-DD (las viejas no la tienen) */
+  fechaRecordatorio?: string;
 };
 
 const STATS_OFFSET_DAYS = 5;

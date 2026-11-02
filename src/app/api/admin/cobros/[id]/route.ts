@@ -134,8 +134,21 @@ export async function PATCH(
     ) {
       updates.fechaEnvioEstadisticas = String(fechaEnvioEstadisticas);
     }
+    const fechaRecordatorioValida =
+      body.fechaRecordatorio && /^\d{4}-\d{2}-\d{2}$/.test(String(body.fechaRecordatorio))
+        ? String(body.fechaRecordatorio)
+        : null;
     if (recordatorioEnviado !== undefined) {
       updates.recordatorioEnviado = Boolean(recordatorioEnviado);
+      if (recordatorioEnviado) {
+        // Fecha en que se recordó: la enviada, la que ya tenía o hoy.
+        updates.fechaRecordatorio =
+          fechaRecordatorioValida ?? existing.fechaRecordatorio ?? todayYmd();
+      } else {
+        unsetFields.push("fechaRecordatorio");
+      }
+    } else if (fechaRecordatorioValida && existing.recordatorioEnviado) {
+      updates.fechaRecordatorio = fechaRecordatorioValida;
     }
     if (origen !== undefined) {
       updates.origen = String(origen) === "suscripcion_mp" ? "suscripcion_mp" : "manual";

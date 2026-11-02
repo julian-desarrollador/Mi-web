@@ -38,6 +38,7 @@ export type CuotaDelMes = {
   estadisticasEnviadas?: boolean;
   fechaEnvioEstadisticas?: string;
   recordatorioEnviado?: boolean;
+  fechaRecordatorio?: string;
   requiereEstadisticas?: boolean;
   accountingRecordId?: string;
   chamba?: boolean;
@@ -1153,7 +1154,7 @@ export default function CuotasDelMesPanel<C extends CuotaDelMes>({
                               onClick={() => handleToggleRecordatorio(c)}
                               title={
                                 c.recordatorioEnviado
-                                  ? "Marcar recordatorio no enviado"
+                                  ? `Recordada${c.fechaRecordatorio ? ` el ${formatLocalDate(c.fechaRecordatorio)}` : ""} · tocá para desmarcar`
                                   : "Marcar recordatorio enviado"
                               }
                               className={`inline-flex items-center justify-center w-8 h-8 rounded-lg border-2 transition-colors cursor-pointer ${

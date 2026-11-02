@@ -24,6 +24,8 @@ export type Cobro = {
   estadisticasEnviadas?: boolean;
   fechaEnvioEstadisticas?: string;
   recordatorioEnviado?: boolean;
+  /** Fecha en que se envió el recordatorio de pago, YYYY-MM-DD */
+  fechaRecordatorio?: string;
   accountingRecordId?: string;
   /** Prioridad manual en cola de cambios (0 = más urgente) */
   prioridad?: number;

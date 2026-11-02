@@ -30,6 +30,7 @@ type CobroLike = {
   paid: boolean;
   fechaCobro?: string;
   recordatorioEnviado?: boolean;
+  fechaRecordatorio?: string;
   estadisticasEnviadas?: boolean;
   requiereEstadisticas?: boolean;
   cambioPendiente?: boolean;
@@ -67,7 +68,14 @@ export function buildCalendarMarkers(
     const proyecto = getProyectoForClient(c.clientName, proyectoMap);
     const estado = getCuotaEstado(c);
     const border = getCuotaOperativaBorder(c, proyecto, todayStr);
-    markers[day].cuotas.push({ id: c.id, estado, border });
+    markers[day].cuotas.push({
+      id: c.id,
+      estado,
+      border,
+      ...(c.recordatorioEnviado
+        ? { recordada: true, fechaRecordatorio: c.fechaRecordatorio }
+        : {}),
+    });
   }
   return markers;
 }

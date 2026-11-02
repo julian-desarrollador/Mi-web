@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { ChevronDown, ChevronLeft, ChevronRight, Settings, Star, Timer } from "lucide-react";
+import { BellRing, ChevronDown, ChevronLeft, ChevronRight, Settings, Star, Timer } from "lucide-react";
 import { formatMonthLabel, todayYmd } from "@/app/admin92/contabilidad/lib/utils";
 import type { CuotaTimerRow } from "@/app/admin92/contabilidad/lib/cuotaTimers";
 import type { CalendarMarkers } from "@/app/admin92/contabilidad/lib/calendarMarkers";
@@ -234,6 +234,21 @@ export default function MonthCalendar({
                   {dayMarkers?.cuotas.map((dot) => (
                     <span key={dot.id} className="flex flex-col items-center">
                       <CuotaCalendarDot estado={dot.estado} border={dot.border} />
+                      {dot.recordada && (
+                        <span
+                          className="mt-0.5 flex items-center gap-px text-[9px] font-semibold leading-none text-amber-700"
+                          title={
+                            dot.fechaRecordatorio
+                              ? `Recordada el ${dot.fechaRecordatorio.split("-").reverse().join("/")}`
+                              : "Recordada (sin fecha)"
+                          }
+                        >
+                          <BellRing aria-hidden className="h-2.5 w-2.5 shrink-0" />
+                          {dot.fechaRecordatorio
+                            ? dot.fechaRecordatorio.slice(5).split("-").reverse().join("/")
+                            : null}
+                        </span>
+                      )}
                       {cuotaTimersOpen && (
                         <span className="flex flex-col items-center gap-0.5 whitespace-nowrap">
                           {cuotaTimersLoading || cuotaTimersError ? (
