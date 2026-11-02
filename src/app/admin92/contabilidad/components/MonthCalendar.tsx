@@ -235,19 +235,22 @@ export default function MonthCalendar({
                     <span key={dot.id} className="flex flex-col items-center">
                       <CuotaCalendarDot estado={dot.estado} border={dot.border} />
                       {cuotaTimersOpen && (
-                        <span className="flex flex-col items-center gap-0.5">
-                          <span className="text-[10px] font-semibold leading-none text-slate-900">
-                            {cuotaTimersLoading || cuotaTimersError
-                              ? "…"
-                              : (hoursById.get(dot.id)?.hoursLabel ?? "0:00 hs")}
-                          </span>
-                          {!cuotaTimersLoading &&
-                          !cuotaTimersError &&
-                          hoursById.get(dot.id)?.repartidoLabel ? (
-                            <span className="text-[10px] font-semibold leading-none text-slate-900">
-                              {hoursById.get(dot.id)?.repartidoLabel}
-                            </span>
-                          ) : null}
+                        <span className="flex flex-col items-center gap-0.5 whitespace-nowrap">
+                          {cuotaTimersLoading || cuotaTimersError ? (
+                            <span className="text-[10px] font-semibold leading-none text-slate-900">…</span>
+                          ) : (
+                            <>
+                              <span className="text-[10px] font-bold leading-none text-slate-900">
+                                {hoursById.get(dot.id)?.totalLabel ?? "0:00 total"}
+                              </span>
+                              <span className="text-[9px] font-semibold leading-none text-emerald-700">
+                                {hoursById.get(dot.id)?.focusLabel ?? "0:00 focus"}
+                              </span>
+                              <span className="text-[9px] font-semibold leading-none text-violet-700">
+                                {hoursById.get(dot.id)?.repartidoLabel ?? "0:00 comp"}
+                              </span>
+                            </>
+                          )}
                         </span>
                       )}
                     </span>

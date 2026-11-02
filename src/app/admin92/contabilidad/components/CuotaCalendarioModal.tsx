@@ -49,6 +49,7 @@ import {
   todayYmd,
 } from "@/app/admin92/contabilidad/lib/utils";
 import type { Cobro } from "@/app/admin92/contabilidad/types";
+import { useCuotaTimerRows } from "@/app/admin92/contabilidad/lib/useCuotaTimerRows";
 
 /** Cuota tal como la devuelve /api/admin/cobros (más campos que el tipo base). */
 type CobroFull = Cobro & {
@@ -203,6 +204,13 @@ export default function CuotaCalendarioModal({ cobroId, dueDate, onClose, onChan
     () => cobros.filter((c) => getMonthKeySafe(c.dueDate) === month),
     [cobros, month],
   );
+  /* Reloj del calendario: horas de cada cuota (total · focus · compartido) */
+  const [cuotaTimersOpen, setCuotaTimersOpen] = useState(false);
+  const cuotaTimerInputs = useMemo(
+    () => cobrosDelMes.map((c) => ({ id: c.id, clientName: c.clientName, dueDate: c.dueDate })),
+    [cobrosDelMes],
+  );
+  const cuotaTimers = useCuotaTimerRows(cuotaTimerInputs, cuotaTimersOpen);
   const recordsDelMes = useMemo(
     () => records.filter((r) => getMonthKey(r.date) === month),
     [records, month],
@@ -428,6 +436,11 @@ export default function CuotaCalendarioModal({ cobroId, dueDate, onClose, onChan
                 setSelectedDate(null);
                 setFocusedId(null);
               }}
+              cuotaTimersOpen={cuotaTimersOpen}
+              onToggleCuotaTimers={() => setCuotaTimersOpen((open) => !open)}
+              cuotaTimerRows={cuotaTimers.rows}
+              cuotaTimersLoading={cuotaTimers.loading}
+              cuotaTimersError={cuotaTimers.error}
             />
             <CambiosPendientesSidebar className="hidden lg:block" {...sidebarProps} />
           </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight, Pause, Play, Undo2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Clock, Pause, Play, Undo2 } from "lucide-react";
 import ErpUpdatesModal from "@/app/admin92/erp/components/ErpUpdatesModal";
 import CuotaCalendarDot from "@/app/admin92/contabilidad/components/CuotaCalendarDot";
 import CuotaCalendarioModal from "@/app/admin92/contabilidad/components/CuotaCalendarioModal";
@@ -16,6 +16,7 @@ import {
   type SolicitudTask,
 } from "@/app/admin92/contabilidad/lib/cuotaOperativa";
 import { cuotaTimerWindow } from "@/app/admin92/contabilidad/lib/cuotaTimers";
+import { useCuotaTimerRows } from "@/app/admin92/contabilidad/lib/useCuotaTimerRows";
 import { formatMonthLabel, MONTH_NAMES, shiftMonth, todayYmd } from "@/app/admin92/contabilidad/lib/utils";
 import {
   formatHoursAsHm,
@@ -60,7 +61,6 @@ type Props = {
   onToggle: (clientName: string) => void;
 };
 
-const VISIBLE_KEY = "erp-timer-cuotas-visible";
 const YMD = /^\d{4}-\d{2}-\d{2}$/;
 const GRID_CLASS = "grid grid-cols-[repeat(auto-fill,minmax(11rem,1fr))] gap-2";
 
@@ -139,25 +139,16 @@ export default function CuotasTimerStrip({
   const currentMonth = today.slice(0, 7);
   const viewMonth = shiftMonth(currentMonth, monthOffset);
 
-  useEffect(() => {
-    try {
-      if (window.localStorage.getItem(VISIBLE_KEY) === "1") setVisible(true);
-    } catch {
-      /* sin storage */
-    }
-  }, []);
+  /* Siempre arranca oculto; mostrar/ocultar no se recuerda entre recargas. */
+  const toggleVisible = () => setVisible((prev) => !prev);
 
-  const toggleVisible = () => {
-    setVisible((prev) => {
-      const next = !prev;
-      try {
-        window.localStorage.setItem(VISIBLE_KEY, next ? "1" : "0");
-      } catch {
-        /* sin storage */
-      }
-      return next;
+  /** Reloj: horas de cada cuota en su ventana (total · focus · compartido), no del período de abajo. */
+  const [showCuotaTimes, setShowCuotaTimes] = useState(false);
+  const toggleCuotaTimes = () =>
+    setShowCuotaTimes((prev) => {
+      if (!prev) setVisible(true);
+      return !prev;
     });
-  };
 
   const [calendarCobro, setCalendarCobro] = useState<{ id?: string; dueDate: string } | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
@@ -257,6 +248,19 @@ export default function CuotasTimerStrip({
   }, [logs, todayLog, periodFrom, periodTo]);
 
   const proyectoByClient = useMemo(() => buildProyectoByClientMap(proyectos), [proyectos]);
+
+  const cuotaTimerInputs = useMemo(
+    () => cuotas.map((c) => ({ id: c.id, clientName: c.clientName, dueDate: c.dueDate })),
+    [cuotas],
+  );
+  const cuotaTimers = useCuotaTimerRows(cuotaTimerInputs, showCuotaTimes, {
+    liveTodayLog: todayLog,
+    nowMs,
+  });
+  const cuotaTimeById = useMemo(
+    () => new Map(cuotaTimers.rows.map((row) => [row.id, row])),
+    [cuotaTimers.rows],
+  );
 
   const openKeys = useMemo(() => new Set(openClients.map(clientKey)), [openClients]);
   /** Posición de cada cuota en curso según el orden en que se abrió. */
@@ -394,13 +398,38 @@ export default function CuotasTimerStrip({
             {MONTH_NAMES[Number(chip.cobro.dueDate.slice(5, 7)) - 1].slice(0, 3)}
           </span>
         </span>
-        <span
-          className={`truncate text-xs font-medium ${
-            breakdown === "—" ? "text-slate-400" : "text-slate-600"
-          }`}
-        >
-          {breakdown}
-        </span>
+        {showCuotaTimes ? (
+          (() => {
+            const row = cuotaTimeById.get(chip.cobro.id);
+            if (cuotaTimers.loading && !row) {
+              return <span className="text-xs font-medium text-slate-400">…</span>;
+            }
+            const fmt = (s: number) => formatHoursAsHm(Math.max(0, s) / 3600);
+            const { from, to } = cuotaTimerWindow(chip.cobro.dueDate);
+            // "2026-10-09" → "09/10"
+            const dm = (ymd: string) => ymd.slice(5).split("-").reverse().join("/");
+            return (
+              <span title={`Suma lo trabajado del ${dm(from)} al ${dm(to)}`} className="flex flex-col gap-0.5">
+                <span className="flex flex-wrap items-baseline gap-x-2 text-xs font-semibold tabular-nums">
+                  <span className="text-slate-900">{fmt(row?.totalSeconds ?? 0)} total</span>
+                  <span className="text-emerald-700">{fmt(row?.seconds ?? 0)} focus</span>
+                  <span className="text-violet-700">{fmt(row?.repartidoSeconds ?? 0)} comp</span>
+                </span>
+                <span className="text-[10px] font-medium tabular-nums text-slate-400">
+                  {dm(from)} → {dm(to)}
+                </span>
+              </span>
+            );
+          })()
+        ) : (
+          <span
+            className={`truncate text-xs font-medium ${
+              breakdown === "—" ? "text-slate-400" : "text-slate-600"
+            }`}
+          >
+            {breakdown}
+          </span>
+        )}
       </button>
     </li>
     );
@@ -417,7 +446,10 @@ export default function CuotasTimerStrip({
               · {openKeys.size} en curso{parallel ? " · compartido" : " · focus"}
             </span>
           )}
-          <span className="font-medium text-slate-500"> · totales: {periodLabel}</span>
+          <span className="font-medium text-slate-500">
+            {" "}
+            · totales: {showCuotaTimes ? "por cuota (ventana de cada vencimiento)" : periodLabel}
+          </span>
         </p>
         <div className="flex shrink-0 flex-col items-end gap-0.5">
           <button
@@ -446,6 +478,18 @@ export default function CuotasTimerStrip({
                   {updatesCount}
                 </span>
               ) : null}
+            </button>
+            <button
+              type="button"
+              onClick={toggleCuotaTimes}
+              aria-label={showCuotaTimes ? "Ocultar horas de las cuotas" : "Ver horas de las cuotas"}
+              aria-pressed={showCuotaTimes}
+              title={showCuotaTimes ? "Ocultar horas de las cuotas" : "Ver horas de las cuotas (total · focus · compartido)"}
+              className={`flex h-6 w-6 items-center justify-center rounded-md cursor-pointer ${
+                showCuotaTimes ? "bg-blue-700 text-white" : "text-slate-700 hover:bg-slate-100"
+              }`}
+            >
+              <Clock className="h-4 w-4" />
             </button>
             <button
               type="button"
@@ -497,6 +541,9 @@ export default function CuotasTimerStrip({
             )}
           </div>
           {loadError && <p className="mb-2 text-xs font-medium text-rose-700">{loadError}</p>}
+          {showCuotaTimes && cuotaTimers.error && (
+            <p className="mb-2 text-xs font-medium text-rose-700">{cuotaTimers.error}</p>
+          )}
           {chips.length === 0 && !loadError ? (
             <p className="text-xs text-slate-400">
               Sin cuotas en {formatMonthLabel(viewMonth)}

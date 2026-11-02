@@ -19,9 +19,13 @@ export type CuotaTimerInput = {
 };
 
 export type CuotaTimerRow = CuotaTimerInput & {
+  /** Segundos en focus (solo esta cuota corriendo) */
   seconds: number;
+  /** Segundos compartidos (su parte de tramos con varias cuotas en paralelo) */
   repartidoSeconds: number;
-  hoursLabel: string;
+  totalSeconds: number;
+  totalLabel: string;
+  focusLabel: string;
   repartidoLabel: string;
 };
 
@@ -127,12 +131,15 @@ export function buildCuotaTimerRows(
         nowMs,
         today,
       );
+      const total = shares.focus + shares.repartido;
       return {
         ...cuota,
         seconds: shares.focus,
         repartidoSeconds: shares.repartido,
-        hoursLabel: formatCuotaTimerHours(shares.focus),
-        repartidoLabel: shares.repartido > 0 ? formatCuotaRepartidoHours(shares.repartido) : "",
+        totalSeconds: total,
+        totalLabel: `${formatHoursAsHm(Math.max(0, total) / 3600)} total`,
+        focusLabel: `${formatHoursAsHm(Math.max(0, shares.focus) / 3600)} focus`,
+        repartidoLabel: formatCuotaRepartidoHours(shares.repartido),
       };
     });
 }
