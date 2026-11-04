@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { BellRing, CalendarDays, X } from "lucide-react";
+import { CalendarDays, X } from "lucide-react";
 import MonthCalendar from "@/app/admin92/contabilidad/components/MonthCalendar";
 import CambiosPendientesSidebar from "@/app/admin92/contabilidad/components/CambiosPendientesSidebar";
 import {
@@ -69,6 +69,20 @@ type Props = {
 };
 
 const YMD = /^\d{4}-\d{2}-\d{2}$/;
+const HM = /^\d{2}:\d{2}$/;
+
+function nowHm(): string {
+  const d = new Date();
+  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+}
+
+/** Texto chico del recordatorio. Sin hora si el dato es viejo. */
+function recordatorioLabel(fecha?: string, hora?: string): string {
+  if (!fecha || !YMD.test(fecha)) return "Recordada";
+  const day = formatLocalDate(fecha);
+  if (hora && HM.test(hora)) return `Recordada el ${day} · ${hora}`;
+  return `Recordada el ${day}`;
+}
 
 function formatCurrency(n: number): string {
   return `$${n.toLocaleString("es-AR")} ARS`;
@@ -312,6 +326,46 @@ export default function CuotaCalendarioModal({ cobroId, dueDate, onClose, onChan
     await handleSaved();
   };
 
+  const markRecordatorio = (c: CobroFull, on: boolean) => {
+    if (!on) {
+      void patchAndReload(
+        `/api/admin/cobros/${c.id}`,
+        { recordatorioEnviado: false },
+        "No se pudo quitar el recordatorio.",
+      );
+      return;
+    }
+    void patchAndReload(
+      `/api/admin/cobros/${c.id}`,
+      {
+        recordatorioEnviado: true,
+        fechaRecordatorio:
+          c.fechaRecordatorio && YMD.test(c.fechaRecordatorio) ? c.fechaRecordatorio : todayYmd(),
+        horaRecordatorio:
+          c.horaRecordatorio && HM.test(c.horaRecordatorio) ? c.horaRecordatorio : nowHm(),
+      },
+      "No se pudo marcar el recordatorio.",
+    );
+  };
+
+  const setFechaRecordatorio = (id: string, ymd: string) => {
+    if (!YMD.test(ymd)) return;
+    void patchAndReload(
+      `/api/admin/cobros/${id}`,
+      { fechaRecordatorio: ymd },
+      "No se pudo guardar el día del recordatorio.",
+    );
+  };
+
+  const setHoraRecordatorio = (id: string, hm: string) => {
+    if (!HM.test(hm)) return;
+    void patchAndReload(
+      `/api/admin/cobros/${id}`,
+      { horaRecordatorio: hm },
+      "No se pudo guardar la hora del recordatorio.",
+    );
+  };
+
   const changePrioridad = (id: string, prioridad: number | undefined) => {
     setCobros((prev) => prev.map((c) => (c.id === id ? { ...c, prioridad } : c)));
     void patchAndReload(
@@ -502,18 +556,6 @@ export default function CuotaCalendarioModal({ cobroId, dueDate, onClose, onChan
                               {CUOTA_ESTADO_LABEL[estado]}
                             </span>
                             <span>Vence {formatLocalDate(c.dueDate)}</span>
-                            {c.recordatorioEnviado ? (
-                              <span
-                                className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 font-semibold text-amber-800 ring-1 ring-amber-200"
-                                title="Recordatorio de pago enviado"
-                              >
-                                <BellRing className="h-3 w-3" aria-hidden />
-                                Recordada
-                                {c.fechaRecordatorio && YMD.test(c.fechaRecordatorio)
-                                  ? ` el ${formatLocalDate(c.fechaRecordatorio)}`
-                                  : " (sin fecha)"}
-                              </span>
-                            ) : null}
                             {c.paid && fechaCobroYmd(c) ? (
                               <span>· Cobrada {formatLocalDate(fechaCobroYmd(c) as string)}</span>
                             ) : null}
@@ -523,6 +565,64 @@ export default function CuotaCalendarioModal({ cobroId, dueDate, onClose, onChan
                           {formatCurrency(c.amount)}
                         </span>
                       </div>
+                      {!c.paid ? (
+                        <div className="mt-2 flex flex-wrap items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => markRecordatorio(c, !c.recordatorioEnviado)}
+                            aria-pressed={Boolean(c.recordatorioEnviado)}
+                            className={`inline-flex cursor-pointer items-center rounded-lg border px-2.5 py-1 text-xs font-medium ${
+                              c.recordatorioEnviado
+                                ? "border-blue-500 bg-blue-100 text-blue-800"
+                                : "border-slate-300 bg-white text-slate-600"
+                            }`}
+                          >
+                            {c.recordatorioEnviado ? "Recordada" : "Marcar recordada"}
+                          </button>
+                          {c.recordatorioEnviado ? (
+                            <>
+                              <input
+                                type="date"
+                                aria-label="Día en que se recordó"
+                                key={`${c.id}-fecha-rec-${c.fechaRecordatorio ?? ""}`}
+                                defaultValue={
+                                  c.fechaRecordatorio && YMD.test(c.fechaRecordatorio)
+                                    ? c.fechaRecordatorio
+                                    : ""
+                                }
+                                onBlur={(event) => {
+                                  const next = event.target.value;
+                                  if (!next || next === c.fechaRecordatorio) return;
+                                  setFechaRecordatorio(c.id, next);
+                                }}
+                                className="rounded border border-slate-200 bg-white px-1.5 py-1 text-[11px] text-slate-700"
+                              />
+                              <input
+                                type="time"
+                                aria-label="Hora en que se recordó"
+                                step={60}
+                                key={`${c.id}-hora-rec-${c.horaRecordatorio ?? ""}`}
+                                defaultValue={
+                                  c.horaRecordatorio && HM.test(c.horaRecordatorio)
+                                    ? c.horaRecordatorio
+                                    : ""
+                                }
+                                onBlur={(event) => {
+                                  const next = event.target.value;
+                                  if (!next || next === c.horaRecordatorio) return;
+                                  setHoraRecordatorio(c.id, next.slice(0, 5));
+                                }}
+                                className="rounded border border-slate-200 bg-white px-1.5 py-1 text-[11px] text-slate-700"
+                              />
+                            </>
+                          ) : null}
+                        </div>
+                      ) : null}
+                      {c.recordatorioEnviado ? (
+                        <p className="mt-1 text-[11px] leading-tight text-slate-500">
+                          {recordatorioLabel(c.fechaRecordatorio, c.horaRecordatorio)}
+                        </p>
+                      ) : null}
                       <CuotaOperativaPanel
                         cobro={c}
                         proyecto={proyecto}

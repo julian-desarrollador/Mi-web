@@ -14,6 +14,20 @@ function todayYmd(): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
+function nowHm(): string {
+  const d = new Date();
+  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+}
+
+/** HH:MM en 24 h. Rechaza 24:00 y minutos fuera de rango. */
+function horaValida(value: unknown): string | null {
+  const raw = String(value ?? "");
+  if (!/^\d{2}:\d{2}$/.test(raw)) return null;
+  const [h, m] = raw.split(":").map(Number);
+  if (h > 23 || m > 59) return null;
+  return raw;
+}
+
 function defaultCuotaDescripcion(cobro: {
   clientName: string;
   servicio?: string;
@@ -138,17 +152,21 @@ export async function PATCH(
       body.fechaRecordatorio && /^\d{4}-\d{2}-\d{2}$/.test(String(body.fechaRecordatorio))
         ? String(body.fechaRecordatorio)
         : null;
+    const horaRecordatorioValida = horaValida(body.horaRecordatorio);
     if (recordatorioEnviado !== undefined) {
       updates.recordatorioEnviado = Boolean(recordatorioEnviado);
       if (recordatorioEnviado) {
-        // Fecha en que se recordó: la enviada, la que ya tenía o hoy.
+        // Día y hora en que se recordó: lo enviado, lo que ya tenía, o ahora.
         updates.fechaRecordatorio =
           fechaRecordatorioValida ?? existing.fechaRecordatorio ?? todayYmd();
+        updates.horaRecordatorio =
+          horaRecordatorioValida ?? existing.horaRecordatorio ?? nowHm();
       } else {
-        unsetFields.push("fechaRecordatorio");
+        unsetFields.push("fechaRecordatorio", "horaRecordatorio");
       }
-    } else if (fechaRecordatorioValida && existing.recordatorioEnviado) {
-      updates.fechaRecordatorio = fechaRecordatorioValida;
+    } else if (existing.recordatorioEnviado) {
+      if (fechaRecordatorioValida) updates.fechaRecordatorio = fechaRecordatorioValida;
+      if (horaRecordatorioValida) updates.horaRecordatorio = horaRecordatorioValida;
     }
     if (origen !== undefined) {
       updates.origen = String(origen) === "suscripcion_mp" ? "suscripcion_mp" : "manual";

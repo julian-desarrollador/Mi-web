@@ -22,6 +22,19 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/* Paleta de la landing /ei (Iván Sánchez) — inspirada en honestgreens.com */
+@theme {
+  --color-ei-ink: #000000;
+  --color-ei-paper: #f7f5ef;
+  --color-ei-cream: #f5f2ec;
+  --color-ei-sand: #eae6d8;
+  --color-ei-lime: #f3f5dc;
+  --color-ei-sprout: #d3f4bb;
+  --color-ei-mint: #7fe895;
+  --color-ei-green: #35d075;
+  --color-ei-mute: #6b6b6b;
+}
+
 /* Conservamos un esquema oscuro por defecto para todo el sitio */
 
 html {

@@ -1,0 +1,844 @@
+- generic [ref=e1]:
+  - main [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - generic [ref=e7]:
+          - link "Volver a contabilidad" [ref=e8] [cursor=pointer]:
+            - /url: /admin92/contabilidad
+          - button [ref=e12] [cursor=pointer]:
+            - heading "ERP Personal" [level=1] [ref=e13]
+            - paragraph [ref=e14]: Filtrá por día, semana o mes.
+        - generic [ref=e16]:
+          - button "Hábitos" [ref=e17] [cursor=pointer]
+          - button "No fumar" [ref=e21] [cursor=pointer]
+          - button "Entregables" [ref=e25] [cursor=pointer]
+          - button "Dashboard" [ref=e30] [cursor=pointer]
+          - button "Cargar día" [ref=e36] [cursor=pointer]
+      - generic [ref=e41]:
+        - generic [ref=e43]:
+          - paragraph [ref=e44]: Timer live
+          - heading "Empezar a trabajar" [level=2] [ref=e45]
+          - paragraph [ref=e46]: Nombres de la categoría · atajos 1–5
+        - generic [ref=e47]:
+          - generic [ref=e48]:
+            - paragraph [ref=e49]:
+              - text: Proyectos
+              - generic [ref=e50]: "· totales: Mié 4/11"
+            - generic [ref=e51]:
+              - button "Abrir calendario de cuotas" [ref=e52] [cursor=pointer]:
+                - generic [aria-hidden] [ref=e53]: 📅
+              - generic [ref=e54]:
+                - button "Updates para entregar" [ref=e55] [cursor=pointer]:
+                  - generic [aria-hidden] [ref=e56]: 📦
+                - button "Ver horas de las cuotas" [ref=e57] [cursor=pointer]
+                - button "Ocultar cuotas" [ref=e585] [cursor=pointer]:
+                  - generic [aria-hidden] [ref=e62]: 🙈
+          - generic [ref=e586]:
+            - button "Mes anterior" [ref=e587] [cursor=pointer]
+            - generic [ref=e590]: Noviembre
+            - button "Mes siguiente" [ref=e591] [cursor=pointer]
+          - list [ref=e594]:
+            - listitem [ref=e595]:
+              - button "Ver Analia - liastyle en el calendario Analia - liastyle 0:00:00 Nov —" [ref=e596] [cursor=pointer]:
+                - generic [ref=e597]:
+                  - button "Ver Analia - liastyle en el calendario" [ref=e598]
+                  - generic [ref=e600]: Analia - liastyle
+                - generic [ref=e604]:
+                  - generic [ref=e605]: 0:00:00
+                  - generic "Cuota que vence el 06/11/2026" [ref=e606]: Nov
+                - generic [ref=e607]: —
+            - listitem [ref=e608]:
+              - button "Ver Andrea consul odonto en el calendario Andrea consul odonto 0:00:00 Nov —" [ref=e609] [cursor=pointer]:
+                - generic [ref=e610]:
+                  - button "Ver Andrea consul odonto en el calendario" [ref=e611]
+                  - generic [ref=e613]: Andrea consul odonto
+                - generic [ref=e617]:
+                  - generic [ref=e618]: 0:00:00
+                  - generic "Cuota que vence el 08/11/2026" [ref=e619]: Nov
+                - generic [ref=e620]: —
+            - listitem [ref=e621]:
+              - button "Ver Carla Bruni en el calendario Carla Bruni 0:00:00 Nov —" [ref=e622] [cursor=pointer]:
+                - generic [ref=e623]:
+                  - button "Ver Carla Bruni en el calendario" [ref=e624]
+                  - generic [ref=e626]: Carla Bruni
+                - generic [ref=e630]:
+                  - generic [ref=e631]: 0:00:00
+                  - generic "Cuota que vence el 06/11/2026" [ref=e632]: Nov
+                - generic [ref=e633]: —
+            - listitem [ref=e634]:
+              - button "Ver Florencia Kinesiólogos mdp en el calendario Florencia Kinesiólogos mdp 0:00:00 Nov —" [ref=e635] [cursor=pointer]:
+                - generic [ref=e636]:
+                  - button "Ver Florencia Kinesiólogos mdp en el calendario" [ref=e637]
+                  - generic [ref=e639]: Florencia Kinesiólogos mdp
+                - generic [ref=e643]:
+                  - generic [ref=e644]: 0:00:00
+                  - generic "Cuota que vence el 01/11/2026" [ref=e645]: Nov
+                - generic [ref=e646]: —
+            - listitem [ref=e647]:
+              - button "Ver Guille jardineriagv en el calendario Guille jardineriagv 0:00:00 Nov —" [ref=e648] [cursor=pointer]:
+                - generic [ref=e649]:
+                  - button "Ver Guille jardineriagv en el calendario" [ref=e650]
+                  - generic [ref=e652]: Guille jardineriagv
+                - generic [ref=e656]:
+                  - generic [ref=e657]: 0:00:00
+                  - generic "Cuota que vence el 19/11/2026" [ref=e658]: Nov
+                - generic [ref=e659]: —
+            - listitem [ref=e660]:
+              - button "Ver Hippo Pro en el calendario Hippo Pro 0:59:28 Nov 59 min total · focus 54 · comp 5" [ref=e661] [cursor=pointer]:
+                - generic [ref=e662]:
+                  - button "Ver Hippo Pro en el calendario" [ref=e663]
+                  - generic [ref=e666]: Hippo Pro
+                - generic [ref=e670]:
+                  - generic [ref=e671]: 0:59:28
+                  - generic "Cuota que vence el 25/11/2026" [ref=e672]: Nov
+                - generic [ref=e673]: 59 min total · focus 54 · comp 5
+            - listitem [ref=e674]:
+              - button "Ver Jesica en el calendario Jesica 0:10:54 Nov 11 min total · focus 6 · comp 5" [ref=e675] [cursor=pointer]:
+                - generic [ref=e676]:
+                  - button "Ver Jesica en el calendario" [ref=e677]
+                  - generic [ref=e680]: Jesica
+                - generic [ref=e684]:
+                  - generic [ref=e685]: 0:10:54
+                  - generic "Cuota que vence el 01/11/2026" [ref=e686]: Nov
+                - generic [ref=e687]: 11 min total · focus 6 · comp 5
+            - listitem [ref=e688]:
+              - button "Ver Marcelo Ponzio en el calendario Marcelo Ponzio 0:00:00 Nov —" [ref=e689] [cursor=pointer]:
+                - generic [ref=e690]:
+                  - button "Ver Marcelo Ponzio en el calendario" [ref=e691]
+                  - generic [ref=e693]: Marcelo Ponzio
+                - generic [ref=e697]:
+                  - generic [ref=e698]: 0:00:00
+                  - generic "Cuota que vence el 17/11/2026" [ref=e699]: Nov
+                - generic [ref=e700]: —
+            - listitem [ref=e701]:
+              - button "Ver Maria Nutricionista en el calendario Maria Nutricionista 0:00:00 Nov —" [ref=e702] [cursor=pointer]:
+                - generic [ref=e703]:
+                  - button "Ver Maria Nutricionista en el calendario" [ref=e704]
+                  - generic [ref=e706]: Maria Nutricionista
+                - generic [ref=e710]:
+                  - generic [ref=e711]: 0:00:00
+                  - generic "Cuota que vence el 08/11/2026" [ref=e712]: Nov
+                - generic [ref=e713]: —
+            - listitem [ref=e714]:
+              - button "Ver Micaela Don Paco en el calendario Micaela Don Paco 0:00:00 Nov —" [ref=e715] [cursor=pointer]:
+                - generic [ref=e716]:
+                  - button "Ver Micaela Don Paco en el calendario" [ref=e717]
+                  - generic [ref=e719]: Micaela Don Paco
+                - generic [ref=e723]:
+                  - generic [ref=e724]: 0:00:00
+                  - generic "Cuota que vence el 20/11/2026" [ref=e725]: Nov
+                - generic [ref=e726]: —
+            - listitem [ref=e727]:
+              - button "Ver Natalia Domecq en el calendario Natalia Domecq 0:00:00 Nov —" [ref=e728] [cursor=pointer]:
+                - generic [ref=e729]:
+                  - button "Ver Natalia Domecq en el calendario" [ref=e730]
+                  - generic [ref=e732]: Natalia Domecq
+                - generic [ref=e736]:
+                  - generic [ref=e737]: 0:00:00
+                  - generic "Cuota que vence el 02/11/2026" [ref=e738]: Nov
+                - generic [ref=e739]: —
+            - listitem [ref=e740]:
+              - button "Ver Rocio Pato Race en el calendario Rocio Pato Race 0:00:00 Nov —" [ref=e741] [cursor=pointer]:
+                - generic [ref=e742]:
+                  - button "Ver Rocio Pato Race en el calendario" [ref=e743]
+                  - generic [ref=e746]: Rocio Pato Race
+                - generic [ref=e750]:
+                  - generic [ref=e751]: 0:00:00
+                  - generic "Cuota que vence el 05/11/2026" [ref=e752]: Nov
+                - generic [ref=e753]: —
+            - listitem [ref=e754]:
+              - button "Ver Yanina colorstudio en el calendario Yanina colorstudio 0:00:00 Nov —" [ref=e755] [cursor=pointer]:
+                - generic [ref=e756]:
+                  - button "Ver Yanina colorstudio en el calendario" [ref=e757]
+                  - generic [ref=e759]: Yanina colorstudio
+                - generic [ref=e763]:
+                  - generic [ref=e764]: 0:00:00
+                  - generic "Cuota que vence el 15/11/2026" [ref=e765]: Nov
+                - generic [ref=e766]: —
+          - dialog [ref=e767]:
+            - generic [ref=e768]:
+              - heading "Calendario de cuotas" [level=2] [ref=e769]
+              - button "Cerrar" [ref=e772] [cursor=pointer]
+            - generic [ref=e776]:
+              - generic [ref=e779]:
+                - generic [ref=e780]:
+                  - button "Mostrar los cuadros" [ref=e781] [cursor=pointer]
+                  - paragraph [ref=e785]: Real contable
+                  - button "Marcar como chamba" [ref=e786] [cursor=pointer]
+                - button "Flujo de caja" [ref=e790] [cursor=pointer]
+              - generic [ref=e792]:
+                - generic [ref=e793]:
+                  - button "Mes anterior" [ref=e794] [cursor=pointer]
+                  - heading "Noviembre 2026" [level=3] [ref=e797]
+                  - button "Mes siguiente" [ref=e798] [cursor=pointer]
+                - generic [ref=e801]:
+                  - generic [ref=e802]: Lu
+                  - generic [ref=e803]: Ma
+                  - generic [ref=e804]: Mi
+                  - generic [ref=e805]: Ju
+                  - generic [ref=e806]: Vi
+                  - generic [ref=e807]: Sa
+                  - generic [ref=e808]: Do
+                - generic [ref=e809]:
+                  - button "26" [ref=e810] [cursor=pointer]
+                  - button "27" [ref=e812] [cursor=pointer]
+                  - button "28" [ref=e814] [cursor=pointer]
+                  - button "29" [ref=e816] [cursor=pointer]
+                  - button "30" [ref=e818] [cursor=pointer]
+                  - button "31" [ref=e820] [cursor=pointer]
+                  - button "1" [ref=e822] [cursor=pointer]
+                  - button "2" [ref=e830] [cursor=pointer]
+                  - button "3" [ref=e835] [cursor=pointer]
+                  - button "4" [ref=e837] [cursor=pointer]
+                  - button "5" [ref=e839] [cursor=pointer]
+                  - button "6" [ref=e845] [cursor=pointer]
+                  - button "7" [ref=e852] [cursor=pointer]
+                  - button "8" [ref=e854] [cursor=pointer]
+                  - button "9" [ref=e861] [cursor=pointer]
+                  - button "10" [ref=e863] [cursor=pointer]
+                  - button "11" [ref=e865] [cursor=pointer]
+                  - button "12" [ref=e867] [cursor=pointer]
+                  - button "13" [ref=e869] [cursor=pointer]
+                  - button "14" [ref=e871] [cursor=pointer]
+                  - button "15" [ref=e873] [cursor=pointer]
+                  - button "16" [ref=e878] [cursor=pointer]
+                  - button "17" [ref=e880] [cursor=pointer]
+                  - button "18" [ref=e885] [cursor=pointer]
+                  - button "19" [ref=e887] [cursor=pointer]
+                  - button "20" [ref=e892] [cursor=pointer]
+                  - button "21" [ref=e897] [cursor=pointer]
+                  - button "22" [ref=e899] [cursor=pointer]
+                  - button "23" [ref=e901] [cursor=pointer]
+                  - button "24" [ref=e903] [cursor=pointer]
+                  - button "25" [ref=e905] [cursor=pointer]
+                  - button "26" [ref=e911] [cursor=pointer]
+                  - button "27" [ref=e913] [cursor=pointer]
+                  - button "28" [ref=e915] [cursor=pointer]
+                  - button "29" [ref=e917] [cursor=pointer]
+                  - button "30" [ref=e919] [cursor=pointer]
+                  - button "1" [ref=e921] [cursor=pointer]
+                  - button "2" [ref=e923] [cursor=pointer]
+                  - button "3" [ref=e925] [cursor=pointer]
+                  - button "4" [ref=e927] [cursor=pointer]
+                  - button "5" [ref=e929] [cursor=pointer]
+                  - button "6" [ref=e931] [cursor=pointer]
+                - generic [ref=e935]:
+                  - generic [ref=e936]:
+                    - generic [ref=e937]:
+                      - generic [ref=e938]: "13"
+                      - text: cuotas
+                    - button "0 leads" [ref=e939] [cursor=pointer]
+                  - button "Mostrar referencias del calendario" [ref=e942] [cursor=pointer]
+                  - button "Ver horas de las cuotas" [ref=e946] [cursor=pointer]
+              - button "Cambios pendientes3+5 atr." [ref=e951] [cursor=pointer]:
+                - generic [ref=e952]:
+                  - text: Cambios pendientes3
+                  - generic [ref=e953]: +5 atr.
+              - generic [ref=e956]:
+                - heading "Cuotas del 19/11/2026" [level=3] [ref=e957]
+                - generic [ref=e959]:
+                  - generic [ref=e960]:
+                    - generic [ref=e961]:
+                      - generic [ref=e962]:
+                        - generic [ref=e963]: Guille jardineriagv
+                        - generic [ref=e964]: App
+                      - paragraph [ref=e965]:
+                        - generic [ref=e966]: Cuota esperada
+                        - generic [ref=e967]: Vence 19/11/2026
+                    - generic [ref=e968]: $10.000 ARS
+                  - button "Marcar recordada" [active] [ref=e970] [cursor=pointer]
+                  - generic [ref=e972]:
+                    - button "Cambio pendiente" [ref=e973] [cursor=pointer]
+                    - button "Estadísticas" [ref=e976] [cursor=pointer]
+                  - button "Agregar nota" [ref=e979] [cursor=pointer]
+              - generic [ref=e983]:
+                - generic [ref=e984]:
+                  - heading "Cuotas del mes" [level=2] [ref=e985]
+                  - generic [ref=e986]:
+                    - link "Word online" [ref=e987] [cursor=pointer]:
+                      - /url: https://docs.google.com/document/d/1ZqAAAGhYJeQrrYtXzc2eNEzGb0lD1yWg1rcWUX7Blz4/edit?usp=sharing
+                    - button "Actualizar" [ref=e991] [cursor=pointer]
+                - generic [ref=e992]: "Reglas: Día 0 = vence · +2/+3 = recordatorio · borde violeta al pagar · envío sugerido +5"
+                - generic [ref=e993]:
+                  - button "Cuota única" [ref=e994] [cursor=pointer]
+                  - button "Cuotas recurrentes" [ref=e995] [cursor=pointer]
+                  - button "Acciones de hoy 4" [ref=e996] [cursor=pointer]:
+                    - text: Acciones de hoy
+                    - generic [ref=e999]: "4"
+                - button "Ver formulario" [ref=e1002] [cursor=pointer]
+                - generic [ref=e1003]:
+                  - searchbox "Buscar cuotas del mes" [ref=e1005]
+                  - generic [ref=e1006]: "Filtros:"
+                  - combobox [ref=e1007] [cursor=pointer]:
+                    - option "Todos los clientes" [selected]
+                    - option "Analia - liastyle"
+                    - option "Andrea consul odonto"
+                    - option "Carla Bruni"
+                    - option "Darin"
+                    - option "Florencia Kinesiólogos mdp"
+                    - option "Guille jardineriagv"
+                    - option "Hippo Pro"
+                    - option "Jesica"
+                    - option "Marcelo Ponzio"
+                    - option "Maria Nutricionista"
+                    - option "Mica Ecommerce"
+                    - option "Micaela Don Paco"
+                    - option "Natalia"
+                    - option "Natalia Domecq"
+                    - option "Natalia Psicologa"
+                    - option "Natalia Psicóloga"
+                    - option "Pe"
+                    - option "Rocio Pato Race"
+                    - option "Wanda karunkine"
+                    - option "Yanina colorstudio"
+                    - option "Yoe epica"
+                  - combobox [ref=e1008] [cursor=pointer]:
+                    - option "Todos" [selected]
+                    - option "Pagados"
+                    - option "Pendientes"
+                  - combobox [ref=e1009] [cursor=pointer]:
+                    - option "Todos los orígenes" [selected]
+                    - option "Manual"
+                    - option "Suscripción MP"
+                - generic [ref=e1010]:
+                  - text: "Total listado: $265.004 ARS"
+                  - generic [ref=e1011]: "· Mes: Noviembre 2026"
+                - table [ref=e1013]:
+                  - rowgroup [ref=e1014]:
+                    - row [ref=e1015]:
+                      - columnheader "Cliente" [ref=e1016]
+                      - columnheader "Servicio" [ref=e1017]
+                      - columnheader "Origen" [ref=e1018]
+                      - columnheader "Fecha" [ref=e1019]
+                      - columnheader "Monto" [ref=e1020]
+                      - columnheader "Pagado" [ref=e1021]
+                      - columnheader "Recordatorio" [ref=e1022]
+                      - columnheader "Estadísticas" [ref=e1023]
+                      - columnheader "Acciones" [ref=e1024]
+                  - rowgroup [ref=e1025]:
+                    - row [ref=e1026]:
+                      - cell "Jesica" [ref=e1027]
+                      - cell "Web" [ref=e1028]
+                      - cell "Manual" [ref=e1029]
+                      - cell "1/11/2026" [ref=e1031]
+                      - cell "$20.000 ARS" [ref=e1032]
+                      - cell [ref=e1033]:
+                        - button "Marcar como pagado" [ref=e1034] [cursor=pointer]
+                      - cell [ref=e1035]:
+                        - button "Marcar recordatorio enviado" [ref=e1036] [cursor=pointer]
+                      - cell [ref=e1037]:
+                        - button "Marcar estadísticas enviadas" [ref=e1038] [cursor=pointer]
+                      - cell [ref=e1039]:
+                        - generic [ref=e1040]:
+                          - button "Marcar como chamba" [ref=e1041] [cursor=pointer]
+                          - button "Copiar a otro mes" [ref=e1045] [cursor=pointer]
+                          - button "Editar" [ref=e1049] [cursor=pointer]
+                          - button "Eliminar" [ref=e1053] [cursor=pointer]
+                    - row [ref=e1057]:
+                      - cell "Florencia Kinesiólogos mdp" [ref=e1058]
+                      - cell "Web" [ref=e1059]
+                      - cell "Manual" [ref=e1060]
+                      - cell "1/11/2026" [ref=e1062]
+                      - cell "$20.000 ARS" [ref=e1063]
+                      - cell [ref=e1064]:
+                        - button "Marcar como pagado" [ref=e1065] [cursor=pointer]
+                      - cell [ref=e1066]:
+                        - button "Marcar recordatorio enviado" [ref=e1067] [cursor=pointer]
+                      - cell [ref=e1068]:
+                        - button "Marcar estadísticas enviadas" [ref=e1069] [cursor=pointer]
+                      - cell [ref=e1070]:
+                        - generic [ref=e1071]:
+                          - button "Marcar como chamba" [ref=e1072] [cursor=pointer]
+                          - button "Copiar a otro mes" [ref=e1076] [cursor=pointer]
+                          - button "Editar" [ref=e1080] [cursor=pointer]
+                          - button "Eliminar" [ref=e1084] [cursor=pointer]
+                    - row [ref=e1088]:
+                      - cell "Natalia Domecq" [ref=e1089]
+                      - cell "Web" [ref=e1090]
+                      - cell "Manual" [ref=e1091]
+                      - cell "2/11/2026" [ref=e1093]
+                      - cell "$15.000 ARS" [ref=e1094]
+                      - cell [ref=e1095]:
+                        - button "Marcar como pagado" [ref=e1096] [cursor=pointer]
+                      - cell [ref=e1097]:
+                        - button "Marcar recordatorio enviado" [ref=e1098] [cursor=pointer]
+                      - cell [ref=e1099]:
+                        - button "Marcar estadísticas enviadas" [ref=e1100] [cursor=pointer]
+                      - cell [ref=e1101]:
+                        - generic [ref=e1102]:
+                          - button "Marcar como chamba" [ref=e1103] [cursor=pointer]
+                          - button "Copiar a otro mes" [ref=e1107] [cursor=pointer]
+                          - button "Editar" [ref=e1111] [cursor=pointer]
+                          - button "Eliminar" [ref=e1115] [cursor=pointer]
+                    - row [ref=e1119]:
+                      - cell "Rocio Pato Race" [ref=e1120]
+                      - cell "Web" [ref=e1121]
+                      - cell "Manual" [ref=e1122]
+                      - cell "5/11/2026" [ref=e1124]
+                      - cell "$1 ARS" [ref=e1125]
+                      - cell [ref=e1126]:
+                        - button "Marcar como pagado" [ref=e1127] [cursor=pointer]
+                      - cell [ref=e1128]:
+                        - button "Marcar recordatorio enviado" [ref=e1129] [cursor=pointer]
+                      - cell [ref=e1130]:
+                        - button "Marcar estadísticas enviadas" [ref=e1131] [cursor=pointer]
+                      - cell [ref=e1132]:
+                        - generic [ref=e1133]:
+                          - button "Marcar como chamba" [ref=e1134] [cursor=pointer]
+                          - button "Copiar a otro mes" [ref=e1138] [cursor=pointer]
+                          - button "Editar" [ref=e1142] [cursor=pointer]
+                          - button "Eliminar" [ref=e1146] [cursor=pointer]
+                    - row [ref=e1150]:
+                      - cell "Carla Bruni" [ref=e1151]
+                      - cell "Web" [ref=e1152]
+                      - cell "Manual" [ref=e1153]
+                      - cell "6/11/2026" [ref=e1155]
+                      - cell "$1 ARS" [ref=e1156]
+                      - cell [ref=e1157]:
+                        - button "Marcar como pagado" [ref=e1158] [cursor=pointer]
+                      - cell [ref=e1159]:
+                        - button "Marcar recordatorio enviado" [ref=e1160] [cursor=pointer]
+                      - cell [ref=e1161]:
+                        - button "Marcar estadísticas enviadas" [ref=e1162] [cursor=pointer]
+                      - cell [ref=e1163]:
+                        - generic [ref=e1164]:
+                          - button "Marcar como chamba" [ref=e1165] [cursor=pointer]
+                          - button "Copiar a otro mes" [ref=e1169] [cursor=pointer]
+                          - button "Editar" [ref=e1173] [cursor=pointer]
+                          - button "Eliminar" [ref=e1177] [cursor=pointer]
+                    - row [ref=e1181]:
+                      - cell "Analia - liastyle" [ref=e1182]
+                      - cell "App" [ref=e1183]
+                      - cell "Manual" [ref=e1184]
+                      - cell "6/11/2026" [ref=e1186]
+                      - cell "$40.000 ARS" [ref=e1187]
+                      - cell [ref=e1188]:
+                        - button "Marcar como pagado" [ref=e1189] [cursor=pointer]
+                      - cell [ref=e1190]:
+                        - button "Marcar recordatorio enviado" [ref=e1191] [cursor=pointer]
+                      - cell [ref=e1192]:
+                        - button "Marcar estadísticas enviadas" [ref=e1193] [cursor=pointer]
+                      - cell [ref=e1194]:
+                        - generic [ref=e1195]:
+                          - button "Marcar como chamba" [ref=e1196] [cursor=pointer]
+                          - button "Copiar a otro mes" [ref=e1200] [cursor=pointer]
+                          - button "Editar" [ref=e1204] [cursor=pointer]
+                          - button "Eliminar" [ref=e1208] [cursor=pointer]
+                    - row [ref=e1212]:
+                      - cell "Andrea consul odonto" [ref=e1213]
+                      - cell "Web" [ref=e1214]
+                      - cell "Manual" [ref=e1215]
+                      - cell "8/11/2026" [ref=e1217]
+                      - cell "$35.000 ARS" [ref=e1218]
+                      - cell [ref=e1219]:
+                        - button "Marcar como pagado" [ref=e1220] [cursor=pointer]
+                      - cell [ref=e1221]:
+                        - button "Marcar recordatorio enviado" [ref=e1222] [cursor=pointer]
+                      - cell [ref=e1223]:
+                        - button "Marcar estadísticas enviadas" [ref=e1224] [cursor=pointer]
+                      - cell [ref=e1225]:
+                        - generic [ref=e1226]:
+                          - button "Marcar como chamba" [ref=e1227] [cursor=pointer]
+                          - button "Copiar a otro mes" [ref=e1231] [cursor=pointer]
+                          - button "Editar" [ref=e1235] [cursor=pointer]
+                          - button "Eliminar" [ref=e1239] [cursor=pointer]
+                    - row [ref=e1243]:
+                      - cell "Maria Nutricionista" [ref=e1244]
+                      - cell "Web" [ref=e1245]
+                      - cell "Manual" [ref=e1246]
+                      - cell "8/11/2026" [ref=e1248]
+                      - cell "$20.000 ARS" [ref=e1249]
+                      - cell [ref=e1250]:
+                        - button "Marcar como pagado" [ref=e1251] [cursor=pointer]
+                      - cell [ref=e1252]:
+                        - button "Marcar recordatorio enviado" [ref=e1253] [cursor=pointer]
+                      - cell [ref=e1254]:
+                        - button "Marcar estadísticas enviadas" [ref=e1255] [cursor=pointer]
+                      - cell [ref=e1256]:
+                        - generic [ref=e1257]:
+                          - button "Marcar como chamba" [ref=e1258] [cursor=pointer]
+                          - button "Copiar a otro mes" [ref=e1262] [cursor=pointer]
+                          - button "Editar" [ref=e1266] [cursor=pointer]
+                          - button "Eliminar" [ref=e1270] [cursor=pointer]
+                    - row [ref=e1274]:
+                      - cell "Yanina colorstudio" [ref=e1275]
+                      - cell "App" [ref=e1276]
+                      - cell "Manual" [ref=e1277]
+                      - cell "15/11/2026" [ref=e1279]
+                      - cell "$40.000 ARS" [ref=e1280]
+                      - cell [ref=e1281]:
+                        - button "Marcar como pagado" [ref=e1282] [cursor=pointer]
+                      - cell [ref=e1283]:
+                        - button "Marcar recordatorio enviado" [ref=e1284] [cursor=pointer]
+                      - cell [ref=e1285]:
+                        - button "Marcar estadísticas enviadas" [ref=e1286] [cursor=pointer]
+                      - cell [ref=e1287]:
+                        - generic [ref=e1288]:
+                          - button "Marcar como chamba" [ref=e1289] [cursor=pointer]
+                          - button "Copiar a otro mes" [ref=e1293] [cursor=pointer]
+                          - button "Editar" [ref=e1297] [cursor=pointer]
+                          - button "Eliminar" [ref=e1301] [cursor=pointer]
+                    - row [ref=e1305]:
+                      - cell "Marcelo Ponzio" [ref=e1306]
+                      - cell "App" [ref=e1307]
+                      - cell "Manual" [ref=e1308]
+                      - cell "17/11/2026" [ref=e1310]
+                      - cell "$65.000 ARS" [ref=e1311]
+                      - cell [ref=e1312]:
+                        - button "Marcar como pagado" [ref=e1313] [cursor=pointer]
+                      - cell [ref=e1314]:
+                        - button "Marcar recordatorio enviado" [ref=e1315] [cursor=pointer]
+                      - cell [ref=e1316]:
+                        - button "Marcar estadísticas enviadas" [ref=e1317] [cursor=pointer]
+                      - cell [ref=e1318]:
+                        - generic [ref=e1319]:
+                          - button "Marcar como chamba" [ref=e1320] [cursor=pointer]
+                          - button "Copiar a otro mes" [ref=e1324] [cursor=pointer]
+                          - button "Editar" [ref=e1328] [cursor=pointer]
+                          - button "Eliminar" [ref=e1332] [cursor=pointer]
+                    - row [ref=e1336]:
+                      - cell "Guille jardineriagv" [ref=e1337]
+                      - cell "App" [ref=e1338]
+                      - cell "Manual" [ref=e1339]
+                      - cell "19/11/2026" [ref=e1341]
+                      - cell "$10.000 ARS" [ref=e1342]
+                      - cell [ref=e1343]:
+                        - button "Marcar como pagado" [ref=e1344] [cursor=pointer]
+                      - cell [ref=e1345]:
+                        - button "Marcar recordatorio enviado" [ref=e1346] [cursor=pointer]
+                      - cell [ref=e1347]:
+                        - button "Marcar estadísticas enviadas" [ref=e1348] [cursor=pointer]
+                      - cell [ref=e1349]:
+                        - generic [ref=e1350]:
+                          - button "Marcar como chamba" [ref=e1351] [cursor=pointer]
+                          - button "Copiar a otro mes" [ref=e1355] [cursor=pointer]
+                          - button "Editar" [ref=e1359] [cursor=pointer]
+                          - button "Eliminar" [ref=e1363] [cursor=pointer]
+                    - row [ref=e1367]:
+                      - cell "Micaela Don Paco" [ref=e1368]
+                      - cell "Web" [ref=e1369]
+                      - cell "Manual" [ref=e1370]
+                      - cell "20/11/2026" [ref=e1372]
+                      - cell "$1 ARS" [ref=e1373]
+                      - cell [ref=e1374]:
+                        - button "Marcar como pagado" [ref=e1375] [cursor=pointer]
+                      - cell [ref=e1376]:
+                        - button "Marcar recordatorio enviado" [ref=e1377] [cursor=pointer]
+                      - cell [ref=e1378]:
+                        - button "Marcar estadísticas enviadas" [ref=e1379] [cursor=pointer]
+                      - cell [ref=e1380]:
+                        - generic [ref=e1381]:
+                          - button "Marcar como chamba" [ref=e1382] [cursor=pointer]
+                          - button "Copiar a otro mes" [ref=e1386] [cursor=pointer]
+                          - button "Editar" [ref=e1390] [cursor=pointer]
+                          - button "Eliminar" [ref=e1394] [cursor=pointer]
+                    - row [ref=e1398]:
+                      - cell "Hippo Pro" [ref=e1399]
+                      - cell "App" [ref=e1400]
+                      - cell "Manual" [ref=e1401]
+                      - cell "25/11/2026" [ref=e1403]
+                      - cell "$1 ARS" [ref=e1404]
+                      - cell [ref=e1405]:
+                        - button "Marcar como pagado" [ref=e1406] [cursor=pointer]
+                      - cell [ref=e1407]:
+                        - button "Marcar recordatorio enviado" [ref=e1408] [cursor=pointer]
+                      - cell [ref=e1409]:
+                        - button "Marcar estadísticas enviadas" [ref=e1410] [cursor=pointer]
+                      - cell [ref=e1411]:
+                        - generic [ref=e1412]:
+                          - button "Marcar como chamba" [ref=e1413] [cursor=pointer]
+                          - button "Copiar a otro mes" [ref=e1417] [cursor=pointer]
+                          - button "Editar" [ref=e1421] [cursor=pointer]
+                          - button "Eliminar" [ref=e1425] [cursor=pointer]
+        - generic [ref=e63]:
+          - generic [ref=e64]:
+            - paragraph [ref=e65]: Categoría
+            - button "Software development" [ref=e66] [cursor=pointer]
+          - generic [ref=e73]:
+            - text: Nombre del timer · opcional
+            - textbox "Nombre del timer · opcional" [ref=e74]:
+              - /placeholder: Analia, ERP… o elegí de la lista
+          - generic [ref=e75]:
+            - generic [ref=e76]:
+              - paragraph [ref=e77]: Tiempo
+              - paragraph [ref=e78]: 0:00:00
+            - button "Iniciar" [ref=e79] [cursor=pointer]
+      - generic [ref=e82]:
+        - generic [ref=e83]:
+          - button "Día" [ref=e84] [cursor=pointer]
+          - button "Semana" [ref=e85] [cursor=pointer]
+          - button "Mes" [ref=e86] [cursor=pointer]
+        - generic [ref=e87]:
+          - button "Período anterior" [ref=e88] [cursor=pointer]
+          - button "Mié 4/11" [ref=e92] [cursor=pointer]
+          - button "Período siguiente" [ref=e96] [cursor=pointer]
+      - button "“No podemos evitar ser influenciados, pero sí podemos elegir las fuentes de esa influencia”" [ref=e100] [cursor=pointer]
+      - generic [ref=e101]:
+        - article [ref=e103]:
+          - generic [ref=e104]:
+            - generic [ref=e105]:
+              - heading "Categorías de trabajo" [level=2] [ref=e106]
+              - paragraph [ref=e107]: Por fecha · más reciente primero
+            - generic [ref=e108]: 1:16 hs
+          - generic [ref=e115]:
+            - button "Categorías" [ref=e116] [cursor=pointer]
+            - button "Historial" [ref=e117] [cursor=pointer]
+            - button "Para qué" [ref=e118] [cursor=pointer]
+          - generic [ref=e119]:
+            - paragraph [ref=e120]: Más reciente primero · click en un timer para editar · Play inicia el timer de hoy
+            - generic [ref=e121]:
+              - generic [ref=e122]:
+                - paragraph [ref=e123]: 4/11/2026
+                - generic [ref=e124]: 1:16 hs
+              - generic [ref=e125]:
+                - generic [ref=e126]:
+                  - generic [ref=e127]:
+                    - button "Iniciar Software development" [ref=e129] [cursor=pointer]
+                    - button "Software development 1:09 hs92%" [ref=e132] [cursor=pointer]:
+                      - generic [ref=e133]:
+                        - generic [ref=e134]: Software development
+                        - generic [ref=e142]:
+                          - text: 1:09 hs
+                          - generic [ref=e143]: 92%
+                  - list [ref=e146]:
+                    - listitem [ref=e147]:
+                      - generic [ref=e148]:
+                        - button "Iniciar mi web" [ref=e149] [cursor=pointer]
+                        - button "mi web 0:03:53" [ref=e152] [cursor=pointer]:
+                          - generic [ref=e153]:
+                            - generic [ref=e154]: mi web
+                            - generic [ref=e155]: 0:03:53
+                    - listitem [ref=e156]:
+                      - generic [ref=e157]:
+                        - button "Iniciar Sin nombre" [ref=e158] [cursor=pointer]
+                        - button "Sin nombre 0:54:21 Hippo Pro" [ref=e161] [cursor=pointer]:
+                          - generic [ref=e162]:
+                            - generic [ref=e163]: Sin nombre
+                            - generic [ref=e164]: 0:54:21
+                          - paragraph [ref=e165]: Hippo Pro
+                    - listitem [ref=e166]:
+                      - generic [ref=e167]:
+                        - button "Iniciar Sin nombre" [ref=e168] [cursor=pointer]
+                        - button "Sin nombre 0:05:07 Compartido · Hippo Pro, Jesica" [ref=e171] [cursor=pointer]:
+                          - generic [ref=e172]:
+                            - generic [ref=e173]: Sin nombre
+                            - generic [ref=e174]: 0:05:07
+                          - paragraph [ref=e175]: Compartido · Hippo Pro, Jesica
+                    - listitem [ref=e176]:
+                      - generic [ref=e177]:
+                        - button "Iniciar Sin nombre" [ref=e178] [cursor=pointer]
+                        - button "Sin nombre 0:05:47 Jesica" [ref=e181] [cursor=pointer]:
+                          - generic [ref=e182]:
+                            - generic [ref=e183]: Sin nombre
+                            - generic [ref=e184]: 0:05:47
+                          - paragraph [ref=e185]: Jesica
+                    - listitem [ref=e186]:
+                      - generic [ref=e187]:
+                        - button "Iniciar Sin nombre" [ref=e188] [cursor=pointer]
+                        - button "Sin nombre 0:00:06" [ref=e191] [cursor=pointer]:
+                          - generic [ref=e192]:
+                            - generic [ref=e193]: Sin nombre
+                            - generic [ref=e194]: 0:00:06
+                - generic [ref=e195]:
+                  - generic [ref=e196]:
+                    - button "Iniciar SaaS" [ref=e198] [cursor=pointer]
+                    - button "SaaS 0:04 hs5%" [ref=e201] [cursor=pointer]:
+                      - generic [ref=e202]:
+                        - generic [ref=e203]: SaaS
+                        - generic [ref=e211]:
+                          - text: 0:04 hs
+                          - generic [ref=e212]: 5%
+                  - list [ref=e215]:
+                    - listitem [ref=e216]:
+                      - generic [ref=e217]:
+                        - button "Iniciar avanzando + mi web" [ref=e218] [cursor=pointer]
+                        - button "avanzando + mi web 0:03:39" [ref=e221] [cursor=pointer]:
+                          - generic [ref=e222]:
+                            - generic [ref=e223]: avanzando + mi web
+                            - generic [ref=e224]: 0:03:39
+                - generic [ref=e225]:
+                  - generic [ref=e226]:
+                    - button "Iniciar Planificación" [ref=e228] [cursor=pointer]
+                    - button "Planificación 0:03 hs3%" [ref=e231] [cursor=pointer]:
+                      - generic [ref=e232]:
+                        - generic [ref=e233]: Planificación
+                        - generic [ref=e241]:
+                          - text: 0:03 hs
+                          - generic [ref=e242]: 3%
+                  - list [ref=e245]:
+                    - listitem [ref=e246]:
+                      - generic [ref=e247]:
+                        - button "Iniciar Sin nombre" [ref=e248] [cursor=pointer]
+                        - button "Sin nombre 0:02:38" [ref=e251] [cursor=pointer]:
+                          - generic [ref=e252]:
+                            - generic [ref=e253]: Sin nombre
+                            - generic [ref=e254]: 0:02:38
+        - generic [ref=e255]:
+          - generic [ref=e256]:
+            - paragraph [ref=e257]: Rendimiento
+            - generic [ref=e261]:
+              - heading "Resumen del día" [level=2] [ref=e262]
+              - button "Observaciones" [ref=e263] [cursor=pointer]
+            - generic [ref=e267]:
+              - paragraph [ref=e268]: Mié 4/11
+              - generic [ref=e269]: Rendimiento general -77%
+          - generic [ref=e273]:
+            - article [ref=e274]:
+              - generic [ref=e275]: 79%
+              - paragraph [ref=e285]: Horas trabajadas
+              - generic [ref=e286]:
+                - strong [ref=e287]: 1:16
+                - generic [ref=e288]: hs
+              - paragraph [ref=e289]: vs. día anterior
+            - article [ref=e290]:
+              - generic [ref=e291]: —
+              - paragraph [ref=e296]: Foco principal
+              - generic [ref=e297]:
+                - strong [ref=e298]: software development
+                - generic [ref=e299]: 92%
+              - paragraph [ref=e300]: vs. día anterior
+            - article [ref=e301]:
+              - generic [ref=e310]:
+                - generic [ref=e311]: 0%
+                - button "Calendario de entrenamiento y comidas" [ref=e315] [cursor=pointer]
+                - button "Detalle de cuotas del mes" [ref=e318] [cursor=pointer]
+              - paragraph [ref=e322]: Entrenamiento
+              - strong [ref=e324]: "No"
+              - generic [ref=e325]:
+                - paragraph [ref=e326]: vs. día anterior
+                - generic [ref=e327]:
+                  - 'button "Gimnasio: No pagado" [ref=e328] [cursor=pointer]': G
+                  - 'button "Natación: No pagado" [ref=e329] [cursor=pointer]': "N"
+                  - 'button "Cursor: No pagado" [ref=e330] [cursor=pointer]': C
+            - article [ref=e331]:
+              - generic [ref=e332]: 0%
+              - paragraph [ref=e343]: Alimentación
+              - generic [ref=e344]:
+                - strong [ref=e345]: 0/4
+                - generic [ref=e346]: comidas
+              - paragraph [ref=e347]: vs. día anterior
+            - article [ref=e348]:
+              - generic [ref=e349]:
+                - generic [ref=e350]:
+                  - generic [ref=e351]: 0%
+                  - paragraph [ref=e359]: Inglés
+                  - strong [ref=e361]: "No"
+                  - paragraph [ref=e362]: vs. día anterior
+                - generic [ref=e364]:
+                  - generic [ref=e365]: 0%
+                  - paragraph [ref=e373]: Creatina
+                  - strong [ref=e375]: "No"
+                  - paragraph [ref=e376]: vs. día anterior
+            - article [ref=e377]:
+              - generic [ref=e378]: —
+              - paragraph [ref=e383]: Sueño
+              - generic [ref=e384]:
+                - generic [ref=e385]:
+                  - strong [ref=e386]: 08:29
+                  - generic [ref=e387]: empecé
+                - paragraph [ref=e388]: DormidasSin dato
+              - paragraph [ref=e389]: Sonó · 07:30·Pospuesta · Sin dato
+              - paragraph [ref=e390]: vs. día anterior
+        - article [ref=e392]:
+          - generic [ref=e393]:
+            - generic [ref=e394]:
+              - heading "Categorías de entrenamiento" [level=2] [ref=e395]
+              - paragraph [ref=e396]: Desglose de días activos
+            - generic [ref=e397]: 0 días
+          - generic [ref=e398]:
+            - generic [ref=e399]:
+              - paragraph [ref=e407]: Gimnasio
+              - paragraph [ref=e408]: 0d
+              - paragraph [ref=e409]: Sin tiempo
+            - generic [ref=e410]:
+              - paragraph [ref=e416]: Natación
+              - paragraph [ref=e417]: 0d
+              - paragraph [ref=e418]: Sin tiempo
+            - generic [ref=e419]:
+              - paragraph [ref=e424]: Entrenamiento en casa
+              - paragraph [ref=e425]: 0d
+              - paragraph [ref=e426]: Sin tiempo
+        - generic [ref=e427]:
+          - article [ref=e428]:
+            - generic [ref=e429]:
+              - heading "Distribución del día" [level=2] [ref=e430]
+              - paragraph [ref=e431]: Porcentaje del tiempo registrado
+            - generic [ref=e432]:
+              - application [ref=e435]
+              - generic:
+                - generic: 1:38h
+                - generic: registradas
+            - generic [ref=e443]:
+              - generic [ref=e444]:
+                - generic [ref=e445]: Trabajo
+                - strong [ref=e447]: 77%
+              - generic [ref=e448]:
+                - generic [ref=e449]: Entrenamiento
+                - strong [ref=e451]: 0%
+              - generic [ref=e452]:
+                - generic [ref=e453]: Descanso
+                - strong [ref=e455]: 23%
+          - article [ref=e456]:
+            - generic [ref=e457]:
+              - generic [ref=e458]:
+                - heading "Horas por categoría" [level=2] [ref=e459]
+                - paragraph [ref=e460]: Desglose del día por categoría
+              - generic [ref=e461]: 1:16 hs total
+            - generic [ref=e464]:
+              - list [ref=e466]:
+                - listitem [ref=e467]:
+                  - img "Branding legend icon" [ref=e468]
+                  - text: Branding
+                - listitem [ref=e470]:
+                  - img "IT News legend icon" [ref=e471]
+                  - text: IT News
+                - listitem [ref=e473]:
+                  - img "Planificación legend icon" [ref=e474]
+                  - text: Planificación
+                - listitem [ref=e476]:
+                  - img "SaaS legend icon" [ref=e477]
+                  - text: SaaS
+                - listitem [ref=e479]:
+                  - img "Software legend icon" [ref=e480]
+                  - text: Software
+                - listitem [ref=e482]:
+                  - img "Stremear legend icon" [ref=e483]
+                  - text: Stremear
+              - application [ref=e485]:
+                - generic [ref=e505]:
+                  - generic [ref=e506]: 4/11
+                  - generic [ref=e509]:
+                    - generic [ref=e510]: "0"
+                    - generic [ref=e512]: "0.35"
+                    - generic [ref=e514]: "0.7"
+                    - generic [ref=e516]: "1.05"
+                    - generic [ref=e518]: "1.4"
+        - generic [ref=e520]:
+          - article [ref=e521]:
+            - generic [ref=e523]:
+              - heading "Progreso del día" [level=2] [ref=e524]
+              - paragraph [ref=e525]: Avance sobre tus objetivos principales
+            - generic [ref=e530]:
+              - generic [ref=e531]:
+                - generic [ref=e532]:
+                  - generic [ref=e533]: Trabajo
+                  - generic [ref=e538]: 1:16 / 8 hs
+                - paragraph [ref=e541]: 16%
+              - generic [ref=e542]:
+                - generic [ref=e543]:
+                  - generic [ref=e544]: Entrenamiento
+                  - generic [ref=e551]: 0 / 1 día
+                - paragraph [ref=e553]: 0%
+          - article [ref=e554]:
+            - generic [ref=e557]:
+              - paragraph [ref=e562]: Puntaje del día
+              - generic [ref=e563]:
+                - strong [ref=e564]: "10"
+                - generic [ref=e565]: / 100
+              - paragraph [ref=e572]:
+                - text: Tu mayor foco fue
+                - strong [ref=e573]: software development
+                - text: (92% del trabajo).
+  - button "Open Next.js Dev Tools" [ref=e579] [cursor=pointer]
+  - alert [ref=e583]
+  - generic [aria-hidden] [ref=e584]: "0"

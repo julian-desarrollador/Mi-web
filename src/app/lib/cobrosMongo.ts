@@ -23,6 +23,8 @@ export type CobroDoc = {
   recordatorioEnviado?: boolean;
   /** Fecha en que se envió el recordatorio de pago, YYYY-MM-DD */
   fechaRecordatorio?: string;
+  /** Hora en que se recordó, HH:MM */
+  horaRecordatorio?: string;
   /** Si esta cuota requiere envío de estadísticas (independiente por mes) */
   requiereEstadisticas?: boolean;
   /** ID del ingreso auto-generado al marcar pagado */

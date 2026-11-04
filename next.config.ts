@@ -5,6 +5,8 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: __dirname,
   },
+  // Permite abrir el dev server desde el celular en la red local (solo afecta a `next dev`)
+  allowedDevOrigins: ["192.168.0.36"],
   async redirects() {
     const oldToSlug: Record<string, string> = {
       "dev-1": "kinesiologia-y-salud",
@@ -50,6 +52,11 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "s44783.pcdn.co",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
         pathname: "/**",
       },
     ],
