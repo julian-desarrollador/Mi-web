@@ -5,8 +5,10 @@ import {
   buildProyectoByClientMap,
   getCuotaOperativaBorder,
   getProyectoForClient,
+  hasMejorasPendientes,
   type CuotaDotMarker,
   type ProyectoOperativo,
+  type SolicitudTask,
 } from "@/app/admin92/contabilidad/lib/cuotaOperativa";
 
 export type { CuotaDotMarker };
@@ -34,6 +36,8 @@ type CobroLike = {
   estadisticasEnviadas?: boolean;
   requiereEstadisticas?: boolean;
   cambioPendiente?: boolean;
+  mejoraPendiente?: boolean;
+  mejorasPendientes?: SolicitudTask[];
 };
 
 function emptyDayMarkers(): DayMarkerTypes {
@@ -72,6 +76,7 @@ export function buildCalendarMarkers(
       id: c.id,
       estado,
       border,
+      ...(hasMejorasPendientes(c) ? { mejora: true } : {}),
       ...(c.recordatorioEnviado
         ? { recordada: true, fechaRecordatorio: c.fechaRecordatorio }
         : {}),

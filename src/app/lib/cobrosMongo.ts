@@ -37,6 +37,10 @@ export type CobroDoc = {
   cambioPendiente?: boolean;
   /** Tareas del cambio asociadas a esta cuota */
   solicitudTasks?: { id: string; text: string; done: boolean; createdAt?: string; fueraColaActiva?: boolean; fechaRealizada?: string }[];
+  /** Mejora pendiente de esta cuota (borde cian) */
+  mejoraPendiente?: boolean;
+  /** Tareas de la mejora asociadas a esta cuota */
+  mejorasPendientes?: { id: string; text: string; done: boolean; createdAt?: string; fueraColaActiva?: boolean; fechaRealizada?: string }[];
   createdAt: Date;
 };
 

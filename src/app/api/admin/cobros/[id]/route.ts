@@ -48,6 +48,40 @@ function resolveCuotaDescripcion(cobro: {
   return defaultCuotaDescripcion(cobro);
 }
 
+/** Valida una lista de tareas del body (cambios o mejoras); descarta las que no tienen texto. */
+function normalizeTasksBody(
+  rawTasks: {
+    id?: string;
+    text?: string;
+    done?: boolean;
+    createdAt?: string;
+    fueraColaActiva?: boolean;
+    fechaRealizada?: string;
+  }[],
+) {
+  return rawTasks
+    .map((t) => {
+      const created =
+        t.createdAt && /^\d{4}-\d{2}-\d{2}$/.test(String(t.createdAt))
+          ? String(t.createdAt)
+          : undefined;
+      const realizada =
+        t.fechaRealizada && /^\d{4}-\d{2}-\d{2}$/.test(String(t.fechaRealizada))
+          ? String(t.fechaRealizada)
+          : undefined;
+      const done = Boolean(t.done);
+      return {
+        id: String(t.id || "").trim() || `t_${Date.now()}`,
+        text: String(t.text || "").trim(),
+        done,
+        ...(created ? { createdAt: created } : {}),
+        ...(t.fueraColaActiva ? { fueraColaActiva: true } : {}),
+        ...(done && realizada ? { fechaRealizada: realizada } : {}),
+      };
+    })
+    .filter((t) => t.text.length > 0);
+}
+
 /** PATCH: actualizar cobro (amount, servicio, paid, paidAt) o actualizar cuotas futuras */
 export async function PATCH(
   req: NextRequest,
@@ -88,6 +122,8 @@ export async function PATCH(
       prioridad,
       cambioPendiente,
       solicitudTasks,
+      mejoraPendiente,
+      mejorasPendientes,
       descripcionCuota,
       requiereEstadisticas,
       chamba,
@@ -196,6 +232,9 @@ export async function PATCH(
     if (cambioPendiente !== undefined) {
       updates.cambioPendiente = Boolean(cambioPendiente);
     }
+    if (mejoraPendiente !== undefined) {
+      updates.mejoraPendiente = Boolean(mejoraPendiente);
+    }
     if (requiereEstadisticas !== undefined) {
       updates.requiereEstadisticas = Boolean(requiereEstadisticas);
     }
@@ -213,37 +252,16 @@ export async function PATCH(
           { status: 400 }
         );
       }
-      const tasks = solicitudTasks
-        .map(
-          (t: {
-            id?: string;
-            text?: string;
-            done?: boolean;
-            createdAt?: string;
-            fueraColaActiva?: boolean;
-            fechaRealizada?: string;
-          }) => {
-          const created =
-            t.createdAt && /^\d{4}-\d{2}-\d{2}$/.test(String(t.createdAt))
-              ? String(t.createdAt)
-              : undefined;
-          const realizada =
-            t.fechaRealizada && /^\d{4}-\d{2}-\d{2}$/.test(String(t.fechaRealizada))
-              ? String(t.fechaRealizada)
-              : undefined;
-          const done = Boolean(t.done);
-          return {
-            id: String(t.id || "").trim() || `t_${Date.now()}`,
-            text: String(t.text || "").trim(),
-            done,
-            ...(created ? { createdAt: created } : {}),
-            ...(t.fueraColaActiva ? { fueraColaActiva: true } : {}),
-            ...(done && realizada ? { fechaRealizada: realizada } : {}),
-          };
-        },
-        )
-        .filter((t: { text: string }) => t.text.length > 0);
-      updates.solicitudTasks = tasks;
+      updates.solicitudTasks = normalizeTasksBody(solicitudTasks);
+    }
+    if (mejorasPendientes !== undefined) {
+      if (!Array.isArray(mejorasPendientes)) {
+        return NextResponse.json(
+          { error: "mejorasPendientes debe ser un array" },
+          { status: 400 }
+        );
+      }
+      updates.mejorasPendientes = normalizeTasksBody(mejorasPendientes);
     }
     if (descripcionCuota !== undefined) {
       const trimmed = String(descripcionCuota || "").trim();

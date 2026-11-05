@@ -233,7 +233,7 @@ export default function MonthCalendar({
                   )}
                   {dayMarkers?.cuotas.map((dot) => (
                     <span key={dot.id} className="flex flex-col items-center">
-                      <CuotaCalendarDot estado={dot.estado} border={dot.border} />
+                      <CuotaCalendarDot estado={dot.estado} border={dot.border} mejora={dot.mejora} />
                       {dot.recordada && (
                         <span
                           className="mt-0.5 flex items-center gap-px text-[9px] font-semibold leading-none text-amber-700"
@@ -297,12 +297,9 @@ export default function MonthCalendar({
                 ))}
               </div>
               <div className="flex flex-wrap items-center gap-4 text-xs text-slate-600">
-                {CALENDAR_BORDER_LEGEND.map(({ label }) => (
+                {CALENDAR_BORDER_LEGEND.map(({ kind, label }) => (
                   <span key={label} className="flex items-center gap-1.5">
-                    <CalendarLegendBorder
-                      border={label.includes("Cambio") ? "cambio" : "stats"}
-                      size="md"
-                    />
+                    <CalendarLegendBorder border={kind} size="md" />
                     {label}
                   </span>
                 ))}

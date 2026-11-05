@@ -25,10 +25,12 @@ import {
   type Desarrollo50Item,
 } from "@/app/admin92/contabilidad/lib/desarrollos50";
 import {
+  buildMejorasDelMes,
   buildTareasCambioDelMes,
   buildDesarrollosCambioItems,
   buildTareasCambioDesarrollos,
   getMesesConCambiosAtrasados,
+  getMesesConMejorasAtrasadas,
   sortTareasCambioPorFecha,
   type CambiosSortMode,
 } from "@/app/admin92/contabilidad/lib/cambiosPendientes";
@@ -41,7 +43,10 @@ import type { ErpDayLog } from "@/app/admin92/erp/lib/erpTypes";
 import {
   buildProyectoByClientMap,
   getCuotaOperativaBorder,
+  CUOTA_TASK_FIELDS,
   getProyectoForClient,
+  hasMejorasPendientes,
+  type CuotaTaskKind,
 } from "@/app/admin92/contabilidad/lib/cuotaOperativa";
 import {
   CUOTA_ESTADO_LABEL,
@@ -135,6 +140,8 @@ type Cobro = {
   /** Cambio pendiente de esta cuota (ciclo mensual) */
   cambioPendiente?: boolean;
   solicitudTasks?: { id: string; text: string; done: boolean }[];
+  mejoraPendiente?: boolean;
+  mejorasPendientes?: { id: string; text: string; done: boolean }[];
 };
 
 type ProyectoContabilidad = {
@@ -222,6 +229,8 @@ function Admin92PageContent() {
   const [dayNotes, setDayNotes] = useState<Record<string, string>>({});
   /** Cuota enfocada desde el panel de cambios (scroll + resaltado) */
   const [focusedCobroId, setFocusedCobroId] = useState<string | null>(null);
+  // Qué pestaña abrir en la cuota elegida desde la columna lateral
+  const [focusedTaskKind, setFocusedTaskKind] = useState<CuotaTaskKind>("cambio");
   const [focusedDesarrolloId, setFocusedDesarrolloId] = useState<string | null>(null);
   const [cambiosSortMode, setCambiosSortMode] = useState<CambiosSortMode>("tareas");
   const [contabilidadToolPanel, setContabilidadToolPanel] = useState<
@@ -705,6 +714,7 @@ function Admin92PageContent() {
           prioridad: c.prioridad,
           estado: getCuotaEstado(c),
           border: getCuotaOperativaBorder(c, p, today),
+          mejora: hasMejorasPendientes(c),
           source: "cobro" as const,
         };
       });
@@ -719,11 +729,44 @@ function Admin92PageContent() {
       return {
         estado: getCuotaEstado(c),
         border: getCuotaOperativaBorder(c, p, today),
+        mejora: hasMejorasPendientes(c),
       };
     });
     const fromDesarrollos = buildTareasCambioDesarrollos(desarrollos50, today);
     return sortTareasCambioPorFecha([...fromCobros, ...fromDesarrollos]);
   }, [cobrosEnMes, proyectoByClient, desarrollos50]);
+
+  /* Mejoras: lo mismo que cambios, con sus propios campos. */
+  const mejorasMes = useMemo(() => {
+    const today = todayYmd();
+    return {
+      cuotas: cobrosEnMes
+        .filter((c) => hasMejorasPendientes(c))
+        .map((c) => {
+          const p = getProyectoForClient(c.clientName, proyectoByClient);
+          return {
+            id: c.id,
+            clientName: c.clientName,
+            dueDate: c.dueDate,
+            servicio: c.servicio,
+            prioridad: c.prioridad,
+            estado: getCuotaEstado(c),
+            border: getCuotaOperativaBorder(c, p, today),
+            mejora: true,
+            source: "cobro" as const,
+          };
+        }),
+      tareas: buildMejorasDelMes(cobrosEnMes, (c) => {
+        const p = getProyectoForClient(c.clientName, proyectoByClient);
+        return {
+          estado: getCuotaEstado(c),
+          border: getCuotaOperativaBorder(c, p, today),
+          mejora: true,
+        };
+      }),
+      mesesAtrasados: getMesesConMejorasAtrasadas(cobros, contabilidadMonth),
+    };
+  }, [cobrosEnMes, proyectoByClient, cobros, contabilidadMonth]);
 
   const mesesConCambiosAtrasados = useMemo(
     () => getMesesConCambiosAtrasados(cobros, contabilidadMonth),
@@ -1020,11 +1063,15 @@ function Admin92PageContent() {
     }
   };
 
-  const handleSelectCuotaFromSidebar = (c: {
-    id: string;
-    dueDate: string;
-    source?: "cobro" | "desarrollo50";
-  }) => {
+  const handleSelectCuotaFromSidebar = (
+    c: {
+      id: string;
+      dueDate: string;
+      source?: "cobro" | "desarrollo50";
+    },
+    kind: CuotaTaskKind,
+  ) => {
+    setFocusedTaskKind(kind);
     if (c.source === "desarrollo50") {
       const alertDate = /^\d{4}-\d{2}-\d{2}$/.test(c.dueDate) ? c.dueDate : todayYmd();
       setContabilidadMonth(getMonthKeySafe(alertDate));
@@ -1045,8 +1092,12 @@ function Admin92PageContent() {
     setFocusedDesarrolloId(null);
   };
 
-  const handleDismissTaskFromColaActiva = async (cobroId: string, taskId: string) => {
-    const desarrollo = desarrollos50.find((d) => d.id === cobroId);
+  const handleDismissTaskFromColaActiva = async (
+    cobroId: string,
+    taskId: string,
+    kind: CuotaTaskKind,
+  ) => {
+    const desarrollo = kind === "cambio" ? desarrollos50.find((d) => d.id === cobroId) : undefined;
     if (desarrollo) {
       const nextTasks = (desarrollo.solicitudTasks ?? []).map((t) =>
         t.id === taskId ? { ...t, fueraColaActiva: true } : t,
@@ -1076,17 +1127,18 @@ function Admin92PageContent() {
 
     const cobro = cobros.find((c) => c.id === cobroId);
     if (!cobro) return;
-    const nextTasks = (cobro.solicitudTasks ?? []).map((t) =>
+    const field = CUOTA_TASK_FIELDS[kind].tasks;
+    const nextTasks = (cobro[field] ?? []).map((t) =>
       t.id === taskId ? { ...t, fueraColaActiva: true } : t,
     );
     setCobros((prev) =>
-      prev.map((c) => (c.id === cobroId ? { ...c, solicitudTasks: nextTasks } : c)),
+      prev.map((c) => (c.id === cobroId ? { ...c, [field]: nextTasks } : c)),
     );
     try {
       const res = await fetch(`/api/admin/cobros/${cobroId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ solicitudTasks: nextTasks }),
+        body: JSON.stringify({ [field]: nextTasks }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -1750,6 +1802,7 @@ function Admin92PageContent() {
                 className="hidden lg:block"
                 cuotas={cuotasConCambioPendiente}
                 tareas={tareasCambioMes}
+                mejoras={mejorasMes}
                 mesesAtrasados={mesesConCambiosAtrasados}
                 onGoToMesAtrasado={handleGoToMesCambiosAtrasados}
                 labelFor={(c) =>
@@ -1772,6 +1825,7 @@ function Admin92PageContent() {
               collapsible
               cuotas={cuotasConCambioPendiente}
               tareas={tareasCambioMes}
+              mejoras={mejorasMes}
               mesesAtrasados={mesesConCambiosAtrasados}
               onGoToMesAtrasado={handleGoToMesCambiosAtrasados}
               labelFor={(c) =>
@@ -2102,6 +2156,7 @@ function Admin92PageContent() {
                                       proyecto={getProyectoForClient(c.clientName, proyectoByClient)}
                                       onCobroUpdated={fetchCobros}
                                       onProyectoUpdated={fetchProyectos}
+                                      tabHint={isFocused ? focusedTaskKind : undefined}
                                     />
                                     <CuotaNotaEditor
                                       cobroId={c.id}
@@ -2207,6 +2262,7 @@ function Admin92PageContent() {
                               proyecto={getProyectoForClient(c.clientName, proyectoByClient)}
                               onCobroUpdated={fetchCobros}
                               onProyectoUpdated={fetchProyectos}
+                              tabHint={isFocused ? focusedTaskKind : undefined}
                               compact
                             />
                             <CuotaNotaEditor

@@ -1,6 +1,11 @@
 import type { CuotaEstado } from "@/app/admin92/contabilidad/lib/cuotaEstilos";
 import type { CuotaOperativaBorder } from "@/app/admin92/contabilidad/lib/cuotaOperativa";
-import { getTaskFechaRealizada, getTaskSortDate, type SolicitudTask } from "@/app/admin92/contabilidad/lib/cuotaOperativa";
+import {
+  getTaskFechaRealizada,
+  getTaskSortDate,
+  hasMejorasPendientes,
+  type SolicitudTask,
+} from "@/app/admin92/contabilidad/lib/cuotaOperativa";
 import { getDesarrollo50AlertDate } from "@/app/admin92/contabilidad/lib/desarrollos50";
 import { getMonthKeySafe } from "@/app/admin92/contabilidad/lib/utils";
 
@@ -14,6 +19,8 @@ export type CuotaCambioItem = {
   prioridad?: number;
   estado: CuotaEstado;
   border: CuotaOperativaBorder;
+  /** Tiene mejoras sin hacer (anillo cian) */
+  mejora?: boolean;
   /** Origen del ítem en la cola (default: cuota) */
   source?: "cobro" | "desarrollo50";
 };
@@ -30,8 +37,11 @@ export type CambioTaskListItem = {
   servicio?: string;
   estado: CuotaEstado;
   border: CuotaOperativaBorder;
+  mejora?: boolean;
   source?: "cobro" | "desarrollo50";
 };
+
+type CuotaMeta = { estado: CuotaEstado; border: CuotaOperativaBorder; mejora?: boolean };
 
 type CobroConTareas = {
   id: string;
@@ -44,6 +54,8 @@ type CobroConTareas = {
   estadisticasEnviadas?: boolean;
   cambioPendiente?: boolean;
   solicitudTasks?: SolicitudTask[];
+  mejoraPendiente?: boolean;
+  mejorasPendientes?: SolicitudTask[];
 };
 
 type CobroCambioLike = {
@@ -51,16 +63,45 @@ type CobroCambioLike = {
   cambioPendiente?: boolean;
 };
 
+type CobroMejoraLike = {
+  dueDate: string;
+  mejoraPendiente?: boolean;
+  mejorasPendientes?: SolicitudTask[];
+};
+
 export function buildTareasCambioDelMes(
   cobros: CobroConTareas[],
-  metaFor: (c: CobroConTareas) => { estado: CuotaEstado; border: CuotaOperativaBorder },
+  metaFor: (c: CobroConTareas) => CuotaMeta,
+): CambioTaskListItem[] {
+  return buildTaskItems(
+    cobros.filter((c) => c.cambioPendiente),
+    (c) => c.solicitudTasks,
+    metaFor,
+  );
+}
+
+/** Igual que buildTareasCambioDelMes, con las tareas de la mejora */
+export function buildMejorasDelMes(
+  cobros: CobroConTareas[],
+  metaFor: (c: CobroConTareas) => CuotaMeta,
+): CambioTaskListItem[] {
+  return buildTaskItems(
+    cobros.filter((c) => hasMejorasPendientes(c)),
+    (c) => c.mejorasPendientes,
+    metaFor,
+  );
+}
+
+function buildTaskItems(
+  cobros: CobroConTareas[],
+  tasksOf: (c: CobroConTareas) => SolicitudTask[] | undefined,
+  metaFor: (c: CobroConTareas) => CuotaMeta,
 ): CambioTaskListItem[] {
   const items: CambioTaskListItem[] = [];
   for (const c of cobros) {
-    if (!c.cambioPendiente) continue;
-    const tasks = c.solicitudTasks ?? [];
+    const tasks = tasksOf(c) ?? [];
     if (tasks.length === 0) continue;
-    const { estado, border } = metaFor(c);
+    const { estado, border, mejora } = metaFor(c);
     for (const t of tasks) {
       if (t.fueraColaActiva) continue;
       items.push({
@@ -75,6 +116,7 @@ export function buildTareasCambioDelMes(
         servicio: c.servicio,
         estado,
         border,
+        mejora,
       });
     }
   }
@@ -183,9 +225,20 @@ export function getMesesConCambiosAtrasados(
   cobros: CobroCambioLike[],
   monthKey: string,
 ): MesCambiosAtrasados[] {
+  return countByMonthBefore(cobros.filter((c) => c.cambioPendiente), monthKey);
+}
+
+/** Meses (anteriores al visible) con al menos una cuota con mejora pendiente */
+export function getMesesConMejorasAtrasadas(
+  cobros: CobroMejoraLike[],
+  monthKey: string,
+): MesCambiosAtrasados[] {
+  return countByMonthBefore(cobros.filter((c) => hasMejorasPendientes(c)), monthKey);
+}
+
+function countByMonthBefore(cobros: { dueDate: string }[], monthKey: string): MesCambiosAtrasados[] {
   const byMonth = new Map<string, number>();
   for (const c of cobros) {
-    if (!c.cambioPendiente) continue;
     const mk = getMonthKeySafe(c.dueDate);
     if (mk >= monthKey) continue;
     byMonth.set(mk, (byMonth.get(mk) ?? 0) + 1);

@@ -11,6 +11,7 @@ import {
   getCuotaOperativaBorder,
   getProyectoForClient,
   getTaskSortDate,
+  hasMejorasPendientes,
   type CuotaOperativaBorder,
   type ProyectoOperativo,
   type SolicitudTask,
@@ -36,6 +37,8 @@ type CobroLite = {
   cambioPendiente?: boolean;
   requiereEstadisticas?: boolean;
   solicitudTasks?: SolicitudTask[];
+  mejoraPendiente?: boolean;
+  mejorasPendientes?: SolicitudTask[];
 };
 
 /** Cuándo se pidió el cambio: la tarea pendiente más antigua (o la más antigua, si están todas hechas). */
@@ -286,6 +289,7 @@ export default function CuotasTimerStrip({
           cobro,
           estado: getCuotaEstado(cobro),
           border: getCuotaOperativaBorder(cobro, proyecto, today),
+          mejora: hasMejorasPendientes(cobro),
           running: openKeys.has(clientKey(cobro.clientName)),
           focus,
           compartido,
@@ -349,7 +353,7 @@ export default function CuotasTimerStrip({
             }}
             className="-m-1 inline-flex shrink-0 cursor-pointer rounded-full p-1"
           >
-            <CuotaCalendarDot estado={chip.estado} border={chip.border} />
+            <CuotaCalendarDot estado={chip.estado} border={chip.border} mejora={chip.mejora} />
           </span>
           <span className="min-w-0 flex-1 truncate text-sm font-semibold text-slate-950">
             {chip.cobro.clientName}

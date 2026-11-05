@@ -60,6 +60,8 @@ export const BORDER_COLORS = {
   cambio: "#f59e0b",
   /** Violeta más luminoso — borde punteado alerta (stats) */
   stats: "#c084fc",
+  /** Cian — borde punteado (mejoras pendientes) */
+  mejora: "#06b6d4",
 } as const;
 
 /** Leyenda del calendario (texto fijo para evitar desajustes SSR/cliente) */
@@ -72,6 +74,7 @@ export const CALENDAR_LEGEND = [
 ] as const;
 
 export const CALENDAR_BORDER_LEGEND = [
-  { color: BORDER_COLORS.cambio, label: "Cambio pendiente", style: "dashed" as const },
-  { color: BORDER_COLORS.stats, label: "Estadísticas pendientes", style: "dashed" as const },
+  { kind: "cambio", color: BORDER_COLORS.cambio, label: "Cambio pendiente", style: "dashed" as const },
+  { kind: "stats", color: BORDER_COLORS.stats, label: "Estadísticas pendientes", style: "dashed" as const },
+  { kind: "mejora", color: BORDER_COLORS.mejora, label: "Mejoras pendientes", style: "dashed" as const },
 ] as const;

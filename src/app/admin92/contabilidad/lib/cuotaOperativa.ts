@@ -25,6 +25,14 @@ export type ProyectoOperativo = {
 
 export type CuotaOperativaBorder = "none" | "cambio" | "stats" | "both";
 
+/** Las dos listas de una cuota: funcionan igual, cada una con sus campos. */
+export type CuotaTaskKind = "cambio" | "mejora";
+
+export const CUOTA_TASK_FIELDS = {
+  cambio: { tasks: "solicitudTasks", flag: "cambioPendiente" },
+  mejora: { tasks: "mejorasPendientes", flag: "mejoraPendiente" },
+} as const;
+
 export type CuotaDotMarker = {
   id: string;
   estado: CuotaEstado;
@@ -33,6 +41,8 @@ export type CuotaDotMarker = {
   recordada?: boolean;
   /** Fecha del recordatorio, YYYY-MM-DD (las viejas no la tienen) */
   fechaRecordatorio?: string;
+  /** Tiene al menos una mejora sin hacer (anillo cian) */
+  mejora?: boolean;
 };
 
 const STATS_OFFSET_DAYS = 5;
@@ -79,6 +89,14 @@ export function getStatsObjectiveDate(cobro: {
 
 export function hasCambioPendiente(cobro: { cambioPendiente?: boolean }): boolean {
   return Boolean(cobro.cambioPendiente);
+}
+
+/** Mismo interruptor que el cambio. Sin valor guardado, cuenta si hay alguna mejora sin hacer. */
+export function hasMejorasPendientes(cobro: {
+  mejoraPendiente?: boolean;
+  mejorasPendientes?: SolicitudTask[];
+}): boolean {
+  return cobro.mejoraPendiente ?? (cobro.mejorasPendientes ?? []).some((t) => !t.done);
 }
 
 export function cobroRequiereEstadisticas(

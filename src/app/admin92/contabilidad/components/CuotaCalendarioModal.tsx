@@ -6,9 +6,11 @@ import MonthCalendar from "@/app/admin92/contabilidad/components/MonthCalendar";
 import CambiosPendientesSidebar from "@/app/admin92/contabilidad/components/CambiosPendientesSidebar";
 import {
   buildDesarrollosCambioItems,
+  buildMejorasDelMes,
   buildTareasCambioDelMes,
   buildTareasCambioDesarrollos,
   getMesesConCambiosAtrasados,
+  getMesesConMejorasAtrasadas,
   sortTareasCambioPorFecha,
   type CambiosSortMode,
   type CuotaCambioItem,
@@ -34,8 +36,11 @@ import {
 } from "@/app/admin92/contabilidad/lib/cuotaEstilos";
 import {
   buildProyectoByClientMap,
+  CUOTA_TASK_FIELDS,
   getCuotaOperativaBorder,
   getProyectoForClient,
+  hasMejorasPendientes,
+  type CuotaTaskKind,
   type ProyectoOperativo,
   type SolicitudTask,
 } from "@/app/admin92/contabilidad/lib/cuotaOperativa";
@@ -57,6 +62,8 @@ type CobroFull = Cobro & {
   cambioPendiente?: boolean;
   requiereEstadisticas?: boolean;
   solicitudTasks?: SolicitudTask[];
+  mejoraPendiente?: boolean;
+  mejorasPendientes?: SolicitudTask[];
 };
 
 type Props = {
@@ -108,6 +115,8 @@ export default function CuotaCalendarioModal({ cobroId, dueDate, onClose, onChan
   const [month, setMonth] = useState(() => getMonthKeySafe(initialDate));
   const [selectedDate, setSelectedDate] = useState<string | null>(initialDate);
   const [focusedId, setFocusedId] = useState<string | null>(cobroId || null);
+  // Qué pestaña abrir en la cuota elegida desde la columna lateral
+  const [focusedKind, setFocusedKind] = useState<CuotaTaskKind>("cambio");
   const [cobros, setCobros] = useState<CobroFull[]>([]);
   const [proyectos, setProyectos] = useState<ProyectoOperativo[]>([]);
   const [desarrollos, setDesarrollos] = useState<Desarrollo50Item[]>([]);
@@ -274,39 +283,68 @@ export default function CuotaCalendarioModal({ cobroId, dueDate, onClose, onChan
   const today = todayYmd();
 
   /* Cambios pendientes: mismos datos que la columna de Contabilidad (page.tsx). */
+  const cuotaItem = useCallback(
+    (c: CobroFull): CuotaCambioItem => {
+      const p = getProyectoForClient(c.clientName, proyectoByClient);
+      return {
+        id: c.id,
+        clientName: c.clientName,
+        dueDate: c.dueDate,
+        servicio: c.servicio,
+        prioridad: c.prioridad,
+        estado: getCuotaEstado(c),
+        border: getCuotaOperativaBorder(c, p, today),
+        mejora: hasMejorasPendientes(c),
+        source: "cobro",
+      };
+    },
+    [proyectoByClient, today],
+  );
+
   const cuotasConCambio = useMemo<CuotaCambioItem[]>(() => {
-    const fromCobros = cobrosDelMes
-      .filter((c) => Boolean(c.cambioPendiente))
-      .map((c) => {
-        const p = getProyectoForClient(c.clientName, proyectoByClient);
-        return {
-          id: c.id,
-          clientName: c.clientName,
-          dueDate: c.dueDate,
-          servicio: c.servicio,
-          prioridad: c.prioridad,
-          estado: getCuotaEstado(c),
-          border: getCuotaOperativaBorder(c, p, today),
-          source: "cobro" as const,
-        };
-      });
+    const fromCobros = cobrosDelMes.filter((c) => Boolean(c.cambioPendiente)).map(cuotaItem);
     return [...fromCobros, ...buildDesarrollosCambioItems(desarrollos, today)];
-  }, [cobrosDelMes, proyectoByClient, desarrollos, today]);
+  }, [cobrosDelMes, cuotaItem, desarrollos, today]);
 
   const tareasCambio = useMemo(() => {
     const fromCobros = buildTareasCambioDelMes(cobrosDelMes, (c) => {
       const p = getProyectoForClient(c.clientName, proyectoByClient);
-      return { estado: getCuotaEstado(c), border: getCuotaOperativaBorder(c, p, today) };
+      return {
+        estado: getCuotaEstado(c),
+        border: getCuotaOperativaBorder(c, p, today),
+        mejora: hasMejorasPendientes(c),
+      };
     });
     return sortTareasCambioPorFecha([...fromCobros, ...buildTareasCambioDesarrollos(desarrollos, today)]);
   }, [cobrosDelMes, proyectoByClient, desarrollos, today]);
 
+  /* Mejoras: lo mismo que cambios, con sus propios campos. */
+  const mejoras = useMemo(
+    () => ({
+      cuotas: cobrosDelMes.filter((c) => hasMejorasPendientes(c)).map(cuotaItem),
+      tareas: buildMejorasDelMes(cobrosDelMes, (c) => {
+        const p = getProyectoForClient(c.clientName, proyectoByClient);
+        return {
+          estado: getCuotaEstado(c),
+          border: getCuotaOperativaBorder(c, p, today),
+          mejora: true,
+        };
+      }),
+      mesesAtrasados: getMesesConMejorasAtrasadas(cobros, month),
+    }),
+    [cobrosDelMes, cuotaItem, proyectoByClient, today, cobros, month],
+  );
+
   const mesesAtrasados = useMemo(() => getMesesConCambiosAtrasados(cobros, month), [cobros, month]);
 
-  const selectFromSidebar = (c: { id: string; dueDate: string; source?: "cobro" | "desarrollo50" }) => {
+  const selectFromSidebar = (
+    c: { id: string; dueDate: string; source?: "cobro" | "desarrollo50" },
+    kind: CuotaTaskKind,
+  ) => {
     const date = YMD.test(c.dueDate) ? c.dueDate : today;
     setMonth(getMonthKeySafe(date));
     setSelectedDate(date);
+    setFocusedKind(kind);
     // Los desarrollos 50% no tienen tarjeta en el modal: solo se elige su día
     setFocusedId(c.source === "desarrollo50" ? null : c.id);
   };
@@ -375,10 +413,10 @@ export default function CuotaCalendarioModal({ cobroId, dueDate, onClose, onChan
     );
   };
 
-  const dismissTask = (id: string, taskId: string) => {
+  const dismissTask = (id: string, taskId: string, kind: CuotaTaskKind) => {
     const hide = (tasks: SolicitudTask[] | undefined) =>
       (tasks ?? []).map((t) => (t.id === taskId ? { ...t, fueraColaActiva: true } : t));
-    const desarrollo = desarrollos.find((d) => d.id === id);
+    const desarrollo = kind === "cambio" ? desarrollos.find((d) => d.id === id) : undefined;
     if (desarrollo) {
       void patchAndReload(
         `/api/admin/desarrollos-50/${id}`,
@@ -389,9 +427,10 @@ export default function CuotaCalendarioModal({ cobroId, dueDate, onClose, onChan
     }
     const cobro = cobros.find((c) => c.id === id);
     if (!cobro) return;
+    const field = CUOTA_TASK_FIELDS[kind].tasks;
     void patchAndReload(
       `/api/admin/cobros/${id}`,
-      { solicitudTasks: hide(cobro.solicitudTasks) },
+      { [field]: hide(cobro[field]) },
       "No se pudo quitar la tarea de la cola activa.",
     );
   };
@@ -399,6 +438,7 @@ export default function CuotaCalendarioModal({ cobroId, dueDate, onClose, onChan
   const sidebarProps = {
     cuotas: cuotasConCambio,
     tareas: tareasCambio,
+    mejoras,
     mesesAtrasados,
     onGoToMesAtrasado: (monthKey: string) => {
       setMonth(monthKey);
@@ -533,7 +573,12 @@ export default function CuotaCalendarioModal({ cobroId, dueDate, onClose, onChan
                       {/* Cabecera: quién, cuánto y en qué estado; fechas en una línea */}
                       <div className="flex items-start gap-3">
                         <span className="mt-1 shrink-0">
-                          <CuotaCalendarDot estado={estado} border={border} size="md" />
+                          <CuotaCalendarDot
+                            estado={estado}
+                            border={border}
+                            mejora={hasMejorasPendientes(c)}
+                            size="md"
+                          />
                         </span>
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
@@ -629,6 +674,7 @@ export default function CuotaCalendarioModal({ cobroId, dueDate, onClose, onChan
                         onCobroUpdated={() => void handleSaved()}
                         onProyectoUpdated={handleSaved}
                         compact
+                        tabHint={isFocused ? focusedKind : undefined}
                       />
                       <CuotaNotaEditor
                         cobroId={c.id}
