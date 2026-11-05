@@ -40,6 +40,7 @@ import {
   getCuotaOperativaBorder,
   getProyectoForClient,
   hasMejorasPendientes,
+  isCuotaSaas,
   type CuotaTaskKind,
   type ProyectoOperativo,
   type SolicitudTask,
@@ -594,6 +595,7 @@ export default function CuotaCalendarioModal({ cobroId, dueDate, onClose, onChan
                             estado={estado}
                             border={border}
                             mejora={hasMejorasPendientes(c)}
+                            saas={isCuotaSaas(c.clientName)}
                             size="md"
                           />
                         </span>

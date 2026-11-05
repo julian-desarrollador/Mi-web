@@ -16,6 +16,8 @@ type Props = {
   size?: "sm" | "md";
   /** Tiene mejoras sin hacer: anillo cian, por fuera de los de cambio y estadísticas */
   mejora?: boolean;
+  /** Cuota del cliente SaaS: el relleno es violeta, no el del estado */
+  saas?: boolean;
 };
 
 function alertGlow(color: string, kind: "cambio" | "stats" | "mejora" = "cambio"): string {
@@ -51,14 +53,22 @@ export function CalendarLegendBorder({
   );
 }
 
-export default function CuotaCalendarDot({ estado, border, size = "sm", mejora = false }: Props) {
-  const fill = ESTADO_COLOR[estado];
+export default function CuotaCalendarDot({ estado, border, size = "sm", mejora = false, saas = false }: Props) {
+  const fill = saas ? MARKER_COLORS.cuotaSaas : ESTADO_COLOR[estado];
   const hasCambio = border === "cambio" || border === "both";
   const hasStats = border === "stats" || border === "both";
   const hasBorder = border !== "none" || mejora;
 
   const outer = size === "sm" ? "h-[18px] w-[18px]" : "h-[22px] w-[22px]";
   const inner = size === "sm" ? "h-1.5 w-1.5" : "h-2 w-2";
+  const saasDot = size === "sm" ? "h-2.5 w-2.5" : "h-3 w-3";
+  const dotClass = saas ? saasDot : inner;
+  const dotStyle = saas
+    ? {
+        backgroundColor: fill,
+        boxShadow: "0 0 0 1.5px #ddd6fe, 0 0 7px 2px #7c3aedcc",
+      }
+    : { backgroundColor: fill };
   const ringWidth = size === "sm" ? 2.5 : 3;
   // Cuánto sobresale el anillo cian: nada si va solo; si no, queda por fuera de los otros
   const mejoraOverflow =
@@ -67,8 +77,9 @@ export default function CuotaCalendarDot({ estado, border, size = "sm", mejora =
   if (!hasBorder) {
     return (
       <span
-        className={`${inner} shrink-0 rounded-full`}
-        style={{ backgroundColor: fill }}
+        className={`${dotClass} shrink-0 rounded-full`}
+        style={dotStyle}
+        title={saas ? "SaaS" : undefined}
         aria-hidden
       />
     );
@@ -88,7 +99,7 @@ export default function CuotaCalendarDot({ estado, border, size = "sm", mejora =
         .join(" · ")}
       aria-hidden
     >
-      <span className={`${inner} rounded-full`} style={{ backgroundColor: fill }} />
+      <span className={`${dotClass} rounded-full`} style={dotStyle} />
       {hasCambio && (
         <span
           className="contabilidad-alert-ring pointer-events-none absolute inset-0 rounded-full border-dashed"

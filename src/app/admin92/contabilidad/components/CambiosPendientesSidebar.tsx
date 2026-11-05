@@ -9,7 +9,7 @@ import {
   type CuotaCambioItem,
   type MesCambiosAtrasados,
 } from "@/app/admin92/contabilidad/lib/cambiosPendientes";
-import type { CuotaTaskKind } from "@/app/admin92/contabilidad/lib/cuotaOperativa";
+import { isCuotaSaas, type CuotaTaskKind } from "@/app/admin92/contabilidad/lib/cuotaOperativa";
 import { formatLocalDate, formatMonthLabel } from "@/app/admin92/contabilidad/lib/utils";
 import CuotaCalendarDot from "@/app/admin92/contabilidad/components/CuotaCalendarDot";
 import MejorasGeneralesPanel from "@/app/admin92/contabilidad/components/MejorasGeneralesPanel";
@@ -345,7 +345,7 @@ export default function CambiosPendientesSidebar({
                       }
                       className="min-w-0 flex-1 flex items-start gap-2 text-left cursor-pointer rounded-md outline-none focus-visible:ring-2 focus-visible:ring-[#84b9ed]/50"
                     >
-                      <CuotaCalendarDot estado={t.estado} border={t.border} mejora={t.mejora} size="md" />
+                      <CuotaCalendarDot estado={t.estado} border={t.border} mejora={t.mejora} saas={isCuotaSaas(t.clientName)} size="md" />
                       <span className="min-w-0 flex-1">
                         <p
                           className={`text-sm font-medium text-slate-900 ${
@@ -409,7 +409,7 @@ export default function CambiosPendientesSidebar({
                     onClick={() => onSelectCuota(c, listTab)}
                     className="min-w-0 flex-1 flex items-start gap-2 text-left cursor-pointer rounded-md outline-none focus-visible:ring-2 focus-visible:ring-[#84b9ed]/50"
                   >
-                    <CuotaCalendarDot estado={c.estado} border={c.border} mejora={c.mejora} size="md" />
+                    <CuotaCalendarDot estado={c.estado} border={c.border} mejora={c.mejora} saas={isCuotaSaas(c.clientName)} size="md" />
                     <span className="min-w-0 flex-1">
                       <p className="text-sm font-medium text-slate-900 truncate">{labelFor(c)}</p>
                       <p className="text-xs text-slate-500 mt-0.5">

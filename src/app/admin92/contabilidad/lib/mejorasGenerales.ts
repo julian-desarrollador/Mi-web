@@ -25,7 +25,9 @@ const listeners = new Set<() => void>();
 
 export function subscribeMejorasGenerales(listener: () => void) {
   listeners.add(listener);
-  return () => listeners.delete(listener);
+  return () => {
+    listeners.delete(listener);
+  };
 }
 
 export function notifyMejorasGenerales() {

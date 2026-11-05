@@ -12,6 +12,7 @@ import {
   getProyectoForClient,
   getTaskSortDate,
   hasMejorasPendientes,
+  isCuotaSaas,
   type CuotaOperativaBorder,
   type ProyectoOperativo,
   type SolicitudTask,
@@ -109,16 +110,17 @@ function pickCuotasDelMes(cobros: CobroLite[], month: string, today: string): Co
   return out;
 }
 
-/** "55 min total · focus 40" o "3:10 total · comp 0:13" (h:mm); omite las partes en 0. */
-function breakdownLabel(totalSeconds: number, focusSeconds: number, compSeconds: number): string {
-  const short = totalSeconds < 3600;
-  const fmt = (s: number) => (short ? String(Math.round(s / 60)) : formatHoursAsHm(s / 3600));
-  const isZero = (s: number) => ["0", "0:00"].includes(fmt(s));
-  if (isZero(totalSeconds)) return "—";
-  const parts = [`${fmt(totalSeconds)}${short ? " min" : ""} total`];
-  if (!isZero(focusSeconds)) parts.push(`focus ${fmt(focusSeconds)}`);
-  if (!isZero(compSeconds)) parts.push(`comp ${fmt(compSeconds)}`);
-  return parts.join(" · ");
+const formatSecondsAsHm = (seconds: number) => formatHoursAsHm(Math.max(0, seconds) / 3600);
+
+/** "0:55 total  0:22 focus  0:32 comp" (h:mm); la misma línea para el período y el ciclo. */
+function CuotaHoursLine({ focus, compartido }: { focus: number; compartido: number }) {
+  return (
+    <span className="flex flex-wrap items-baseline gap-x-2 text-xs font-semibold tabular-nums">
+      <span className="text-slate-900">{formatSecondsAsHm(focus + compartido)} total</span>
+      <span className="text-emerald-700">{formatSecondsAsHm(focus)} focus</span>
+      <span className="text-violet-700">{formatSecondsAsHm(compartido)} comp</span>
+    </span>
+  );
 }
 
 export default function CuotasTimerStrip({
@@ -145,7 +147,7 @@ export default function CuotasTimerStrip({
   /* Siempre arranca oculto; mostrar/ocultar no se recuerda entre recargas. */
   const toggleVisible = () => setVisible((prev) => !prev);
 
-  /** Reloj: horas de cada cuota en su ventana (total · focus · compartido), no del período de abajo. */
+  /** Reloj: suma a cada tarjeta las horas del ciclo de la cuota, debajo de las del período de abajo. */
   const [showCuotaTimes, setShowCuotaTimes] = useState(false);
   const toggleCuotaTimes = () =>
     setShowCuotaTimes((prev) => {
@@ -320,7 +322,6 @@ export default function CuotasTimerStrip({
   const pausedChips = chips.filter((chip) => !chip.running);
 
   const renderChip = (chip: (typeof chips)[number]) => {
-    const breakdown = breakdownLabel(chip.focus + chip.compartido, chip.focus, chip.compartido);
     return (
     <li key={chip.cobro.id || chip.cobro.clientName}>
       <button
@@ -353,7 +354,12 @@ export default function CuotasTimerStrip({
             }}
             className="-m-1 inline-flex shrink-0 cursor-pointer rounded-full p-1"
           >
-            <CuotaCalendarDot estado={chip.estado} border={chip.border} mejora={chip.mejora} />
+            <CuotaCalendarDot
+              estado={chip.estado}
+              border={chip.border}
+              mejora={chip.mejora}
+              saas={isCuotaSaas(chip.cobro.clientName)}
+            />
           </span>
           <span className="min-w-0 flex-1 truncate text-sm font-semibold text-slate-950">
             {chip.cobro.clientName}
@@ -402,38 +408,38 @@ export default function CuotasTimerStrip({
             {MONTH_NAMES[Number(chip.cobro.dueDate.slice(5, 7)) - 1].slice(0, 3)}
           </span>
         </span>
-        {showCuotaTimes ? (
-          (() => {
-            const row = cuotaTimeById.get(chip.cobro.id);
-            if (cuotaTimers.loading && !row) {
-              return <span className="text-xs font-medium text-slate-400">…</span>;
-            }
-            const fmt = (s: number) => formatHoursAsHm(Math.max(0, s) / 3600);
-            const { from, to } = cuotaTimerWindow(chip.cobro.dueDate);
-            // "2026-10-09" → "09/10"
-            const dm = (ymd: string) => ymd.slice(5).split("-").reverse().join("/");
-            return (
-              <span title={`Suma lo trabajado del ${dm(from)} al ${dm(to)}`} className="flex flex-col gap-0.5">
-                <span className="flex flex-wrap items-baseline gap-x-2 text-xs font-semibold tabular-nums">
-                  <span className="text-slate-900">{fmt(row?.totalSeconds ?? 0)} total</span>
-                  <span className="text-emerald-700">{fmt(row?.seconds ?? 0)} focus</span>
-                  <span className="text-violet-700">{fmt(row?.repartidoSeconds ?? 0)} comp</span>
-                </span>
-                <span className="text-[10px] font-medium tabular-nums text-slate-400">
-                  {dm(from)} → {dm(to)}
-                </span>
-              </span>
-            );
-          })()
+        {/* Lo trabajado en la pestaña Día / Semana / Mes elegida abajo */}
+        {formatSecondsAsHm(chip.focus + chip.compartido) === "0:00" ? (
+          <span className="text-xs font-medium text-slate-400">—</span>
         ) : (
-          <span
-            className={`truncate text-xs font-medium ${
-              breakdown === "—" ? "text-slate-400" : "text-slate-600"
-            }`}
-          >
-            {breakdown}
-          </span>
+          <CuotaHoursLine focus={chip.focus} compartido={chip.compartido} />
         )}
+        {showCuotaTimes
+          ? (() => {
+              const row = cuotaTimeById.get(chip.cobro.id);
+              const { from, to } = cuotaTimerWindow(chip.cobro.dueDate);
+              // "2026-10-09" → "09/10"
+              const dm = (ymd: string) => ymd.slice(5).split("-").reverse().join("/");
+              return (
+                <span
+                  title={`Suma lo trabajado del ${dm(from)} al ${dm(to)}`}
+                  className="flex flex-col gap-0.5 border-t border-dashed border-slate-200 pt-1"
+                >
+                  <span className="text-[10px] font-medium tabular-nums text-slate-400">
+                    Ciclo {dm(from)} → {dm(to)}
+                  </span>
+                  {cuotaTimers.loading && !row ? (
+                    <span className="text-xs font-medium text-slate-400">…</span>
+                  ) : (
+                    <CuotaHoursLine
+                      focus={row?.seconds ?? 0}
+                      compartido={row?.repartidoSeconds ?? 0}
+                    />
+                  )}
+                </span>
+              );
+            })()
+          : null}
       </button>
     </li>
     );
@@ -452,7 +458,7 @@ export default function CuotasTimerStrip({
           )}
           <span className="font-medium text-slate-500">
             {" "}
-            · totales: {showCuotaTimes ? "por cuota (ventana de cada vencimiento)" : periodLabel}
+            · totales: {periodLabel}
           </span>
         </p>
         <div className="flex shrink-0 flex-col items-end gap-0.5">
@@ -486,9 +492,9 @@ export default function CuotasTimerStrip({
             <button
               type="button"
               onClick={toggleCuotaTimes}
-              aria-label={showCuotaTimes ? "Ocultar horas de las cuotas" : "Ver horas de las cuotas"}
+              aria-label={showCuotaTimes ? "Ocultar ciclo de cada cuota" : "Ver ciclo de cada cuota"}
               aria-pressed={showCuotaTimes}
-              title={showCuotaTimes ? "Ocultar horas de las cuotas" : "Ver horas de las cuotas (total · focus · compartido)"}
+              title={showCuotaTimes ? "Ocultar ciclo de cada cuota" : "Ver ciclo de cada cuota (de vencimiento a vencimiento)"}
               className={`flex h-6 w-6 items-center justify-center rounded-md cursor-pointer ${
                 showCuotaTimes ? "bg-blue-700 text-white" : "text-slate-700 hover:bg-slate-100"
               }`}

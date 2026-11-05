@@ -6,6 +6,7 @@ import {
   getCuotaOperativaBorder,
   getProyectoForClient,
   hasMejorasPendientes,
+  isCuotaSaas,
   type CuotaDotMarker,
   type ProyectoOperativo,
   type SolicitudTask,
@@ -77,6 +78,7 @@ export function buildCalendarMarkers(
       estado,
       border,
       ...(hasMejorasPendientes(c) ? { mejora: true } : {}),
+      ...(isCuotaSaas(c.clientName) ? { saas: true } : {}),
       ...(c.recordatorioEnviado
         ? { recordada: true, fechaRecordatorio: c.fechaRecordatorio }
         : {}),

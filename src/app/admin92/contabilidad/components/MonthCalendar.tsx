@@ -233,7 +233,7 @@ export default function MonthCalendar({
                   )}
                   {dayMarkers?.cuotas.map((dot) => (
                     <span key={dot.id} className="flex flex-col items-center">
-                      <CuotaCalendarDot estado={dot.estado} border={dot.border} mejora={dot.mejora} />
+                      <CuotaCalendarDot estado={dot.estado} border={dot.border} mejora={dot.mejora} saas={dot.saas} />
                       {dot.recordada && (
                         <span
                           className="mt-0.5 flex items-center gap-px text-[9px] font-semibold leading-none text-amber-700"
