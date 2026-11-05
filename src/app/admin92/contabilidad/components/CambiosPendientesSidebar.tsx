@@ -12,7 +12,13 @@ import {
 import type { CuotaTaskKind } from "@/app/admin92/contabilidad/lib/cuotaOperativa";
 import { formatLocalDate, formatMonthLabel } from "@/app/admin92/contabilidad/lib/utils";
 import CuotaCalendarDot from "@/app/admin92/contabilidad/components/CuotaCalendarDot";
+import MejorasGeneralesPanel from "@/app/admin92/contabilidad/components/MejorasGeneralesPanel";
 import SaasTareasPanel from "@/app/admin92/contabilidad/components/SaasTareasPanel";
+import {
+  mejoraGeneralAbierta,
+  useMejorasGenerales,
+  type AplicacionRef,
+} from "@/app/admin92/contabilidad/lib/mejorasGenerales";
 
 type Props = {
   cuotas: CuotaCambioItem[];
@@ -33,12 +39,24 @@ type Props = {
   onSelectCuota: (c: CuotaCambioItem, kind: CuotaTaskKind) => void;
   onPrioridadChange: (cobroId: string, prioridad: number | undefined) => void;
   onDismissTaskFromColaActiva?: (cobroId: string, taskId: string, kind: CuotaTaskKind) => void;
+  /** Clientes distintos de las cuotas cargadas, para «Aplicar a…» */
+  aplicacionesDisponibles?: AplicacionRef[];
+  /** Abre la cuota de esa aplicación en el mes que está en pantalla */
+  onSelectAplicacion?: (app: AplicacionRef) => void;
   /** En mobile: panel colapsable */
   collapsible?: boolean;
   className?: string;
 };
 
-/** Las dos pestañas funcionan igual: solo cambian los textos y el color. */
+type SidebarTab = "cambio" | "mejora" | "general";
+
+const TAB_CHIP: Record<SidebarTab, string> = {
+  cambio: "Cambios",
+  mejora: "Mejoras",
+  general: "Generales",
+};
+
+/** Las dos pestañas de cuota funcionan igual: solo cambian los textos y el color. */
 const TAB_STYLES = {
   cambio: {
     label: "Cambios pendientes",
@@ -158,18 +176,24 @@ export default function CambiosPendientesSidebar({
   onSelectCuota,
   onPrioridadChange,
   onDismissTaskFromColaActiva,
+  aplicacionesDisponibles = [],
+  onSelectAplicacion,
   collapsible = false,
   className = "",
 }: Props) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mesesAtrasadosOpen, setMesesAtrasadosOpen] = useState(false);
   const [saasPendingCount, setSaasPendingCount] = useState(0);
-  const [tab, setTab] = useState<CuotaTaskKind>("cambio");
+  const [tab, setTab] = useState<SidebarTab>("cambio");
+  const generales = useMejorasGenerales();
+  const generalesAbiertas = generales.items.filter(mejoraGeneralAbierta).length;
 
   const isSaas = sortMode === "saas";
+  const isGeneral = tab === "general" && !isSaas;
+  const listTab: CuotaTaskKind = tab === "general" ? "cambio" : tab;
   const data =
-    tab === "mejora" && mejoras ? mejoras : { cuotas, tareas, mesesAtrasados };
-  const styles = TAB_STYLES[tab];
+    listTab === "mejora" && mejoras ? mejoras : { cuotas, tareas, mesesAtrasados };
+  const styles = TAB_STYLES[listTab];
   const sorted = sortCuotasCambiosPendientes(data.cuotas, sortMode);
   const atrasadosCount = data.mesesAtrasados.reduce((sum, m) => sum + m.count, 0);
   const countFor = (kind: CuotaTaskKind) => {
@@ -188,78 +212,89 @@ export default function CambiosPendientesSidebar({
     if (data.mesesAtrasados.length === 0) setMesesAtrasadosOpen(false);
   }, [data.mesesAtrasados.length]);
 
-  const selectTab = (kind: CuotaTaskKind) => {
+  const selectTab = (kind: SidebarTab) => {
     setTab(kind);
     if (isSaas) onSortModeChange("tareas");
   };
 
+  const selectSort = (mode: CambiosSortMode) => {
+    if (tab === "general") setTab("cambio");
+    onSortModeChange(mode);
+  };
+
+  const chipCount = (kind: SidebarTab) =>
+    kind === "general" ? generalesAbiertas : countFor(kind);
+
   const content = (
     <>
       {mejoras ? (
-        <div role="tablist" aria-label="Lista" className="mb-2 grid grid-cols-2 gap-1 rounded-lg border border-slate-200 p-0.5 text-xs">
-          {(["cambio", "mejora"] as const).map((kind) => {
+        <div role="tablist" aria-label="Lista" className="mb-2 flex flex-wrap rounded-lg border border-slate-200 p-0.5 text-xs">
+          {(["cambio", "mejora", "general"] as const).map((kind) => {
             const isActive = !isSaas && tab === kind;
+            const activeClass =
+              kind === "general" ? "bg-emerald-600 text-white" : TAB_STYLES[kind].tabActive;
             return (
               <button
                 key={kind}
                 type="button"
                 role="tab"
                 aria-selected={isActive}
+                aria-label={kind === "general" ? "Mejoras generales" : TAB_STYLES[kind].label}
                 onClick={() => selectTab(kind)}
-                className={`rounded-md px-2 py-1.5 font-semibold cursor-pointer ${
-                  isActive ? TAB_STYLES[kind].tabActive : "text-slate-600"
+                className={`rounded-md px-2 py-1 font-medium cursor-pointer ${
+                  isActive ? activeClass : "text-slate-600"
                 }`}
               >
-                {TAB_STYLES[kind].label}
-                <span className="ml-1 font-normal opacity-80">({countFor(kind)})</span>
+                {TAB_CHIP[kind]}
+                <span className="ml-1 font-normal opacity-80">({chipCount(kind)})</span>
               </button>
             );
           })}
         </div>
       ) : null}
 
-      <div className={`mb-3 flex flex-wrap items-center gap-2 ${isSaas || !mejoras ? "justify-between" : "justify-end"}`}>
-        {isSaas || !mejoras ? (
+      <div className={`mb-3 flex flex-wrap items-center gap-2 ${isSaas || !mejoras || isGeneral ? "justify-between" : "justify-end"}`}>
+        {isSaas || !mejoras || isGeneral ? (
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-            {isSaas ? "SaaS" : styles.label}
+            {isSaas ? "SaaS" : isGeneral ? "Mejoras generales" : styles.label}
             <span className="ml-1.5 font-normal normal-case text-slate-400">
-              ({isSaas ? saasPendingCount : countFor("cambio")})
+              ({isSaas ? saasPendingCount : isGeneral ? generalesAbiertas : countFor("cambio")})
             </span>
           </p>
         ) : null}
         <div className="flex flex-wrap rounded-lg border border-slate-200 p-0.5 text-xs">
           <button
             type="button"
-            onClick={() => onSortModeChange("fecha")}
+            onClick={() => selectSort("fecha")}
             className={`rounded-md px-2 py-1 font-medium cursor-pointer ${
-              sortMode === "fecha" ? "bg-slate-900 text-white" : "text-slate-600"
+              !isGeneral && sortMode === "fecha" ? "bg-slate-900 text-white" : "text-slate-600"
             }`}
           >
             Fecha
           </button>
           <button
             type="button"
-            onClick={() => onSortModeChange("prioridad")}
+            onClick={() => selectSort("prioridad")}
             className={`rounded-md px-2 py-1 font-medium cursor-pointer ${
-              sortMode === "prioridad" ? "bg-slate-900 text-white" : "text-slate-600"
+              !isGeneral && sortMode === "prioridad" ? "bg-slate-900 text-white" : "text-slate-600"
             }`}
           >
             Prioridad
           </button>
           <button
             type="button"
-            onClick={() => onSortModeChange("tareas")}
+            onClick={() => selectSort("tareas")}
             className={`rounded-md px-2 py-1 font-medium cursor-pointer ${
-              sortMode === "tareas" ? "bg-slate-900 text-white" : "text-slate-600"
+              !isGeneral && sortMode === "tareas" ? "bg-slate-900 text-white" : "text-slate-600"
             }`}
           >
             Tareas
           </button>
           <button
             type="button"
-            onClick={() => onSortModeChange("saas")}
+            onClick={() => selectSort("saas")}
             className={`rounded-md px-2 py-1 font-medium cursor-pointer ${
-              sortMode === "saas" ? "bg-indigo-600 text-white" : "text-slate-600"
+              !isGeneral && sortMode === "saas" ? "bg-indigo-600 text-white" : "text-slate-600"
             }`}
           >
             SaaS
@@ -267,7 +302,12 @@ export default function CambiosPendientesSidebar({
         </div>
       </div>
 
-      {isSaas ? (
+      {isGeneral ? (
+        <MejorasGeneralesPanel
+          aplicacionesDisponibles={aplicacionesDisponibles}
+          onSelectAplicacion={onSelectAplicacion}
+        />
+      ) : isSaas ? (
         <SaasTareasPanel onCountChange={setSaasPendingCount} />
       ) : sortMode === "tareas" ? (
         data.tareas.length === 0 ? (
@@ -300,7 +340,7 @@ export default function CambiosPendientesSidebar({
                             mejora: t.mejora,
                             source: t.source,
                           },
-                          tab,
+                          listTab,
                         )
                       }
                       className="min-w-0 flex-1 flex items-start gap-2 text-left cursor-pointer rounded-md outline-none focus-visible:ring-2 focus-visible:ring-[#84b9ed]/50"
@@ -325,7 +365,7 @@ export default function CambiosPendientesSidebar({
                     {onDismissTaskFromColaActiva && (
                       <button
                         type="button"
-                        onClick={() => onDismissTaskFromColaActiva(t.cobroId, t.taskId, tab)}
+                        onClick={() => onDismissTaskFromColaActiva(t.cobroId, t.taskId, listTab)}
                         title="Quitar de cola activa (queda en Cola operativa)"
                         aria-label="Quitar de cola activa"
                         className="shrink-0 rounded-md p-1.5 text-slate-400 hover:text-slate-700 cursor-pointer"
@@ -366,7 +406,7 @@ export default function CambiosPendientesSidebar({
                   )}
                   <button
                     type="button"
-                    onClick={() => onSelectCuota(c, tab)}
+                    onClick={() => onSelectCuota(c, listTab)}
                     className="min-w-0 flex-1 flex items-start gap-2 text-left cursor-pointer rounded-md outline-none focus-visible:ring-2 focus-visible:ring-[#84b9ed]/50"
                   >
                     <CuotaCalendarDot estado={c.estado} border={c.border} mejora={c.mejora} size="md" />
@@ -463,6 +503,11 @@ export default function CambiosPendientesSidebar({
                     {mejoras.cuotas.length}
                   </span>
                 )}
+                {generalesAbiertas > 0 && (
+                  <span className="ml-1.5 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-800">
+                    {generalesAbiertas}
+                  </span>
+                )}
                 {atrasadosCount > 0 && (
                   <span className={`ml-1.5 rounded-full border px-2 py-0.5 text-xs font-medium ${styles.atrasadosButton}`}>
                     +{atrasadosCount} atr.
@@ -485,7 +530,7 @@ export default function CambiosPendientesSidebar({
   return (
     <aside
       data-cambios-sidebar
-      className={`rounded-2xl border border-slate-200 bg-white p-4 sticky top-24 ${className}`}
+      className={`rounded-2xl border border-slate-200 bg-white p-4 ${className}`}
     >
       {content}
     </aside>

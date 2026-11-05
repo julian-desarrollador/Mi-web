@@ -6,6 +6,7 @@ import { getRemindersToday, getRemindersWeekBefore, getStatsOverdue, getStatsTod
 import { formatRecordatorioMensaje, MENSAJE_ESTADISTICAS, MENSAJE_RECORDATORIO_PAGO } from "@/app/lib/cobrosMensajes";
 import ChambaToggle from "@/app/admin92/contabilidad/components/ChambaToggle";
 import ConfirmarPagoCobro from "@/app/admin92/contabilidad/components/ConfirmarPagoCobro";
+import CuotaSelect from "@/app/admin92/contabilidad/components/CuotaSelect";
 import DatePickerField from "@/app/admin92/contabilidad/components/DatePickerField";
 import {
   formatLocalDate,
@@ -17,6 +18,11 @@ import {
 } from "@/app/admin92/contabilidad/lib/utils";
 
 const SERVICIO_OPTIONS = ["", "App", "Tienda", "Web", "Mantenimiento", "Otro"] as const;
+const SERVICIO_SELECT_OPTIONS = SERVICIO_OPTIONS.map((opt) => ({ value: opt, label: opt || "—" }));
+const ORIGEN_SELECT_OPTIONS = [
+  { value: "manual", label: "Manual" },
+  { value: "suscripcion_mp", label: "Suscripción MP" },
+];
 
 const WORD_ONLINE_URL =
   process.env.NEXT_PUBLIC_ENLACE_WORD?.trim() ||
@@ -768,26 +774,21 @@ export default function CuotasDelMesPanel<C extends CuotaDelMes>({
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-slate-700 mb-1">Servicio</label>
-                        <select
+                        <CuotaSelect
+                          ariaLabel="Servicio"
                           value={cobroServicio}
-                          onChange={(e) => setCobroServicio(e.target.value)}
-                          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-[#84b9ed] focus:border-transparent cursor-pointer"
-                        >
-                          {SERVICIO_OPTIONS.map((opt) => (
-                            <option key={opt || "vacio"} value={opt}>{opt || "—"}</option>
-                          ))}
-                        </select>
+                          options={SERVICIO_SELECT_OPTIONS}
+                          onChange={setCobroServicio}
+                        />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-slate-700 mb-1">Origen</label>
-                        <select
+                        <CuotaSelect
+                          ariaLabel="Origen"
                           value={cobroOrigen}
-                          onChange={(e) => setCobroOrigen(e.target.value as "manual" | "suscripcion_mp")}
-                          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-[#84b9ed] focus:border-transparent cursor-pointer"
-                        >
-                          <option value="manual">Manual</option>
-                          <option value="suscripcion_mp">Suscripción MP</option>
-                        </select>
+                          options={ORIGEN_SELECT_OPTIONS}
+                          onChange={(next) => setCobroOrigen(next as "manual" | "suscripcion_mp")}
+                        />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-slate-700 mb-1">Monto (ARS)</label>
@@ -842,26 +843,21 @@ export default function CuotasDelMesPanel<C extends CuotaDelMes>({
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">Servicio</label>
-                    <select
+                    <CuotaSelect
+                      ariaLabel="Servicio"
                       value={cobroServicio}
-                      onChange={(e) => setCobroServicio(e.target.value)}
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-[#84b9ed] focus:border-transparent cursor-pointer"
-                    >
-                      {SERVICIO_OPTIONS.map((opt) => (
-                        <option key={opt || "vacio"} value={opt}>{opt || "—"}</option>
-                      ))}
-                    </select>
+                      options={SERVICIO_SELECT_OPTIONS}
+                      onChange={setCobroServicio}
+                    />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">Origen</label>
-                    <select
+                    <CuotaSelect
+                      ariaLabel="Origen"
                       value={cobroOrigen}
-                      onChange={(e) => setCobroOrigen(e.target.value as "manual" | "suscripcion_mp")}
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-[#84b9ed] focus:border-transparent cursor-pointer"
-                    >
-                      <option value="manual">Manual</option>
-                      <option value="suscripcion_mp">Suscripción MP</option>
-                    </select>
+                      options={ORIGEN_SELECT_OPTIONS}
+                      onChange={(next) => setCobroOrigen(next as "manual" | "suscripcion_mp")}
+                    />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">Monto (ARS)</label>
@@ -888,17 +884,12 @@ export default function CuotasDelMesPanel<C extends CuotaDelMes>({
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">Desde mes</label>
-                    <select
+                    <CuotaSelect
+                      ariaLabel="Desde mes"
                       value={cobroFromMonth}
-                      onChange={(e) => setCobroFromMonth(e.target.value)}
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-[#84b9ed] focus:border-transparent cursor-pointer"
-                    >
-                      {cobroMonthOptions.map((ym) => (
-                        <option key={ym} value={ym}>
-                          {formatMonthLabel(ym)}
-                        </option>
-                      ))}
-                    </select>
+                      options={cobroMonthOptions.map((ym) => ({ value: ym, label: formatMonthLabel(ym) }))}
+                      onChange={setCobroFromMonth}
+                    />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">Cant. meses</label>
@@ -951,15 +942,13 @@ export default function CuotasDelMesPanel<C extends CuotaDelMes>({
                     </div>
                     <div>
                       <label className="block text-xs font-medium text-slate-600 mb-1">Servicio</label>
-                      <select
+                      <CuotaSelect
+                        ariaLabel="Servicio"
+                        className="min-w-[10rem]"
                         value={editCobroServicio}
-                        onChange={(e) => setEditCobroServicio(e.target.value)}
-                        className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-[#84b9ed] focus:border-transparent cursor-pointer"
-                      >
-                        {SERVICIO_OPTIONS.map((opt) => (
-                          <option key={opt || "vacio"} value={opt}>{opt || "—"}</option>
-                        ))}
-                      </select>
+                        options={SERVICIO_SELECT_OPTIONS}
+                        onChange={setEditCobroServicio}
+                      />
                     </div>
                     <div>
                       <label className="block text-xs font-medium text-slate-600 mb-1">Fecha</label>
@@ -1035,36 +1024,41 @@ export default function CuotasDelMesPanel<C extends CuotaDelMes>({
                       ) : null}
                     </div>
                     <label className="text-sm font-medium text-slate-700">Filtros:</label>
-                    <select
+                    <CuotaSelect
+                      ariaLabel="Filtrar por cliente"
+                      size="sm"
+                      className="min-w-[140px]"
                       value={cobroFilterClient}
-                      onChange={(e) => setCobroFilterClient(e.target.value)}
-                      className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:ring-2 focus:ring-[#84b9ed] focus:border-transparent min-w-[140px] cursor-pointer"
-                    >
-                      <option value="">Todos los clientes</option>
-                      {cobroClients.map((name) => (
-                        <option key={name} value={name}>
-                          {name}
-                        </option>
-                      ))}
-                    </select>
-                    <select
+                      options={[
+                        { value: "", label: "Todos los clientes" },
+                        ...cobroClients.map((name) => ({ value: name, label: name })),
+                      ]}
+                      onChange={setCobroFilterClient}
+                    />
+                    <CuotaSelect
+                      ariaLabel="Filtrar por estado de pago"
+                      size="sm"
+                      className="min-w-[120px]"
                       value={cobroFilterPaid}
-                      onChange={(e) => setCobroFilterPaid(e.target.value as "" | "paid" | "pending")}
-                      className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:ring-2 focus:ring-[#84b9ed] focus:border-transparent min-w-[120px] cursor-pointer"
-                    >
-                      <option value="">Todos</option>
-                      <option value="paid">Pagados</option>
-                      <option value="pending">Pendientes</option>
-                    </select>
-                    <select
+                      options={[
+                        { value: "", label: "Todos" },
+                        { value: "paid", label: "Pagados" },
+                        { value: "pending", label: "Pendientes" },
+                      ]}
+                      onChange={(next) => setCobroFilterPaid(next as "" | "paid" | "pending")}
+                    />
+                    <CuotaSelect
+                      ariaLabel="Filtrar por origen"
+                      size="sm"
+                      className="min-w-[160px]"
                       value={cobroFilterOrigen}
-                      onChange={(e) => setCobroFilterOrigen(e.target.value as "" | "manual" | "suscripcion_mp")}
-                      className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:ring-2 focus:ring-[#84b9ed] focus:border-transparent min-w-[160px] cursor-pointer"
-                    >
-                      <option value="">Todos los orígenes</option>
-                      <option value="manual">Manual</option>
-                      <option value="suscripcion_mp">Suscripción MP</option>
-                    </select>
+                      options={[
+                        { value: "", label: "Todos los orígenes" },
+                        { value: "manual", label: "Manual" },
+                        { value: "suscripcion_mp", label: "Suscripción MP" },
+                      ]}
+                      onChange={(next) => setCobroFilterOrigen(next as "" | "manual" | "suscripcion_mp")}
+                    />
                     {cobroFilterClient && (
                       <button
                         type="button"
@@ -1237,20 +1231,16 @@ export default function CuotasDelMesPanel<C extends CuotaDelMes>({
                                 <span className="text-xs text-slate-600">
                                   Copiar cuota de <span className="font-medium text-slate-800">{c.clientName}</span> a:
                                 </span>
-                                <select
+                                <CuotaSelect
+                                  ariaLabel="Mes destino"
+                                  size="xs"
+                                  className="min-w-[9rem]"
                                   value={copyRow.month}
-                                  onChange={(e) => setCopyRow({ id: c.id, month: e.target.value })}
-                                  aria-label="Mes destino"
-                                  className="rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs text-slate-800 cursor-pointer"
-                                >
-                                  {cobroMonthOptions
+                                  options={cobroMonthOptions
                                     .filter((ym) => ym !== getMonthKeySafe(c.dueDate))
-                                    .map((ym) => (
-                                      <option key={ym} value={ym}>
-                                        {formatMonthLabel(ym)}
-                                      </option>
-                                    ))}
-                                </select>
+                                    .map((ym) => ({ value: ym, label: formatMonthLabel(ym) }))}
+                                  onChange={(month) => setCopyRow({ id: c.id, month })}
+                                />
                                 <button
                                   type="button"
                                   disabled={cobroSubmitting}

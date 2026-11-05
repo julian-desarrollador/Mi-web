@@ -16,6 +16,11 @@ import { computeCobranzaKpis } from "@/app/admin92/contabilidad/lib/cobranza";
 import CuotaOperativaPanel from "@/app/admin92/contabilidad/components/CuotaOperativaPanel";
 import Desarrollo50TasksBlock from "@/app/admin92/contabilidad/components/Desarrollo50TasksBlock";
 import CambiosPendientesSidebar from "@/app/admin92/contabilidad/components/CambiosPendientesSidebar";
+import {
+  appsDesdeCobros,
+  mismaAplicacion,
+  type AplicacionRef,
+} from "@/app/admin92/contabilidad/lib/mejorasGenerales";
 import ConfirmarPagoCobro from "@/app/admin92/contabilidad/components/ConfirmarPagoCobro";
 import DatePickerField from "@/app/admin92/contabilidad/components/DatePickerField";
 import {
@@ -1063,6 +1068,22 @@ function Admin92PageContent() {
     }
   };
 
+  const aplicacionesDisponibles = useMemo(() => appsDesdeCobros(cobros), [cobros]);
+
+  const handleSelectAplicacion = (app: AplicacionRef) => {
+    const matches = cobros.filter((c) => mismaAplicacion(c, app));
+    const inMonth = matches.filter((c) => getMonthKeySafe(c.dueDate) === contabilidadMonth);
+    const target = inMonth[0] ?? [...matches].sort((a, b) => b.dueDate.localeCompare(a.dueDate))[0];
+    if (!target) return;
+    if (getMonthKeySafe(target.dueDate) !== contabilidadMonth) {
+      setContabilidadMonth(getMonthKeySafe(target.dueDate));
+    }
+    setSelectedDate(target.dueDate);
+    setFocusedCobroId(target.id);
+    setFocusedDesarrolloId(null);
+    setFocusedTaskKind("mejora");
+  };
+
   const handleSelectCuotaFromSidebar = (
     c: {
       id: string;
@@ -1819,6 +1840,8 @@ function Admin92PageContent() {
                 onSelectCuota={handleSelectCuotaFromSidebar}
                 onPrioridadChange={handleCobroPrioridadChange}
                 onDismissTaskFromColaActiva={handleDismissTaskFromColaActiva}
+                aplicacionesDisponibles={aplicacionesDisponibles}
+                onSelectAplicacion={handleSelectAplicacion}
               />
             </div>
             <CambiosPendientesSidebar
@@ -1842,6 +1865,8 @@ function Admin92PageContent() {
               onSelectCuota={handleSelectCuotaFromSidebar}
               onPrioridadChange={handleCobroPrioridadChange}
               onDismissTaskFromColaActiva={handleDismissTaskFromColaActiva}
+              aplicacionesDisponibles={aplicacionesDisponibles}
+              onSelectAplicacion={handleSelectAplicacion}
             />
 
             {/* Detalle del día / mes */}

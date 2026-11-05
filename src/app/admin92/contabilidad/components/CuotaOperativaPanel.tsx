@@ -14,6 +14,7 @@ import {
   type SolicitudTask,
 } from "@/app/admin92/contabilidad/lib/cuotaOperativa";
 import CuotaTareasSection from "@/app/admin92/contabilidad/components/CuotaTareasSection";
+import MejorasGeneralesEnCuota from "@/app/admin92/contabilidad/components/MejorasGeneralesEnCuota";
 import DatePickerField from "@/app/admin92/contabilidad/components/DatePickerField";
 import { formatLocalDate, todayYmd } from "@/app/admin92/contabilidad/lib/utils";
 
@@ -350,6 +351,10 @@ export default function CuotaOperativaPanel({
         saving={saving}
         onPatch={patchCobro}
       />
+
+      {tab === "mejora" ? (
+        <MejorasGeneralesEnCuota clientName={cobro.clientName} servicio={cobro.servicio} />
+      ) : null}
 
       {error && <p className="border-t border-slate-100 px-3 py-2 text-xs text-red-600">{error}</p>}
     </div>

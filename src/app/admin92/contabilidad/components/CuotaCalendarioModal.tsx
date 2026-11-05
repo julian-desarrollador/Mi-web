@@ -45,6 +45,11 @@ import {
   type SolicitudTask,
 } from "@/app/admin92/contabilidad/lib/cuotaOperativa";
 import {
+  appsDesdeCobros,
+  mismaAplicacion,
+  type AplicacionRef,
+} from "@/app/admin92/contabilidad/lib/mejorasGenerales";
+import {
   formatLocalDate,
   formatMonthLabel,
   getMonthKey,
@@ -435,6 +440,16 @@ export default function CuotaCalendarioModal({ cobroId, dueDate, onClose, onChan
     );
   };
 
+  const aplicacionesDisponibles = useMemo(() => appsDesdeCobros(cobros), [cobros]);
+
+  const selectAplicacion = (app: AplicacionRef) => {
+    const matches = cobros.filter((c) => mismaAplicacion(c, app));
+    const inMonth = matches.filter((c) => getMonthKeySafe(c.dueDate) === month);
+    const target = inMonth[0] ?? [...matches].sort((a, b) => b.dueDate.localeCompare(a.dueDate))[0];
+    if (!target) return;
+    selectFromSidebar(target, "mejora");
+  };
+
   const sidebarProps = {
     cuotas: cuotasConCambio,
     tareas: tareasCambio,
@@ -457,6 +472,8 @@ export default function CuotaCalendarioModal({ cobroId, dueDate, onClose, onChan
     onSelectCuota: selectFromSidebar,
     onPrioridadChange: changePrioridad,
     onDismissTaskFromColaActiva: dismissTask,
+    aplicacionesDisponibles,
+    onSelectAplicacion: selectAplicacion,
   };
 
   return (
