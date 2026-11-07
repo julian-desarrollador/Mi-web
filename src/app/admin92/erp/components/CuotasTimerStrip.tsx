@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight, Clock, Pause, Play, Undo2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Clock, Pause, Play, Search, Undo2, X } from "lucide-react";
 import ErpUpdatesModal from "@/app/admin92/erp/components/ErpUpdatesModal";
 import CuotaCalendarDot from "@/app/admin92/contabilidad/components/CuotaCalendarDot";
 import CuotaCalendarioModal from "@/app/admin92/contabilidad/components/CuotaCalendarioModal";
@@ -86,6 +86,11 @@ function clientKey(name: string): string {
   return name.trim().toLowerCase();
 }
 
+/** Minúsculas y sin acentos, para buscar sin importar cómo se escribió. */
+function normalizeSearch(text: string): string {
+  return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+}
+
 /**
  * Mismas cuotas que el calendario de contabilidad: las que vencen en el mes elegido
  * (por defecto, el de hoy). Si un cliente tuviera más de una en el mes, queda una sola
@@ -134,6 +139,7 @@ export default function CuotasTimerStrip({
   onToggle,
 }: Props) {
   const [visible, setVisible] = useState(false);
+  const [cuotaQuery, setCuotaQuery] = useState("");
   const [cobros, setCobros] = useState<CobroLite[]>([]);
   const [proyectos, setProyectos] = useState<ProyectoOperativo[]>([]);
   const [logs, setLogs] = useState<ErpDayLog[]>([]);
@@ -318,8 +324,17 @@ export default function CuotasTimerStrip({
       );
   }, [cuotas, periodLogs, nowMs, today, proyectoByClient, todayLog, openKeys, openIndex]);
 
-  const runningChips = chips.filter((chip) => chip.running);
-  const pausedChips = chips.filter((chip) => !chip.running);
+  const visibleChips = useMemo(() => {
+    const terms = normalizeSearch(cuotaQuery).split(/\s+/).filter(Boolean);
+    if (terms.length === 0) return chips;
+    return chips.filter((chip) => {
+      const haystack = normalizeSearch(chip.cobro.clientName);
+      return terms.every((term) => haystack.includes(term));
+    });
+  }, [chips, cuotaQuery]);
+
+  const runningChips = visibleChips.filter((chip) => chip.running);
+  const pausedChips = visibleChips.filter((chip) => !chip.running);
 
   const renderChip = (chip: (typeof chips)[number]) => {
     return (
@@ -516,7 +531,7 @@ export default function CuotasTimerStrip({
 
       {visible && (
         <>
-          <div className="mb-2 flex items-center gap-1">
+          <div className="mb-2 flex flex-wrap items-center gap-1">
             <button
               type="button"
               onClick={() => setMonthOffset((offset) => offset - 1)}
@@ -549,6 +564,37 @@ export default function CuotasTimerStrip({
                 <Undo2 className="h-3.5 w-3.5" />
               </button>
             )}
+            <div className="relative ml-1 w-40">
+              <Search
+                className="pointer-events-none absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400"
+                aria-hidden
+              />
+              <input
+                type="search"
+                value={cuotaQuery}
+                onChange={(event) => setCuotaQuery(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Escape" && cuotaQuery) {
+                    event.stopPropagation();
+                    setCuotaQuery("");
+                  }
+                }}
+                placeholder="Buscar cliente…"
+                aria-label="Buscar cuota"
+                style={{ backgroundColor: "#ffffff", color: "#0f172a" }}
+                className="w-full rounded-lg border border-slate-300 py-1 pl-7 pr-7 text-xs focus:border-transparent focus:ring-2 focus:ring-[#84b9ed] [&::-webkit-search-cancel-button]:hidden"
+              />
+              {cuotaQuery ? (
+                <button
+                  type="button"
+                  onClick={() => setCuotaQuery("")}
+                  aria-label="Limpiar búsqueda"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 rounded p-0.5 text-slate-400 cursor-pointer"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              ) : null}
+            </div>
           </div>
           {loadError && <p className="mb-2 text-xs font-medium text-rose-700">{loadError}</p>}
           {showCuotaTimes && cuotaTimers.error && (
@@ -558,7 +604,9 @@ export default function CuotasTimerStrip({
             <p className="text-xs text-slate-400">
               Sin cuotas en {formatMonthLabel(viewMonth)}
             </p>
-          ) : (
+          ) : visibleChips.length === 0 && chips.length > 0 ? (
+            <p className="text-xs text-slate-400">Ninguna cuota coincide.</p>
+          ) : chips.length > 0 ? (
             <>
               {runningChips.length > 0 && (
                 <ul className={GRID_CLASS}>{runningChips.map(renderChip)}</ul>
@@ -570,7 +618,7 @@ export default function CuotasTimerStrip({
                 <ul className={GRID_CLASS}>{pausedChips.map(renderChip)}</ul>
               )}
             </>
-          )}
+          ) : null}
         </>
       )}
 

@@ -193,7 +193,7 @@ export default function DatePickerField({
       role="dialog"
       aria-label="Elegir fecha"
       style={{ top: pos.top, left: pos.left, width: POPOVER_WIDTH }}
-      className="fixed z-[80] rounded-2xl border border-slate-200 bg-white p-3 shadow-[0_20px_50px_rgba(15,23,42,0.16)]"
+      className="fixed z-[90] rounded-2xl border border-slate-200 bg-white p-3 shadow-[0_20px_50px_rgba(15,23,42,0.16)]"
     >
       <div className="mb-3 flex items-center justify-between gap-2">
         <button

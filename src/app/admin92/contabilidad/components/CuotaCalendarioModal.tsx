@@ -20,6 +20,8 @@ import {
   sortDesarrollos50,
   type Desarrollo50Item,
 } from "@/app/admin92/contabilidad/lib/desarrollos50";
+import ConfirmarPagoCobro from "@/app/admin92/contabilidad/components/ConfirmarPagoCobro";
+import DatePickerField from "@/app/admin92/contabilidad/components/DatePickerField";
 import CuotaCalendarDot from "@/app/admin92/contabilidad/components/CuotaCalendarDot";
 import CuotaOperativaPanel from "@/app/admin92/contabilidad/components/CuotaOperativaPanel";
 import CuotaNotaEditor from "@/app/admin92/contabilidad/components/CuotaNotaEditor";
@@ -131,6 +133,9 @@ export default function CuotaCalendarioModal({ cobroId, dueDate, onClose, onChan
   const [sortMode, setSortMode] = useState<CambiosSortMode>("tareas");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [pendingPaid, setPendingPaid] = useState<CobroFull | null>(null);
+  const [paidFecha, setPaidFecha] = useState(todayYmd());
+  const [confirmingPaid, setConfirmingPaid] = useState(false);
   const closeRef = useRef<HTMLButtonElement>(null);
 
   const load = useCallback(async () => {
@@ -184,11 +189,17 @@ export default function CuotaCalendarioModal({ cobroId, dueDate, onClose, onChan
   useEffect(() => {
     closeRef.current?.focus();
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
+      if (event.key !== "Escape") return;
+      if (document.querySelector('[role="dialog"][aria-label="Elegir fecha"]')) return;
+      if (pendingPaid) {
+        setPendingPaid(null);
+        return;
+      }
+      onClose();
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [onClose]);
+  }, [onClose, pendingPaid]);
 
   /** Flechas del teclado cambian el día seleccionado (← → ±1 día, ↑ ↓ ±1 semana), como en Contabilidad */
   useEffect(() => {
@@ -204,6 +215,7 @@ export default function CuotaCalendarioModal({ cobroId, dueDate, onClose, onChan
                 ? 7
                 : null;
       if (dayDelta === null) return;
+      if (document.querySelector('[role="dialog"][aria-label="Elegir fecha"]')) return;
       const target = e.target as HTMLElement | null;
       if (
         target &&
@@ -368,6 +380,39 @@ export default function CuotaCalendarioModal({ cobroId, dueDate, onClose, onChan
       setError(err instanceof Error ? err.message : fallback);
     }
     await handleSaved();
+  };
+
+  const markPaid = (c: CobroFull) => {
+    if (c.paid) {
+      void patchAndReload(`/api/admin/cobros/${c.id}`, { paid: false }, "No se pudo marcar la cuota como pendiente.");
+      return;
+    }
+    setPendingPaid(c);
+    setPaidFecha(todayYmd());
+  };
+
+  const confirmPaid = async () => {
+    if (!pendingPaid || !YMD.test(paidFecha)) return;
+    setConfirmingPaid(true);
+    setError("");
+    try {
+      const res = await fetch(`/api/admin/cobros/${pendingPaid.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ paid: true, fechaIngreso: paidFecha }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data?.error || "No se pudo marcar la cuota como pagada.");
+        return;
+      }
+      setPendingPaid(null);
+      await handleSaved();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo marcar la cuota como pagada.");
+    } finally {
+      setConfirmingPaid(false);
+    }
   };
 
   const markRecordatorio = (c: CobroFull, on: boolean) => {
@@ -573,6 +618,17 @@ export default function CuotaCalendarioModal({ cobroId, dueDate, onClose, onChan
               <h3 className="mb-3 text-sm font-semibold text-slate-800">
                 Cuotas del {formatLocalDate(selectedDate)}
               </h3>
+              {pendingPaid ? (
+                <ConfirmarPagoCobro
+                  cobro={pendingPaid}
+                  fechaCobro={paidFecha}
+                  onFechaCobroChange={setPaidFecha}
+                  onConfirm={() => void confirmPaid()}
+                  onCancel={() => setPendingPaid(null)}
+                  confirming={confirmingPaid}
+                  formatCurrency={formatCurrency}
+                />
+              ) : null}
               <div className="space-y-3">
                 {dayCuotas.map((c) => {
                   const estado = getCuotaEstado(c);
@@ -629,8 +685,8 @@ export default function CuotaCalendarioModal({ cobroId, dueDate, onClose, onChan
                           {formatCurrency(c.amount)}
                         </span>
                       </div>
-                      {!c.paid ? (
-                        <div className="mt-2 flex flex-wrap items-center gap-2">
+                      <div className="mt-2 flex flex-wrap items-center gap-2">
+                        {!c.paid ? (
                           <button
                             type="button"
                             onClick={() => markRecordatorio(c, !c.recordatorioEnviado)}
@@ -643,24 +699,34 @@ export default function CuotaCalendarioModal({ cobroId, dueDate, onClose, onChan
                           >
                             {c.recordatorioEnviado ? "Recordada" : "Marcar recordada"}
                           </button>
-                          {c.recordatorioEnviado ? (
-                            <>
-                              <input
-                                type="date"
-                                aria-label="Día en que se recordó"
-                                key={`${c.id}-fecha-rec-${c.fechaRecordatorio ?? ""}`}
-                                defaultValue={
-                                  c.fechaRecordatorio && YMD.test(c.fechaRecordatorio)
-                                    ? c.fechaRecordatorio
-                                    : ""
-                                }
-                                onBlur={(event) => {
-                                  const next = event.target.value;
-                                  if (!next || next === c.fechaRecordatorio) return;
-                                  setFechaRecordatorio(c.id, next);
-                                }}
-                                className="rounded border border-slate-200 bg-white px-1.5 py-1 text-[11px] text-slate-700"
-                              />
+                        ) : null}
+                        <button
+                          type="button"
+                          onClick={() => markPaid(c)}
+                          className={`rounded-lg border px-2.5 py-1 text-xs font-medium cursor-pointer ${
+                            c.paid
+                              ? "border-slate-300 bg-white text-slate-600"
+                              : "border-green-300 bg-green-50 text-green-800"
+                          }`}
+                        >
+                          {c.paid ? "Marcar pendiente" : "Marcar pagada"}
+                        </button>
+                      </div>
+                      {!c.paid && c.recordatorioEnviado ? (
+                        <div className="mt-2 flex flex-wrap items-center gap-2">
+                          <DatePickerField
+                            aria-label="Día en que se recordó"
+                            value={
+                              c.fechaRecordatorio && YMD.test(c.fechaRecordatorio)
+                                ? c.fechaRecordatorio
+                                : ""
+                            }
+                            onChange={(ymd) => {
+                              if (!ymd || ymd === c.fechaRecordatorio) return;
+                              setFechaRecordatorio(c.id, ymd);
+                            }}
+                            className="rounded border border-slate-200 bg-white px-1.5 py-1 text-[11px] text-slate-900"
+                          />
                               <input
                                 type="time"
                                 aria-label="Hora en que se recordó"
@@ -678,8 +744,6 @@ export default function CuotaCalendarioModal({ cobroId, dueDate, onClose, onChan
                                 }}
                                 className="rounded border border-slate-200 bg-white px-1.5 py-1 text-[11px] text-slate-700"
                               />
-                            </>
-                          ) : null}
                         </div>
                       ) : null}
                       {c.recordatorioEnviado ? (
