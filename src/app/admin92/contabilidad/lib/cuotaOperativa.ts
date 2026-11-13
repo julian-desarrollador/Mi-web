@@ -43,12 +43,14 @@ export type CuotaDotMarker = {
   fechaRecordatorio?: string;
   /** Tiene al menos una mejora sin hacer (anillo cian) */
   mejora?: boolean;
-  /** Cuota mensual del cliente SaaS: el puntito es violeta */
+  /** Cuota de SaaS o Mi web: el puntito es rosa */
   saas?: boolean;
 };
 
+/** Puntito rosa: la cuota del cliente "saas" o "mi web". */
 export function isCuotaSaas(clientName: string): boolean {
-  return normalizeClientName(clientName) === "saas";
+  const name = normalizeClientName(clientName);
+  return name === "saas" || name === "mi web";
 }
 
 const STATS_OFFSET_DAYS = 5;

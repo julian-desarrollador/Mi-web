@@ -51,8 +51,8 @@ export const MARKER_COLORS = {
   cuotaPendiente: "#f97316",
   cuotaRecordada: "#3b82f6",
   cuotaPagada: "#16a34a",
-  /** Solo la cuota mensual del cliente SaaS */
-  cuotaSaas: "#7c3aed",
+  /** Cuotas de los clientes SaaS y Mi web */
+  cuotaSaas: "#ec4899",
   /** Mismo verde que cuota pagada: 1.er 50% ya cobrado */
   desarrollo50: "#16a34a",
 } as const;
@@ -72,7 +72,7 @@ export const CALENDAR_LEGEND = [
   { color: MARKER_COLORS.cuotaPendiente, label: "Cuota pendiente" },
   { color: MARKER_COLORS.cuotaRecordada, label: "Cuota recordada" },
   { color: MARKER_COLORS.cuotaPagada, label: "Cuota pagada · operación al día" },
-  { color: MARKER_COLORS.cuotaSaas, label: "SaaS" },
+  { color: MARKER_COLORS.cuotaSaas, label: "SaaS · Mi web" },
   { color: MARKER_COLORS.desarrollo50, label: "Desarrollo 50%" },
 ] as const;
 

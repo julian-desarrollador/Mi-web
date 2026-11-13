@@ -20,6 +20,7 @@ import {
   sortDesarrollos50,
   type Desarrollo50Item,
 } from "@/app/admin92/contabilidad/lib/desarrollos50";
+import CalendarioDiaNota from "@/app/admin92/contabilidad/components/CalendarioDiaNota";
 import ConfirmarPagoCobro from "@/app/admin92/contabilidad/components/ConfirmarPagoCobro";
 import DatePickerField from "@/app/admin92/contabilidad/components/DatePickerField";
 import CuotaCalendarDot from "@/app/admin92/contabilidad/components/CuotaCalendarDot";
@@ -136,6 +137,7 @@ export default function CuotaCalendarioModal({ cobroId, dueDate, onClose, onChan
   const [pendingPaid, setPendingPaid] = useState<CobroFull | null>(null);
   const [paidFecha, setPaidFecha] = useState(todayYmd());
   const [confirmingPaid, setConfirmingPaid] = useState(false);
+  const [dayNotes, setDayNotes] = useState<Record<string, string>>({});
   const closeRef = useRef<HTMLButtonElement>(null);
 
   const load = useCallback(async () => {
@@ -180,6 +182,46 @@ export default function CuotaCalendarioModal({ cobroId, dueDate, onClose, onChan
   useEffect(() => {
     void load();
   }, [load]);
+
+  const loadDayNotes = useCallback(async (targetMonth: string) => {
+    try {
+      const res = await fetch(
+        `/api/admin/calendario-notas?month=${encodeURIComponent(targetMonth)}`,
+        { cache: "no-store" },
+      );
+      const data = await res.json();
+      if (!res.ok) return;
+      const raw = data?.notes;
+      if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
+        setDayNotes({});
+        return;
+      }
+      const next: Record<string, string> = {};
+      for (const [date, text] of Object.entries(raw as Record<string, unknown>)) {
+        if (typeof text === "string" && text.trim()) next[date] = text;
+      }
+      setDayNotes(next);
+    } catch {
+      /* silencioso */
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadDayNotes(month);
+  }, [month, loadDayNotes]);
+
+  useEffect(() => {
+    const onFocus = () => {
+      if (document.visibilityState === "hidden") return;
+      void loadDayNotes(month);
+    };
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onFocus);
+    return () => {
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onFocus);
+    };
+  }, [month, loadDayNotes]);
 
   const handleSaved = useCallback(async () => {
     await load();
@@ -598,10 +640,27 @@ export default function CuotaCalendarioModal({ cobroId, dueDate, onClose, onChan
               cuotaTimerRows={cuotaTimers.rows}
               cuotaTimersLoading={cuotaTimers.loading}
               cuotaTimersError={cuotaTimers.error}
+              dayNotes={dayNotes}
             />
             <CambiosPendientesSidebar className="hidden lg:block" {...sidebarProps} />
           </div>
           <CambiosPendientesSidebar collapsible {...sidebarProps} />
+
+          {selectedDate ? (
+            <CalendarioDiaNota
+              key={selectedDate}
+              date={selectedDate}
+              text={dayNotes[selectedDate] ?? ""}
+              onSaved={(date, saved) => {
+                setDayNotes((prev) => {
+                  const next = { ...prev };
+                  if (saved) next[date] = saved;
+                  else delete next[date];
+                  return next;
+                });
+              }}
+            />
+          ) : null}
 
           {loading ? (
             <p className="py-6 text-center text-sm text-slate-500">Cargando cuotas…</p>

@@ -319,7 +319,7 @@ function KpiCard({ item, compareLabel }: { item: KpiView; compareLabel: string }
   );
 }
 
-/** KPI Sueño: misma altura que el resto; inicio a la izq. y dormidas a la der. */
+/** KPI Sueño: la hora arriba y las dormidas debajo, para que no se pisen. */
 function SleepKpiCard({
   period,
   alarm,
@@ -372,31 +372,33 @@ function SleepKpiCard({
         )}
       </div>
       <p className="mt-5 text-sm font-medium text-slate-500">Sueño</p>
-      <div className="mt-1 flex items-baseline justify-between gap-3">
-        <div className="flex min-w-0 items-baseline gap-1.5">
-          <strong
-            className={`tracking-tight ${
-              mainValue !== "—"
-                ? "text-3xl font-bold text-slate-950"
-                : "text-3xl font-bold text-slate-300"
-            }`}
-          >
-            {mainValue}
-          </strong>
-          <span className="text-sm font-semibold text-indigo-600">{mainHint}</span>
-        </div>
-        <p className="shrink-0 text-right text-xs font-semibold text-amber-700">
-          <span className="mr-1 text-[10px] font-bold uppercase tracking-[0.14em] text-amber-600">
-            Dormidas
-          </span>
-          {sleepLabel}
-        </p>
+      <div className="mt-1 flex items-baseline gap-1.5">
+        <strong
+          className={`tracking-tight ${
+            mainValue !== "—"
+              ? "text-3xl font-bold text-slate-950"
+              : "text-3xl font-bold text-slate-300"
+          }`}
+        >
+          {mainValue}
+        </strong>
+        <span className="text-sm font-semibold text-indigo-600">{mainHint}</span>
       </div>
+      <p className="mt-1 text-xs font-semibold text-amber-700">
+        <span className="mr-1 text-[10px] font-bold uppercase tracking-[0.14em] text-amber-600">
+          Dormidas
+        </span>
+        {sleepLabel}
+      </p>
       {period === "day" ? (
-        <p className="mt-2 text-xs font-semibold text-slate-600">
-          <span className="text-amber-700">Sonó</span> · {alarm?.rangAt ?? "Sin dato"}
-          <span className="mx-1.5 text-slate-300">·</span>
-          <span className="text-orange-600">Pospuesta</span> · {snoozeLabel}
+        <p className="mt-2 flex flex-wrap gap-x-1.5 text-xs font-semibold leading-relaxed text-slate-600">
+          <span>
+            <span className="text-amber-700">Sonó</span> · {alarm?.rangAt ?? "Sin dato"}
+          </span>
+          <span className="text-slate-300">·</span>
+          <span>
+            <span className="text-orange-600">Pospuesta</span> · {snoozeLabel}
+          </span>
         </p>
       ) : null}
       <p className="mt-3 text-xs text-slate-400">{compareLabel}</p>
@@ -977,7 +979,7 @@ export default function ErpDashboard({
     return (
       <div className="space-y-4" aria-busy="true" aria-label="Cargando métricas">
         <div className="h-24 animate-pulse rounded-2xl bg-slate-200/70" />
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-6">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 6 }, (_, index) => (
             <div key={index} className="h-44 animate-pulse rounded-2xl bg-slate-200/70" />
           ))}
@@ -1123,7 +1125,7 @@ export default function ErpDashboard({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {primaryKpis.map((item) =>
             item.kind === "training" ? (
               <TrainingKpiCard

@@ -16,7 +16,7 @@ type Props = {
   size?: "sm" | "md";
   /** Tiene mejoras sin hacer: anillo cian, por fuera de los de cambio y estadísticas */
   mejora?: boolean;
-  /** Cuota del cliente SaaS: el relleno es violeta, no el del estado */
+  /** Cuota de SaaS o Mi web: el relleno es rosa, no el del estado */
   saas?: boolean;
 };
 
@@ -61,12 +61,12 @@ export default function CuotaCalendarDot({ estado, border, size = "sm", mejora =
 
   const outer = size === "sm" ? "h-[18px] w-[18px]" : "h-[22px] w-[22px]";
   const inner = size === "sm" ? "h-1.5 w-1.5" : "h-2 w-2";
-  const saasDot = size === "sm" ? "h-2.5 w-2.5" : "h-3 w-3";
+  const saasDot = size === "sm" ? "h-2 w-2" : "h-2.5 w-2.5";
   const dotClass = saas ? saasDot : inner;
   const dotStyle = saas
     ? {
         backgroundColor: fill,
-        boxShadow: "0 0 0 1.5px #ddd6fe, 0 0 7px 2px #7c3aedcc",
+        boxShadow: "0 0 0 1.5px #fbcfe8, 0 0 7px 2px #ec4899cc",
       }
     : { backgroundColor: fill };
   const ringWidth = size === "sm" ? 2.5 : 3;
@@ -79,7 +79,7 @@ export default function CuotaCalendarDot({ estado, border, size = "sm", mejora =
       <span
         className={`${dotClass} shrink-0 rounded-full`}
         style={dotStyle}
-        title={saas ? "SaaS" : undefined}
+        title={saas ? "SaaS · Mi web" : undefined}
         aria-hidden
       />
     );

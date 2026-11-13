@@ -424,6 +424,7 @@ function Admin92PageContent() {
     try {
       const res = await fetch(
         `/api/admin/calendario-notas?month=${encodeURIComponent(month)}`,
+        { cache: "no-store" },
       );
       const data = await res.json();
       if (!res.ok) return;
@@ -479,6 +480,20 @@ function Admin92PageContent() {
   useEffect(() => {
     if (activeTab !== "contabilidad") return;
     void fetchDayNotes(contabilidadMonth);
+  }, [activeTab, contabilidadMonth]);
+
+  useEffect(() => {
+    if (activeTab !== "contabilidad") return;
+    const onFocus = () => {
+      if (document.visibilityState === "hidden") return;
+      void fetchDayNotes(contabilidadMonth);
+    };
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onFocus);
+    return () => {
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onFocus);
+    };
   }, [activeTab, contabilidadMonth]);
 
   /** Flechas del teclado cambian el día seleccionado (← → ±1 día, ↑ ↓ ±1 semana) */
