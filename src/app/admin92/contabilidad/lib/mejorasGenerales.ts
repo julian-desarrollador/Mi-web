@@ -42,6 +42,18 @@ export function mismaAplicacion(a: AplicacionRef, b: AplicacionRef): boolean {
   return aplicacionKey(a) === aplicacionKey(b);
 }
 
+/** Misma aplicación, marcada hecha (con su fecha de entrega) o pendiente (sin fecha). */
+export function conHecho(
+  app: MejoraGeneralAplicacion,
+  done: boolean,
+  fechaRealizada?: string,
+): MejoraGeneralAplicacion {
+  const base = { clientName: app.clientName, ...(app.servicio ? { servicio: app.servicio } : {}) };
+  if (!done) return { ...base, done: false };
+  const fecha = fechaRealizada || app.fechaRealizada;
+  return { ...base, done: true, ...(fecha ? { fechaRealizada: fecha } : {}) };
+}
+
 export function etiquetaAplicacion(app: AplicacionRef): string {
   const servicio = app.servicio?.trim();
   return servicio ? `${app.clientName} (${servicio})` : app.clientName;
@@ -123,12 +135,12 @@ export function useMejorasGenerales() {
   }, []);
 
   const add = useCallback(
-    (text: string) =>
+    (text: string, createdAt?: string) =>
       run(async () => {
         const res = await fetch("/api/admin/mejoras-generales", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text }),
+          body: JSON.stringify({ text, ...(createdAt ? { createdAt } : {}) }),
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data?.error || "No se pudo guardar la mejora.");
@@ -160,5 +172,20 @@ export function useMejorasGenerales() {
     [run],
   );
 
-  return { items, loading, saving, error, add, remove, setAplicaciones };
+  /** Cambia el día en que se anotó la mejora */
+  const setFecha = useCallback(
+    (id: string, createdAt: string) =>
+      run(async () => {
+        const res = await fetch(`/api/admin/mejoras-generales/${id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ createdAt }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data?.error || "No se pudo cambiar la fecha.");
+      }),
+    [run],
+  );
+
+  return { items, loading, saving, error, add, remove, setAplicaciones, setFecha };
 }
