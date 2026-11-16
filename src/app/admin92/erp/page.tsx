@@ -9,7 +9,7 @@ import ErpLiveTimer, { type MoodSessionSignal } from "@/app/admin92/erp/componen
 import { clockNow } from "@/app/admin92/erp/lib/useErpMoods";
 import ErpEntregables from "@/app/admin92/erp/components/ErpEntregables";
 import ErpHabitos from "@/app/admin92/erp/components/ErpHabitos";
-import ErpNoFumar from "@/app/admin92/erp/components/ErpNoFumar";
+import ErpRutina from "@/app/admin92/erp/components/ErpRutina";
 import ErpPeriodPicker from "@/app/admin92/erp/components/ErpPeriodPicker";
 import ErpReflection from "@/app/admin92/erp/components/ErpReflection";
 import {
@@ -468,7 +468,7 @@ export default function ErpPage() {
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex rounded-xl border border-slate-200 bg-white p-1 shadow-sm">
               <ErpHabitos />
-              <ErpNoFumar />
+              <ErpRutina />
               <ErpEntregables />
               <button
                 type="button"
