@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { BookOpen, ChevronLeft, ChevronRight, Piano, X } from "lucide-react";
 import {
   formatWeekRangeLabel,
   mondayOfWeek,
@@ -92,8 +92,13 @@ function dayMonth(ymd: string): string {
   return `${Number(day)}/${Number(month)}`;
 }
 
-function dayMarks(log: ErpDayLog | undefined): { training: boolean; food: boolean } {
-  if (!log) return { training: false, food: false };
+function dayMarks(log: ErpDayLog | undefined): {
+  training: boolean;
+  food: boolean;
+  reading: boolean;
+  piano: boolean;
+} {
+  if (!log) return { training: false, food: false, reading: false, piano: false };
   const training = normalizeTraining(log.training);
   const food = normalizeFood(log.food);
   return {
@@ -101,6 +106,8 @@ function dayMarks(log: ErpDayLog | undefined): { training: boolean; food: boolea
       isTrainingDone(training[key]),
     ),
     food: MEAL_META.some(({ key }) => food[key].done),
+    reading: Boolean(log.reading?.done),
+    piano: isTrainingDone(log.piano),
   };
 }
 
@@ -116,6 +123,13 @@ type MealDetail = {
   value: string;
 };
 
+type HabitDetail = {
+  key: "reading" | "piano";
+  label: string;
+  headline: string;
+  note: string;
+};
+
 function splitNotes(notes: string): string[] {
   return notes
     .split(/\s+[-–—]\s+/)
@@ -125,7 +139,7 @@ function splitNotes(notes: string): string[] {
 
 function describeDay(
   log: ErpDayLog | undefined,
-): { training: TrainingDetail[]; meals: MealDetail[] } | null {
+): { training: TrainingDetail[]; meals: MealDetail[]; habits: HabitDetail[] } | null {
   if (!log) return null;
   const training = normalizeTraining(log.training);
   const food = normalizeFood(log.food);
@@ -142,8 +156,27 @@ function describeDay(
     if (!meal.done) return [];
     return [{ key, label, value: meal.quality != null ? String(meal.quality) : "hecha" }];
   });
-  if (trainingLines.length === 0 && meals.length === 0) return null;
-  return { training: trainingLines, meals };
+  const habits: HabitDetail[] = [];
+  if (log.reading?.done) {
+    const pages = log.reading.pages;
+    habits.push({
+      key: "reading",
+      label: "Lectura",
+      headline: pages != null && pages > 0 ? `${pages} pág` : "Leído",
+      note: (log.reading.notes ?? "").trim(),
+    });
+  }
+  if (isTrainingDone(log.piano)) {
+    const minutes = log.piano.minutes;
+    habits.push({
+      key: "piano",
+      label: "Piano",
+      headline: minutes != null && minutes > 0 ? `${minutes} min` : "Tocado",
+      note: (log.piano.notes ?? "").trim(),
+    });
+  }
+  if (trainingLines.length === 0 && meals.length === 0 && habits.length === 0) return null;
+  return { training: trainingLines, meals, habits };
 }
 
 export default function ErpTrainingFoodCalendar({ anchorDate, onClose }: Props) {
@@ -235,6 +268,8 @@ export default function ErpTrainingFoodCalendar({ anchorDate, onClose }: Props) 
     const bits = [
       marks.training ? "con entrenamiento" : "",
       marks.food ? "con comida" : "",
+      marks.reading ? "con lectura" : "",
+      marks.piano ? "con piano" : "",
     ].filter(Boolean);
     return (
       <button
@@ -259,12 +294,18 @@ export default function ErpTrainingFoodCalendar({ anchorDate, onClose }: Props) 
         >
           {Number(date.slice(8))}
         </span>
-        <span className="flex h-2 items-center gap-1">
+        <span className="flex h-3.5 items-center gap-1">
           {marks.training ? (
             <span className="h-2 w-2 rounded-full bg-[#1d4e89]" aria-hidden />
           ) : null}
           {marks.food ? (
             <span className="h-2 w-2 rounded-full bg-[#c2410c]" aria-hidden />
+          ) : null}
+          {marks.reading ? (
+            <BookOpen className="h-3.5 w-3.5 text-rose-700" aria-hidden />
+          ) : null}
+          {marks.piano ? (
+            <Piano className="h-3.5 w-3.5 text-violet-700" aria-hidden />
           ) : null}
         </span>
       </button>
@@ -348,6 +389,14 @@ export default function ErpTrainingFoodCalendar({ anchorDate, onClose }: Props) 
             <span className="h-2 w-2 rounded-full bg-[#c2410c]" aria-hidden />
             Comida
           </span>
+          <span className="inline-flex items-center gap-1.5">
+            <BookOpen className="h-3.5 w-3.5 text-rose-700" aria-hidden />
+            Lectura
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <Piano className="h-3.5 w-3.5 text-violet-700" aria-hidden />
+            Piano
+          </span>
         </div>
 
         {view === "month" ? (
@@ -397,6 +446,35 @@ export default function ErpTrainingFoodCalendar({ anchorDate, onClose }: Props) 
                         </span>
                       ))}
                     </div>
+                  ) : null}
+                </div>
+              ))}
+            </div>
+          ) : null}
+          {!loading && detail && detail.habits.length > 0 ? (
+            <div className="mt-2 space-y-2">
+              {detail.habits.map((habit) => (
+                <div
+                  key={habit.key}
+                  className={`rounded-xl border border-[#c5d4e8] border-l-4 bg-white px-3 py-2 ${
+                    habit.key === "reading" ? "border-l-rose-600" : "border-l-violet-600"
+                  }`}
+                >
+                  <p
+                    className={`inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide ${
+                      habit.key === "reading" ? "text-rose-700" : "text-violet-700"
+                    }`}
+                  >
+                    {habit.key === "reading" ? (
+                      <BookOpen className="h-3.5 w-3.5" aria-hidden />
+                    ) : (
+                      <Piano className="h-3.5 w-3.5" aria-hidden />
+                    )}
+                    {habit.label}
+                  </p>
+                  <p className="mt-0.5 text-sm font-semibold text-[#0f2744]">{habit.headline}</p>
+                  {habit.note ? (
+                    <p className="mt-1 text-xs font-medium text-[#0f2744]">{habit.note}</p>
                   ) : null}
                 </div>
               ))}

@@ -168,6 +168,10 @@ export type PeriodStats = {
   trainingMinutes: number;
   englishDays: number;
   englishMinutes: number;
+  readingDays: number;
+  readingPages: number;
+  pianoDays: number;
+  pianoMinutes: number;
   creatineDays: number;
   /** null si ningún día del período registró sueño */
   sleepAvg: number | null;
@@ -237,6 +241,10 @@ export function computePeriodStats(
   let trainingMinutes = 0;
   let englishDays = 0;
   let englishMinutes = 0;
+  let readingDays = 0;
+  let readingPages = 0;
+  let pianoDays = 0;
+  let pianoMinutes = 0;
   let creatineDays = 0;
   const sleepVals: number[] = [];
   const mealCountVals: number[] = [];
@@ -295,6 +303,14 @@ export function computePeriodStats(
       if (isTrainingDone(log.english)) {
         englishDays += 1;
         englishMinutes += effectiveEnglishMinutes(log.english);
+      }
+      if (log.reading?.done) {
+        readingDays += 1;
+        readingPages += log.reading.pages ?? 0;
+      }
+      if (isTrainingDone(log.piano)) {
+        pianoDays += 1;
+        pianoMinutes += log.piano.minutes ?? 0;
       }
       if (log.creatine) creatineDays += 1;
     }
@@ -431,6 +447,10 @@ export function computePeriodStats(
     trainingMinutes,
     englishDays,
     englishMinutes,
+    readingDays,
+    readingPages,
+    pianoDays,
+    pianoMinutes,
     creatineDays,
     sleepAvg,
     foodMealsAvg,
@@ -464,8 +484,8 @@ export type KpiView = {
   value: string;
   unit: string;
   change: number | null;
-  color: "blue" | "cyan" | "violet" | "emerald" | "indigo" | "amber";
-  kind: "work" | "daily" | "training" | "english" | "creatine" | "sleep" | "food";
+  color: "blue" | "cyan" | "violet" | "emerald" | "indigo" | "amber" | "rose";
+  kind: "work" | "daily" | "training" | "english" | "reading" | "piano" | "creatine" | "sleep" | "food";
   /** Líneas secundarias compactas (ej. sin hoy, lun–vie) */
   details?: string[];
 };
@@ -562,6 +582,46 @@ export function buildKpis(
       change: previous ? pctChange(current.englishDays, previous.englishDays) : null,
       color: "emerald",
       kind: "english",
+    },
+    {
+      label: "Lectura",
+      value:
+        period === "day"
+          ? current.readingDays > 0
+            ? "Sí"
+            : "No"
+          : String(current.readingDays),
+      unit:
+        period === "day"
+          ? current.readingPages > 0
+            ? `${current.readingPages} pág`
+            : ""
+          : current.readingPages > 0
+            ? `días · ${current.readingPages} pág`
+            : "días",
+      change: previous ? pctChange(current.readingDays, previous.readingDays) : null,
+      color: "rose",
+      kind: "reading",
+    },
+    {
+      label: "Piano",
+      value:
+        period === "day"
+          ? current.pianoDays > 0
+            ? "Sí"
+            : "No"
+          : String(current.pianoDays),
+      unit:
+        period === "day"
+          ? current.pianoMinutes > 0
+            ? `${current.pianoMinutes} min`
+            : ""
+          : current.pianoMinutes > 0
+            ? `días · ${current.pianoMinutes} min`
+            : "días",
+      change: previous ? pctChange(current.pianoDays, previous.pianoDays) : null,
+      color: "violet",
+      kind: "piano",
     },
     {
       label: "Creatina",
@@ -704,6 +764,16 @@ function formatTrainingWeek(stats: PeriodStats): string {
   return `${stats.trainingDays} d`;
 }
 
+function formatReadingWeek(stats: PeriodStats): string {
+  if (stats.readingPages > 0) return `${stats.readingDays} d · ${stats.readingPages} pág`;
+  return `${stats.readingDays} d`;
+}
+
+function formatPianoWeek(stats: PeriodStats): string {
+  if (stats.pianoMinutes > 0) return `${stats.pianoDays} d · ${stats.pianoMinutes} min`;
+  return `${stats.pianoDays} d`;
+}
+
 function formatEnglishWeek(stats: PeriodStats): string {
   if (stats.englishMinutes > 0) {
     return `${stats.englishDays} d · ${stats.englishMinutes} min`;
@@ -802,6 +872,24 @@ export function buildWeekCompareRows(
       b ? formatEnglishWeek(b) : "—",
       a?.englishDays ?? null,
       b?.englishDays ?? null,
+      (d) => formatSignedNumber(d, 0),
+    ),
+    row(
+      "reading",
+      "Lectura",
+      a ? formatReadingWeek(a) : "—",
+      b ? formatReadingWeek(b) : "—",
+      a?.readingDays ?? null,
+      b?.readingDays ?? null,
+      (d) => formatSignedNumber(d, 0),
+    ),
+    row(
+      "piano",
+      "Piano",
+      a ? formatPianoWeek(a) : "—",
+      b ? formatPianoWeek(b) : "—",
+      a?.pianoDays ?? null,
+      b?.pianoDays ?? null,
       (d) => formatSignedNumber(d, 0),
     ),
     row(

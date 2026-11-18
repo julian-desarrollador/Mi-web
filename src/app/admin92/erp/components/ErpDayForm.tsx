@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   BookOpen,
   Check,
+  Piano,
   Dumbbell,
   FlaskConical,
   Home,
@@ -22,6 +23,7 @@ import {
   emptyDayLog,
   emptyFood,
   emptyMeal,
+  emptyReadingSession,
   emptyTrainingSession,
   emptyWorkTimers,
   ENGLISH_FIXED_MINUTES,
@@ -103,6 +105,8 @@ function cloneLog(log: ErpDayLog): ErpDayLog {
         minutes: english.done ? ENGLISH_FIXED_MINUTES : english.minutes,
       };
     })(),
+    reading: { ...(log.reading ?? emptyReadingSession()) },
+    piano: { ...(log.piano ?? emptyTrainingSession()) },
     activeWorkTimer: log.activeWorkTimer
       ? {
           ...log.activeWorkTimer,
@@ -301,6 +305,24 @@ export default function ErpDayForm({
     setDraft((prev) => ({
       ...prev,
       english: { ...prev.english, ...patch },
+    }));
+  };
+
+  const toggleReading = () => {
+    setDraft((prev) => ({
+      ...prev,
+      reading: prev.reading.done
+        ? emptyReadingSession(false)
+        : { ...prev.reading, done: true },
+    }));
+  };
+
+  const togglePiano = () => {
+    setDraft((prev) => ({
+      ...prev,
+      piano: prev.piano.done
+        ? emptyTrainingSession(false)
+        : { ...prev.piano, done: true },
     }));
   };
 
@@ -723,7 +745,7 @@ export default function ErpDayForm({
                       )}
                       {key === "natacion" ? (
                         <p className="mt-1 flex h-[34px] items-center rounded-lg border border-slate-200 bg-slate-50 px-2.5 font-mono text-sm text-slate-700">
-                          1:00
+                          {formatMinutesAsHm(NATACION_FIXED_MINUTES)}
                         </p>
                       ) : (
                         <input
@@ -872,6 +894,144 @@ export default function ErpDayForm({
         ) : (
           <div className="rounded-xl border border-dashed border-emerald-200 bg-white/70 px-3 py-2 text-xs text-slate-500">
             Si ese día hiciste inglés, marcá y opcionalmente agregá un detalle.
+          </div>
+        )}
+      </section>
+
+      <section className="rounded-2xl border border-rose-200/80 bg-gradient-to-br from-rose-50/80 via-white to-orange-50/40 p-4 shadow-sm">
+        <div className="mb-2 flex items-center justify-between gap-3">
+          <div>
+            <h3 className="text-sm font-bold text-slate-900">Lectura</h3>
+            <p className="mt-0.5 text-xs text-slate-500">Páginas y el libro, si lo anotás.</p>
+          </div>
+          <button
+            type="button"
+            onClick={toggleReading}
+            className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition cursor-pointer ${
+              draft.reading.done
+                ? "bg-rose-100 text-rose-800 ring-1 ring-rose-200"
+                : "bg-white text-slate-600 ring-1 ring-slate-200"
+            }`}
+          >
+            <BookOpen className="h-4 w-4" />
+            {draft.reading.done ? "Hecho" : "Marcar"}
+            {draft.reading.done && <Check className="h-3.5 w-3.5 text-rose-600" />}
+          </button>
+        </div>
+        {draft.reading.done ? (
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-[110px_1fr]">
+            <label className="text-[11px] font-medium text-slate-600">
+              Páginas
+              <input
+                type="number"
+                min={0}
+                inputMode="numeric"
+                aria-label="Páginas leídas"
+                value={draft.reading.pages ?? ""}
+                onChange={(event) => {
+                  const raw = event.target.value;
+                  if (raw === "") {
+                    setDraft((prev) => ({ ...prev, reading: { ...prev.reading, pages: null } }));
+                    return;
+                  }
+                  const pages = Number(raw);
+                  if (!Number.isInteger(pages) || pages < 0 || pages > 9999) return;
+                  setDraft((prev) => ({ ...prev, reading: { ...prev.reading, pages } }));
+                }}
+                style={{ backgroundColor: "#ffffff", color: "#0f172a" }}
+                className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900"
+              />
+            </label>
+            <label className="text-[11px] font-medium text-slate-600">
+              Libro
+              <input
+                type="text"
+                placeholder="Nombre del libro"
+                aria-label="Libro"
+                value={draft.reading.notes}
+                onChange={(event) =>
+                  setDraft((prev) => ({
+                    ...prev,
+                    reading: { ...prev.reading, notes: event.target.value },
+                  }))
+                }
+                style={{ backgroundColor: "#ffffff", color: "#0f172a" }}
+                className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900"
+              />
+            </label>
+          </div>
+        ) : (
+          <div className="rounded-xl border border-dashed border-rose-200 bg-white/70 px-3 py-2 text-xs text-slate-500">
+            Si leíste, marcá y anotá las páginas y el libro.
+          </div>
+        )}
+      </section>
+
+      <section className="rounded-2xl border border-violet-200/80 bg-gradient-to-br from-violet-50/80 via-white to-fuchsia-50/40 p-4 shadow-sm">
+        <div className="mb-2 flex items-center justify-between gap-3">
+          <div>
+            <h3 className="text-sm font-bold text-slate-900">Piano</h3>
+            <p className="mt-0.5 text-xs text-slate-500">Minutos y la pieza, si la anotás.</p>
+          </div>
+          <button
+            type="button"
+            onClick={togglePiano}
+            className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition cursor-pointer ${
+              draft.piano.done
+                ? "bg-violet-100 text-violet-800 ring-1 ring-violet-200"
+                : "bg-white text-slate-600 ring-1 ring-slate-200"
+            }`}
+          >
+            <Piano className="h-4 w-4" />
+            {draft.piano.done ? "Hecho" : "Marcar"}
+            {draft.piano.done && <Check className="h-3.5 w-3.5 text-violet-600" />}
+          </button>
+        </div>
+        {draft.piano.done ? (
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-[110px_1fr]">
+            <label className="text-[11px] font-medium text-slate-600">
+              Minutos
+              <input
+                type="number"
+                min={0}
+                inputMode="numeric"
+                aria-label="Minutos de piano"
+                value={draft.piano.minutes ?? ""}
+                onChange={(event) => {
+                  const raw = event.target.value;
+                  if (raw === "") {
+                    setDraft((prev) => ({ ...prev, piano: { ...prev.piano, minutes: null } }));
+                    return;
+                  }
+                  const minutes = Number(raw);
+                  if (!Number.isInteger(minutes) || minutes < 0 || minutes > 9999) return;
+                  setDraft((prev) => ({ ...prev, piano: { ...prev.piano, minutes } }));
+                }}
+                style={{ backgroundColor: "#ffffff", color: "#0f172a" }}
+                className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900"
+              />
+            </label>
+            <label className="text-[11px] font-medium text-slate-600">
+              Pieza
+              <input
+                type="text"
+                placeholder="Pieza o ejercicio"
+                aria-label="Pieza de piano"
+                value={draft.piano.notes ?? ""}
+                onChange={(event) =>
+                  setDraft((prev) => ({
+                    ...prev,
+                    piano: { ...prev.piano, notes: event.target.value },
+                  }))
+                }
+                style={{ backgroundColor: "#ffffff", color: "#0f172a" }}
+                className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900"
+              />
+            </label>
+          </div>
+        ) : (
+          <div className="rounded-xl border border-dashed border-violet-200 bg-white/70 px-3 py-2 text-xs text-slate-500">
+            Si tocaste, marcá y anotá los minutos y la pieza.
           </div>
         )}
       </section>

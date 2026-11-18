@@ -21,6 +21,7 @@ import {
   Megaphone,
   Moon,
   Newspaper,
+  Piano,
   Radio,
   Salad,
   Sparkles,
@@ -79,6 +80,7 @@ const colorClasses = {
   cyan: "bg-cyan-50 text-cyan-600 ring-cyan-100",
   violet: "bg-violet-50 text-violet-600 ring-violet-100",
   emerald: "bg-emerald-50 text-emerald-600 ring-emerald-100",
+  rose: "bg-rose-50 text-rose-600 ring-rose-100",
   indigo: "bg-indigo-50 text-indigo-600 ring-indigo-100",
   amber: "bg-amber-50 text-amber-600 ring-amber-100",
 } as const;
@@ -88,6 +90,8 @@ const kpiIcons: Record<KpiView["kind"], ComponentType<{ className?: string }>> =
   daily: Activity,
   training: Dumbbell,
   english: BookOpen,
+  reading: BookOpen,
+  piano: Piano,
   creatine: FlaskConical,
   sleep: Moon,
   food: Salad,
@@ -768,12 +772,16 @@ function TrainingKpiCard({
 }
 
 function DualHabitKpiCard({
-  english,
-  creatine,
+  left,
+  right,
+  LeftIcon,
+  RightIcon,
   compareLabel,
 }: {
-  english: KpiView;
-  creatine: KpiView;
+  left: KpiView;
+  right: KpiView;
+  LeftIcon: ComponentType<{ className?: string }>;
+  RightIcon: ComponentType<{ className?: string }>;
   compareLabel: string;
 }) {
   const renderHalf = (item: KpiView, Icon: ComponentType<{ className?: string }>) => {
@@ -819,9 +827,9 @@ function DualHabitKpiCard({
   return (
     <article className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_8px_30px_rgba(15,23,42,0.04)] transition hover:-translate-y-0.5 hover:shadow-[0_14px_36px_rgba(15,23,42,0.08)]">
       <div className="flex items-stretch gap-3">
-        {renderHalf(english, BookOpen)}
+        {renderHalf(left, LeftIcon)}
         <div className="w-px shrink-0 self-stretch bg-slate-100" />
-        {renderHalf(creatine, FlaskConical)}
+        {renderHalf(right, RightIcon)}
       </div>
     </article>
   );
@@ -908,11 +916,15 @@ export default function ErpDashboard({
   const primaryKpis = kpis.filter(
     (item) =>
       item.kind !== "english" &&
+      item.kind !== "reading" &&
+      item.kind !== "piano" &&
       item.kind !== "creatine" &&
       item.kind !== "sleep",
   );
   const englishKpi = kpis.find((item) => item.kind === "english");
   const creatineKpi = kpis.find((item) => item.kind === "creatine");
+  const readingKpi = kpis.find((item) => item.kind === "reading");
+  const pianoKpi = kpis.find((item) => item.kind === "piano");
   const sleepKpi = kpis.find((item) => item.kind === "sleep");
   const alarm = alarmFromLog(focusLog);
   const notesEntries = periodLogs
@@ -1148,8 +1160,19 @@ export default function ErpDashboard({
           )}
           {englishKpi && creatineKpi && (
             <DualHabitKpiCard
-              english={englishKpi}
-              creatine={creatineKpi}
+              left={englishKpi}
+              right={creatineKpi}
+              LeftIcon={BookOpen}
+              RightIcon={FlaskConical}
+              compareLabel={compareLabel}
+            />
+          )}
+          {readingKpi && pianoKpi && (
+            <DualHabitKpiCard
+              left={readingKpi}
+              right={pianoKpi}
+              LeftIcon={BookOpen}
+              RightIcon={Piano}
               compareLabel={compareLabel}
             />
           )}

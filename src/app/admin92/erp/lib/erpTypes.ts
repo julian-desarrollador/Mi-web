@@ -77,6 +77,14 @@ export type ErpTrainingSession = {
   notes?: string;
 };
 
+/** Lectura: hecho + páginas + el libro */
+export type ErpReadingSession = {
+  done: boolean;
+  /** Páginas leídas; null = no registradas */
+  pages: number | null;
+  notes: string;
+};
+
 export type ErpTraining = {
   gimnasio: ErpTrainingSession;
   natacion: ErpTrainingSession;
@@ -106,6 +114,10 @@ export type ErpDayLog = {
   training: ErpTraining;
   /** Práctica de inglés, separada del entrenamiento físico */
   english: ErpTrainingSession;
+  /** Lectura del día: páginas, no minutos */
+  reading: ErpReadingSession;
+  /** Práctica de piano: minutos escritos a mano */
+  piano: ErpTrainingSession;
   /** Tomó creatina ese día */
   creatine: boolean;
   /** null = no registrado ese día */
@@ -773,13 +785,17 @@ export function emptyTrainingSession(done = false): ErpTrainingSession {
   return { done, minutes: null, notes: "" };
 }
 
-/** Natación siempre dura 1 hora fija */
-export const NATACION_FIXED_MINUTES = 60;
+export function emptyReadingSession(done = false): ErpReadingSession {
+  return { done, pages: null, notes: "" };
+}
+
+/** Natación siempre dura 45 minutos fijos */
+export const NATACION_FIXED_MINUTES = 45;
 
 /** Inglés siempre dura 1 hora fija */
 export const ENGLISH_FIXED_MINUTES = 60;
 
-/** Minutos efectivos de una sesión (natación = siempre 60 si está hecha) */
+/** Minutos efectivos de una sesión (natación = siempre 45 si está hecha) */
 export function effectiveTrainingMinutes(
   key: TrainingCategoryKey,
   session: ErpTrainingSession | boolean | undefined,
@@ -817,6 +833,8 @@ export function emptyDayLog(date: string): ErpDayLog {
       casa: emptyTrainingSession(),
     },
     english: emptyTrainingSession(),
+    reading: emptyReadingSession(),
+    piano: emptyTrainingSession(),
     creatine: false,
     sleepHours: null,
     food: emptyFood(),
@@ -981,6 +999,64 @@ function isValidTime(value: string): boolean {
   if (!/^\d{2}:\d{2}$/.test(value)) return false;
   const [hours, minutes] = value.split(":").map(Number);
   return hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59;
+}
+
+function readPracticeCount(raw: unknown): number | null | undefined {
+  if (raw === null || raw === undefined || raw === "") return null;
+  if (typeof raw !== "number" || !Number.isInteger(raw) || raw < 0 || raw > 9999) return undefined;
+  return raw;
+}
+
+function readReadingSession(
+  raw: unknown,
+): { ok: true; session: ErpReadingSession } | { ok: false; error: string } {
+  if (raw === undefined) return { ok: true, session: emptyReadingSession() };
+  if (!raw || typeof raw !== "object") {
+    return { ok: false, error: "Los datos de lectura son inválidos" };
+  }
+  const session = raw as Record<string, unknown>;
+  if (typeof session.done !== "boolean") {
+    return { ok: false, error: "El estado de lectura es inválido" };
+  }
+  const pages = readPracticeCount(session.pages);
+  if (pages === undefined) return { ok: false, error: "Las páginas de lectura son inválidas" };
+  if (session.notes !== undefined && typeof session.notes !== "string") {
+    return { ok: false, error: "El detalle de lectura es inválido" };
+  }
+  return {
+    ok: true,
+    session: {
+      done: session.done,
+      pages: session.done ? pages : null,
+      notes: typeof session.notes === "string" ? session.notes.trim().slice(0, 1000) : "",
+    },
+  };
+}
+
+function readPianoSession(
+  raw: unknown,
+): { ok: true; session: ErpTrainingSession } | { ok: false; error: string } {
+  if (raw === undefined) return { ok: true, session: emptyTrainingSession() };
+  if (!raw || typeof raw !== "object") {
+    return { ok: false, error: "Los datos de piano son inválidos" };
+  }
+  const session = raw as Record<string, unknown>;
+  if (typeof session.done !== "boolean") {
+    return { ok: false, error: "El estado de piano es inválido" };
+  }
+  const minutes = readPracticeCount(session.minutes);
+  if (minutes === undefined) return { ok: false, error: "Los minutos de piano son inválidos" };
+  if (session.notes !== undefined && typeof session.notes !== "string") {
+    return { ok: false, error: "El detalle de piano es inválido" };
+  }
+  return {
+    ok: true,
+    session: {
+      done: session.done,
+      minutes: session.done ? minutes : null,
+      notes: typeof session.notes === "string" ? session.notes.trim().slice(0, 1000) : "",
+    },
+  };
 }
 
 export type ErpDayLogValidation =
@@ -1189,6 +1265,11 @@ export function validateErpDayLog(
     };
   }
 
+  const reading = readReadingSession(value.reading);
+  if (!reading.ok) return reading;
+  const piano = readPianoSession(value.piano);
+  if (!piano.ok) return piano;
+
   let creatine = false;
   if (value.creatine !== undefined) {
     if (typeof value.creatine !== "boolean") {
@@ -1254,6 +1335,8 @@ export function validateErpDayLog(
       activeWorkTimer,
       training,
       english,
+      reading: reading.session,
+      piano: piano.session,
       creatine,
       sleepHours,
       food,

@@ -1,0 +1,535 @@
+[     414ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[     581ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=28gzf4PyRDVgIEo8PdM_V' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[     907ms] [LOG] %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[     907ms] [LOG] %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {route: /admin92/erp, path: /admin92/erp} @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[     909ms] [LOG] %c[Vercel Web Analytics]%c [view] http://127.0.0.1:6120/admin92/erp color: rgb(120, 120, 120) color: inherit {o: http://127.0.0.1:6120/admin92/erp, sv: 0.1.3, sdkn: @vercel/analytics/next, sdkv: 1.6.1, dp: /admin92/erp} /_vercel/insights/view @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[    1315ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[    1316ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[    1317ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[    1317ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[    1716ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=28gzf4PyRDVgIEo8PdM_V' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[    2728ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=28gzf4PyRDVgIEo8PdM_V' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[    3739ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=28gzf4PyRDVgIEo8PdM_V' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[    4744ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=28gzf4PyRDVgIEo8PdM_V' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[    5752ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=28gzf4PyRDVgIEo8PdM_V' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[   10761ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=28gzf4PyRDVgIEo8PdM_V' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[   15782ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=28gzf4PyRDVgIEo8PdM_V' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[   20798ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=28gzf4PyRDVgIEo8PdM_V' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[   25848ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=28gzf4PyRDVgIEo8PdM_V' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[   30907ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=28gzf4PyRDVgIEo8PdM_V' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[   35952ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=28gzf4PyRDVgIEo8PdM_V' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[   41270ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=28gzf4PyRDVgIEo8PdM_V' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[   41531ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[   41739ms] [LOG] %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[   41739ms] [LOG] %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {route: /admin92/erp, path: /admin92/erp} @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[   41748ms] [LOG] %c[Vercel Web Analytics]%c [view] http://127.0.0.1:6120/admin92/erp color: rgb(120, 120, 120) color: inherit {o: http://127.0.0.1:6120/admin92/erp, sv: 0.1.3, sdkn: @vercel/analytics/next, sdkv: 1.6.1, dp: /admin92/erp} /_vercel/insights/view @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[   42069ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=f1_i67MKoIZR9eL9iIx3F' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[   42124ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[   42124ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[   42125ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[   42125ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[   43379ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=f1_i67MKoIZR9eL9iIx3F' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[   45129ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=f1_i67MKoIZR9eL9iIx3F' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[   50124ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=f1_i67MKoIZR9eL9iIx3F' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[   53678ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=f1_i67MKoIZR9eL9iIx3F' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[   55839ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=f1_i67MKoIZR9eL9iIx3F' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[   65521ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=f1_i67MKoIZR9eL9iIx3F' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[   74343ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=f1_i67MKoIZR9eL9iIx3F' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[   82949ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=f1_i67MKoIZR9eL9iIx3F' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[   92275ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=f1_i67MKoIZR9eL9iIx3F' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[   98949ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=f1_i67MKoIZR9eL9iIx3F' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  107804ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=f1_i67MKoIZR9eL9iIx3F' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  114010ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=f1_i67MKoIZR9eL9iIx3F' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  114374ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  114726ms] [LOG] %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  114726ms] [LOG] %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {route: /admin92/erp, path: /admin92/erp} @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  114737ms] [LOG] %c[Vercel Web Analytics]%c [view] http://127.0.0.1:6120/admin92/erp color: rgb(120, 120, 120) color: inherit {o: http://127.0.0.1:6120/admin92/erp, sv: 0.1.3, sdkn: @vercel/analytics/next, sdkv: 1.6.1, dp: /admin92/erp} /_vercel/insights/view @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  115200ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  115200ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  115202ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  115203ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  116873ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=ONeA40qGpBXvIBi3oj-Av' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  119402ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=ONeA40qGpBXvIBi3oj-Av' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  123525ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=ONeA40qGpBXvIBi3oj-Av' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  127721ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=ONeA40qGpBXvIBi3oj-Av' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  131361ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=ONeA40qGpBXvIBi3oj-Av' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  133508ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=ONeA40qGpBXvIBi3oj-Av' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  142139ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=ONeA40qGpBXvIBi3oj-Av' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  149740ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=ONeA40qGpBXvIBi3oj-Av' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  159008ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=ONeA40qGpBXvIBi3oj-Av' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  168049ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=ONeA40qGpBXvIBi3oj-Av' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  176688ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=ONeA40qGpBXvIBi3oj-Av' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  186489ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=ONeA40qGpBXvIBi3oj-Av' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  196351ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=ONeA40qGpBXvIBi3oj-Av' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  196668ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  196940ms] [LOG] %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  196941ms] [LOG] %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {route: /admin92/erp, path: /admin92/erp} @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  196944ms] [LOG] %c[Vercel Web Analytics]%c [view] http://127.0.0.1:6120/admin92/erp color: rgb(120, 120, 120) color: inherit {o: http://127.0.0.1:6120/admin92/erp, sv: 0.1.3, sdkn: @vercel/analytics/next, sdkv: 1.6.1, dp: /admin92/erp} /_vercel/insights/view @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  197335ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  197335ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  197336ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  197337ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  200916ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=fZhu7vZGXbLO-b9eA4Wxq' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  206925ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=fZhu7vZGXbLO-b9eA4Wxq' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  211868ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=fZhu7vZGXbLO-b9eA4Wxq' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  214341ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=fZhu7vZGXbLO-b9eA4Wxq' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  216725ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=fZhu7vZGXbLO-b9eA4Wxq' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  219968ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=fZhu7vZGXbLO-b9eA4Wxq' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  227622ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=fZhu7vZGXbLO-b9eA4Wxq' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  234896ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=fZhu7vZGXbLO-b9eA4Wxq' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  244168ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=fZhu7vZGXbLO-b9eA4Wxq' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  250769ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=fZhu7vZGXbLO-b9eA4Wxq' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  260619ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=fZhu7vZGXbLO-b9eA4Wxq' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  269477ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=fZhu7vZGXbLO-b9eA4Wxq' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  275584ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=fZhu7vZGXbLO-b9eA4Wxq' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  275838ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  276087ms] [LOG] %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  276088ms] [LOG] %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {route: /admin92/erp, path: /admin92/erp} @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  276090ms] [LOG] %c[Vercel Web Analytics]%c [view] http://127.0.0.1:6120/admin92/erp color: rgb(120, 120, 120) color: inherit {o: http://127.0.0.1:6120/admin92/erp, sv: 0.1.3, sdkn: @vercel/analytics/next, sdkv: 1.6.1, dp: /admin92/erp} /_vercel/insights/view @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  276421ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  276422ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  276423ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  276423ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  278056ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=9Sn2k5u_vNASxqR_MvNYe' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  280560ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=9Sn2k5u_vNASxqR_MvNYe' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  283132ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=9Sn2k5u_vNASxqR_MvNYe' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  283486ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  283486ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  283487ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  283487ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  283928ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  283928ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  283930ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  283930ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  285940ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=9Sn2k5u_vNASxqR_MvNYe' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  289141ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=9Sn2k5u_vNASxqR_MvNYe' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  293899ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=9Sn2k5u_vNASxqR_MvNYe' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  300543ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=9Sn2k5u_vNASxqR_MvNYe' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  309170ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=9Sn2k5u_vNASxqR_MvNYe' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  318951ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=9Sn2k5u_vNASxqR_MvNYe' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  326702ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=9Sn2k5u_vNASxqR_MvNYe' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  332898ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=9Sn2k5u_vNASxqR_MvNYe' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  341134ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=9Sn2k5u_vNASxqR_MvNYe' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  348408ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=9Sn2k5u_vNASxqR_MvNYe' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  348598ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  348870ms] [LOG] %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  348871ms] [LOG] %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {route: /admin92/erp, path: /admin92/erp} @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  348874ms] [LOG] %c[Vercel Web Analytics]%c [view] http://127.0.0.1:6120/admin92/erp color: rgb(120, 120, 120) color: inherit {o: http://127.0.0.1:6120/admin92/erp, sv: 0.1.3, sdkn: @vercel/analytics/next, sdkv: 1.6.1, dp: /admin92/erp} /_vercel/insights/view @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  349208ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  349209ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  349211ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  349211ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  351132ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=d6yfS2IErKZWUjEjFQux8' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  354167ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=d6yfS2IErKZWUjEjFQux8' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  356586ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=d6yfS2IErKZWUjEjFQux8' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  359430ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=d6yfS2IErKZWUjEjFQux8' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  362831ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=d6yfS2IErKZWUjEjFQux8' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  368763ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=d6yfS2IErKZWUjEjFQux8' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  374400ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  374716ms] [LOG] %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  374716ms] [LOG] %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {route: /admin92/erp, path: /admin92/erp} @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  374717ms] [LOG] %c[Vercel Web Analytics]%c [view] http://127.0.0.1:6120/admin92/erp color: rgb(120, 120, 120) color: inherit {o: http://127.0.0.1:6120/admin92/erp, sv: 0.1.3, sdkn: @vercel/analytics/next, sdkv: 1.6.1, dp: /admin92/erp} /_vercel/insights/view @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  376329ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  376330ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  376331ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  376331ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  376927ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  376928ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  376928ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  376929ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  377455ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=M4Zbetp29yEXijWkPNxxT' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  383072ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=M4Zbetp29yEXijWkPNxxT' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  385697ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  385996ms] [LOG] %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  385996ms] [LOG] %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {route: /admin92/erp, path: /admin92/erp} @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  386001ms] [LOG] %c[Vercel Web Analytics]%c [view] http://127.0.0.1:6120/admin92/erp color: rgb(120, 120, 120) color: inherit {o: http://127.0.0.1:6120/admin92/erp, sv: 0.1.3, sdkn: @vercel/analytics/next, sdkv: 1.6.1, dp: /admin92/erp} /_vercel/insights/view @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  386422ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  386422ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  386423ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  386423ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  387155ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=HahG892zIcOhoM8cNVjUf' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  392356ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=HahG892zIcOhoM8cNVjUf' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  398045ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=HahG892zIcOhoM8cNVjUf' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  402655ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=HahG892zIcOhoM8cNVjUf' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  406386ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=HahG892zIcOhoM8cNVjUf' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  409842ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=HahG892zIcOhoM8cNVjUf' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  418763ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=HahG892zIcOhoM8cNVjUf' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  427816ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=HahG892zIcOhoM8cNVjUf' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  434563ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=HahG892zIcOhoM8cNVjUf' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  442142ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=HahG892zIcOhoM8cNVjUf' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  449740ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=HahG892zIcOhoM8cNVjUf' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  456040ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=HahG892zIcOhoM8cNVjUf' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  465391ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=HahG892zIcOhoM8cNVjUf' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  465659ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  465928ms] [LOG] %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  465928ms] [LOG] %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {route: /admin92/erp, path: /admin92/erp} @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  465929ms] [LOG] %c[Vercel Web Analytics]%c [view] http://127.0.0.1:6120/admin92/erp color: rgb(120, 120, 120) color: inherit {o: http://127.0.0.1:6120/admin92/erp, sv: 0.1.3, sdkn: @vercel/analytics/next, sdkv: 1.6.1, dp: /admin92/erp} /_vercel/insights/view @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  466243ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  466244ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  466245ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  466246ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  468648ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=tMkewkvwLx-OcNdwf2W0u' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  474049ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=tMkewkvwLx-OcNdwf2W0u' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  479395ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=tMkewkvwLx-OcNdwf2W0u' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  483550ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=tMkewkvwLx-OcNdwf2W0u' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  487102ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=tMkewkvwLx-OcNdwf2W0u' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  492540ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=tMkewkvwLx-OcNdwf2W0u' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  498486ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  498776ms] [LOG] %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  498777ms] [LOG] %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {route: /admin92/erp, path: /admin92/erp} @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  498778ms] [LOG] %c[Vercel Web Analytics]%c [view] http://127.0.0.1:6120/admin92/erp color: rgb(120, 120, 120) color: inherit {o: http://127.0.0.1:6120/admin92/erp, sv: 0.1.3, sdkn: @vercel/analytics/next, sdkv: 1.6.1, dp: /admin92/erp} /_vercel/insights/view @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  499910ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  499910ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  499911ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  499912ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  500802ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  501061ms] [LOG] %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  501061ms] [LOG] %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {route: /admin92/erp, path: /admin92/erp} @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  501070ms] [LOG] %c[Vercel Web Analytics]%c [view] http://127.0.0.1:6120/admin92/erp color: rgb(120, 120, 120) color: inherit {o: http://127.0.0.1:6120/admin92/erp, sv: 0.1.3, sdkn: @vercel/analytics/next, sdkv: 1.6.1, dp: /admin92/erp} /_vercel/insights/view @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  501368ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  501369ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  501370ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  501371ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  502170ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=amTiQGz_4npmiEoSAA9sV' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  506704ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=amTiQGz_4npmiEoSAA9sV' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  509999ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=amTiQGz_4npmiEoSAA9sV' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  515685ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=amTiQGz_4npmiEoSAA9sV' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  518877ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=amTiQGz_4npmiEoSAA9sV' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  523012ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=amTiQGz_4npmiEoSAA9sV' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  532949ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=amTiQGz_4npmiEoSAA9sV' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  540223ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=amTiQGz_4npmiEoSAA9sV' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  546495ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=amTiQGz_4npmiEoSAA9sV' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  553255ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=amTiQGz_4npmiEoSAA9sV' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  563264ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=amTiQGz_4npmiEoSAA9sV' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  570015ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=amTiQGz_4npmiEoSAA9sV' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  576515ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=amTiQGz_4npmiEoSAA9sV' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  576808ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  577082ms] [LOG] %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  577082ms] [LOG] %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {route: /admin92/erp, path: /admin92/erp} @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  577083ms] [LOG] %c[Vercel Web Analytics]%c [view] http://127.0.0.1:6120/admin92/erp color: rgb(120, 120, 120) color: inherit {o: http://127.0.0.1:6120/admin92/erp, sv: 0.1.3, sdkn: @vercel/analytics/next, sdkv: 1.6.1, dp: /admin92/erp} /_vercel/insights/view @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  577467ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  577467ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  577468ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  577469ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  579197ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=R9HmzdbG4QiTZYILdgjgS' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  582598ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=R9HmzdbG4QiTZYILdgjgS' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  587436ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=R9HmzdbG4QiTZYILdgjgS' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  590019ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=R9HmzdbG4QiTZYILdgjgS' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  592193ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=R9HmzdbG4QiTZYILdgjgS' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  596622ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=R9HmzdbG4QiTZYILdgjgS' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  601653ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=R9HmzdbG4QiTZYILdgjgS' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  606697ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=R9HmzdbG4QiTZYILdgjgS' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  611733ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=R9HmzdbG4QiTZYILdgjgS' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  616771ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=R9HmzdbG4QiTZYILdgjgS' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  621824ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=R9HmzdbG4QiTZYILdgjgS' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  626869ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=R9HmzdbG4QiTZYILdgjgS' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  631907ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=R9HmzdbG4QiTZYILdgjgS' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  632201ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  632251ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=92lmcjT18Q_pft7d7cDwx' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  632476ms] [LOG] %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  632476ms] [LOG] %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {route: /admin92/erp, path: /admin92/erp} @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  632478ms] [LOG] %c[Vercel Web Analytics]%c [view] http://127.0.0.1:6120/admin92/erp color: rgb(120, 120, 120) color: inherit {o: http://127.0.0.1:6120/admin92/erp, sv: 0.1.3, sdkn: @vercel/analytics/next, sdkv: 1.6.1, dp: /admin92/erp} /_vercel/insights/view @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  632897ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  632897ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  632899ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  632900ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  633393ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=92lmcjT18Q_pft7d7cDwx' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  634453ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=92lmcjT18Q_pft7d7cDwx' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  635537ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=92lmcjT18Q_pft7d7cDwx' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  636625ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=92lmcjT18Q_pft7d7cDwx' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  637895ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=92lmcjT18Q_pft7d7cDwx' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  643483ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=92lmcjT18Q_pft7d7cDwx' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  648987ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=92lmcjT18Q_pft7d7cDwx' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  655460ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=92lmcjT18Q_pft7d7cDwx' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  662679ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=92lmcjT18Q_pft7d7cDwx' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  671791ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=92lmcjT18Q_pft7d7cDwx' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  680044ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=92lmcjT18Q_pft7d7cDwx' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  687753ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=92lmcjT18Q_pft7d7cDwx' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  688076ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  688321ms] [LOG] %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  688321ms] [LOG] %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {route: /admin92/erp, path: /admin92/erp} @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  688323ms] [LOG] %c[Vercel Web Analytics]%c [view] http://127.0.0.1:6120/admin92/erp color: rgb(120, 120, 120) color: inherit {o: http://127.0.0.1:6120/admin92/erp, sv: 0.1.3, sdkn: @vercel/analytics/next, sdkv: 1.6.1, dp: /admin92/erp} /_vercel/insights/view @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  688725ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  688725ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  688727ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  688727ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  692209ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=rk7jaAHcqWVOpZICBAJ8h' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  696706ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=rk7jaAHcqWVOpZICBAJ8h' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  698855ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=rk7jaAHcqWVOpZICBAJ8h' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  702858ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=rk7jaAHcqWVOpZICBAJ8h' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  706920ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=rk7jaAHcqWVOpZICBAJ8h' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  712312ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=rk7jaAHcqWVOpZICBAJ8h' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  719550ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=rk7jaAHcqWVOpZICBAJ8h' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  724558ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=rk7jaAHcqWVOpZICBAJ8h' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  729567ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=rk7jaAHcqWVOpZICBAJ8h' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  734574ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=rk7jaAHcqWVOpZICBAJ8h' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  739583ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=rk7jaAHcqWVOpZICBAJ8h' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  744590ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=rk7jaAHcqWVOpZICBAJ8h' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  749597ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=rk7jaAHcqWVOpZICBAJ8h' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  749875ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  749920ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=QpqdJyX69mPW2WE_XYXPs' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  750138ms] [LOG] %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  750138ms] [LOG] %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {route: /admin92/erp, path: /admin92/erp} @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  750144ms] [LOG] %c[Vercel Web Analytics]%c [view] http://127.0.0.1:6120/admin92/erp color: rgb(120, 120, 120) color: inherit {o: http://127.0.0.1:6120/admin92/erp, sv: 0.1.3, sdkn: @vercel/analytics/next, sdkv: 1.6.1, dp: /admin92/erp} /_vercel/insights/view @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  750500ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  750500ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  750501ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  750502ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  750976ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=QpqdJyX69mPW2WE_XYXPs' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  752039ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=QpqdJyX69mPW2WE_XYXPs' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  753139ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=QpqdJyX69mPW2WE_XYXPs' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  754240ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=QpqdJyX69mPW2WE_XYXPs' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  755308ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=QpqdJyX69mPW2WE_XYXPs' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  760626ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=QpqdJyX69mPW2WE_XYXPs' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  766262ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=QpqdJyX69mPW2WE_XYXPs' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  771643ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=QpqdJyX69mPW2WE_XYXPs' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  777907ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=QpqdJyX69mPW2WE_XYXPs' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  786066ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=QpqdJyX69mPW2WE_XYXPs' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  792773ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=QpqdJyX69mPW2WE_XYXPs' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  800435ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=QpqdJyX69mPW2WE_XYXPs' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  800764ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  801060ms] [LOG] %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  801060ms] [LOG] %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {route: /admin92/erp, path: /admin92/erp} @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  801065ms] [LOG] %c[Vercel Web Analytics]%c [view] http://127.0.0.1:6120/admin92/erp color: rgb(120, 120, 120) color: inherit {o: http://127.0.0.1:6120/admin92/erp, sv: 0.1.3, sdkn: @vercel/analytics/next, sdkv: 1.6.1, dp: /admin92/erp} /_vercel/insights/view @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  801376ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  801377ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  801377ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  801378ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2298
+[  803375ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=S5T_CeKnl_LVhLnroFxso' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  806211ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=S5T_CeKnl_LVhLnroFxso' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  809220ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=S5T_CeKnl_LVhLnroFxso' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  813735ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=S5T_CeKnl_LVhLnroFxso' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  817236ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=S5T_CeKnl_LVhLnroFxso' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  821337ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=S5T_CeKnl_LVhLnroFxso' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  830682ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=S5T_CeKnl_LVhLnroFxso' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  837717ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=S5T_CeKnl_LVhLnroFxso' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  846209ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=S5T_CeKnl_LVhLnroFxso' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877
+[  856029ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:6120/_next/webpack-hmr?id=S5T_CeKnl_LVhLnroFxso' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE @ http://127.0.0.1:6120/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10877

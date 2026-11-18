@@ -1,0 +1,235 @@
+- generic [ref=f1e1]:
+  - main [ref=f1e2]:
+    - generic [ref=f1e3]:
+      - generic [ref=f1e4]:
+        - generic [ref=f1e5]:
+          - link "Volver a contabilidad" [ref=f1e6] [cursor=pointer]:
+            - /url: /admin92/contabilidad
+          - button [ref=f1e10] [cursor=pointer]:
+            - heading "ERP Personal" [level=1] [ref=f1e11]
+            - paragraph [ref=f1e12]: Filtrá por día, semana o mes.
+        - generic [ref=f1e14]:
+          - button "Hábitos" [ref=f1e15] [cursor=pointer]
+          - button "Rutina" [ref=f1e19] [cursor=pointer]
+          - button "Entregables" [ref=f1e23] [cursor=pointer]
+          - button "Dashboard" [ref=f1e28] [cursor=pointer]
+          - button "Cargar día" [active] [ref=f1e34] [cursor=pointer]
+      - generic [ref=f1e39]:
+        - generic [ref=f1e41]:
+          - paragraph [ref=f1e42]: Timer live
+          - heading "En curso" [level=2] [ref=f1e43]
+          - paragraph [ref=f1e44]: Nombres de la categoría · atajos 1–5
+        - generic [ref=f1e46]:
+          - paragraph [ref=f1e47]:
+            - text: Proyectos
+            - generic [ref=f1e48]: · 1 en curso · focus
+            - generic [ref=f1e49]: "· totales: Mié 18/11"
+          - generic [ref=f1e50]:
+            - button "Abrir calendario de cuotas" [ref=f1e51] [cursor=pointer]:
+              - generic [aria-hidden] [ref=f1e52]: 📅
+            - generic [ref=f1e53]:
+              - button "Updates para entregar" [ref=f1e54] [cursor=pointer]:
+                - generic [aria-hidden] [ref=f1e55]: 📦
+              - button "Ver ciclo de cada cuota" [ref=f1e56] [cursor=pointer]
+              - button "Mostrar cuotas" [ref=f1e60] [cursor=pointer]:
+                - generic [aria-hidden] [ref=f1e61]: 👁️
+        - generic [ref=f1e62]:
+          - generic [ref=f1e63]:
+            - paragraph [ref=f1e64]: Categoría
+            - button "Software development" [ref=f1e65] [cursor=pointer]
+          - generic [ref=f1e72]:
+            - text: Nombre del timer · opcional
+            - textbox "Nombre del timer · opcional" [ref=f1e73]:
+              - /placeholder: Analia, ERP… o elegí de la lista
+          - generic [ref=f1e74]:
+            - button "podcast with oky · 50 min" [ref=f1e75] [cursor=pointer]:
+              - generic [ref=f1e78]:
+                - text: podcast with oky
+                - generic [ref=f1e79]: · 50 min
+            - generic [ref=f1e80]:
+              - paragraph [ref=f1e81]: Tiempo
+              - paragraph [ref=f1e82]: 0:50:00
+            - button "Detener" [ref=f1e83] [cursor=pointer]
+        - generic [ref=f1e86]:
+          - paragraph [ref=f1e87]: Ramas / ítems
+          - list
+          - generic [ref=f1e88]:
+            - textbox "Ej. conectar wpp · enviar plantilla a revisión" [ref=f1e89]
+            - button "Agregar" [disabled] [ref=f1e90] [cursor=pointer]
+      - generic [ref=f1e543]:
+        - generic [ref=f1e544]:
+          - generic [ref=f1e545]:
+            - heading "Cargar día" [level=2] [ref=f1e546]
+            - paragraph [ref=f1e547]: 18/11/2026 · guardado en MongoDB
+          - generic [ref=f1e548]:
+            - text: Fecha
+            - textbox "Fecha" [ref=f1e549]: 2026-11-18
+        - generic [ref=f1e550]:
+          - generic [ref=f1e551]:
+            - button "Lun 16" [ref=f1e552] [cursor=pointer]:
+              - generic [ref=f1e553]: Lun
+              - generic [ref=f1e554]: "16"
+            - button "Mar 17" [ref=f1e556] [cursor=pointer]:
+              - generic [ref=f1e557]: Mar
+              - generic [ref=f1e558]: "17"
+            - button "Mié 18" [ref=f1e560] [cursor=pointer]:
+              - generic [ref=f1e561]: Mié
+              - generic [ref=f1e562]: "18"
+            - button "Jue 19" [ref=f1e564] [cursor=pointer]:
+              - generic [ref=f1e565]: Jue
+              - generic [ref=f1e566]: "19"
+            - button "Vie 20" [ref=f1e568] [cursor=pointer]:
+              - generic [ref=f1e569]: Vie
+              - generic [ref=f1e570]: "20"
+            - button "Sáb 21" [ref=f1e572] [cursor=pointer]:
+              - generic [ref=f1e573]: Sáb
+              - generic [ref=f1e574]: "21"
+            - button "Dom 22" [ref=f1e576] [cursor=pointer]:
+              - generic [ref=f1e577]: Dom
+              - generic [ref=f1e578]: "22"
+          - button "Guardar día" [ref=f1e580] [cursor=pointer]
+        - generic [ref=f1e581]:
+          - generic [ref=f1e582]:
+            - heading "Sueño" [level=3] [ref=f1e585]
+            - generic [ref=f1e586]: · opcional
+            - generic [ref=f1e587]: Retraso 107 min
+          - generic [ref=f1e588]:
+            - generic [ref=f1e589]:
+              - text: Sonó
+              - textbox "Sonó" [ref=f1e590]: 07:30
+            - generic [ref=f1e591]:
+              - text: Veces pospuesta
+              - spinbutton "Veces pospuesta" [ref=f1e592]
+            - generic [ref=f1e593]:
+              - text: Empecé a trabajar
+              - textbox "Empecé a trabajar" [ref=f1e594]: 09:17
+          - generic [ref=f1e596]:
+            - generic [ref=f1e597]: Horas dormidas· opcional
+            - spinbutton "Horas dormidas· opcional" [ref=f1e598]
+        - generic [ref=f1e599]:
+          - generic [ref=f1e600]:
+            - heading "Trabajo" [level=3] [ref=f1e601]
+            - generic [ref=f1e602]: Total 0:17 hs
+          - paragraph [ref=f1e603]:
+            - text: Escribí como
+            - strong [ref=f1e604]: 4:52
+            - text: (horas:minutos). También acepta decimal (4.5). O pegá el desglose de timers abajo.
+          - generic [ref=f1e605]:
+            - generic [ref=f1e606]:
+              - text: Pegar desglose de timers
+              - textbox "Pegar desglose de timers" [ref=f1e607]:
+                - /placeholder: "**SaaS — 0:56 hs**\n\n- saas - La evolución del Frontend → 0:22:23\n- saas - genteleman escalando → 0:33:49\n\n**Software development — 0:42 hs**\n\n- erpp mejora → 0:20:29"
+            - generic [ref=f1e608]:
+              - button "Parsear" [disabled] [ref=f1e609]
+              - button "Aplicar al día" [disabled] [ref=f1e610]
+              - button "Limpiar" [ref=f1e611] [cursor=pointer]
+          - generic [ref=f1e612]:
+            - generic [ref=f1e613]:
+              - generic [ref=f1e614]:
+                - generic [ref=f1e615]: Software development
+                - textbox "Software development" [ref=f1e617]:
+                  - /placeholder: 0:00
+                  - text: 0:13
+              - list [ref=f1e618]:
+                - listitem [ref=f1e619]:
+                  - generic [ref=f1e620]: Sin nombre
+                  - generic [ref=f1e621]: 0:12:39
+                - listitem [ref=f1e622]:
+                  - generic [ref=f1e623]: Suma timers
+                  - generic [ref=f1e624]: 0:12:39
+            - generic [ref=f1e626]:
+              - generic [ref=f1e627]: SaaS
+              - textbox "SaaS" [ref=f1e629]:
+                - /placeholder: 0:00
+                - text: 0:00
+            - generic [ref=f1e630]:
+              - generic [ref=f1e631]:
+                - generic [ref=f1e632]: Planificación
+                - textbox "Planificación" [ref=f1e634]:
+                  - /placeholder: 0:00
+                  - text: 0:04
+              - list [ref=f1e635]:
+                - listitem [ref=f1e636]:
+                  - generic [ref=f1e637]: planificacion
+                  - generic [ref=f1e638]: 0:04:07
+                - listitem [ref=f1e639]:
+                  - generic [ref=f1e640]: Suma timers
+                  - generic [ref=f1e641]: 0:04:07
+            - generic [ref=f1e643]:
+              - generic [ref=f1e644]: Branding / Marketing
+              - textbox "Branding / Marketing" [ref=f1e646]:
+                - /placeholder: 0:00
+                - text: 0:00
+            - generic [ref=f1e648]:
+              - generic [ref=f1e649]: IT News
+              - textbox "IT News" [ref=f1e651]:
+                - /placeholder: 0:00
+                - text: 0:00
+            - generic [ref=f1e653]:
+              - generic [ref=f1e654]: Stremear
+              - textbox "Stremear" [ref=f1e656]:
+                - /placeholder: 0:00
+                - text: 0:00
+        - generic [ref=f1e657]:
+          - heading "Entrenamiento" [level=3] [ref=f1e658]
+          - paragraph [ref=f1e659]:
+            - text: "Duración como en trabajo:"
+            - strong [ref=f1e660]: 1:30
+            - text: (horas:minutos).
+          - generic [ref=f1e661]:
+            - button "Gimnasio" [ref=f1e663] [cursor=pointer]
+            - button "Natación" [ref=f1e672] [cursor=pointer]
+            - button "En casa" [ref=f1e679] [cursor=pointer]
+        - generic [ref=f1e684]:
+          - generic [ref=f1e685]:
+            - heading "Alimentación" [level=3] [ref=f1e686]
+            - paragraph [ref=f1e687]: Marcá cada comida y, si querés, su calidad (1–5).
+          - generic [ref=f1e688]:
+            - generic [ref=f1e689]:
+              - button "Desayuno" [ref=f1e690] [cursor=pointer]
+              - generic [ref=f1e691]: Sin marcar
+            - generic [ref=f1e692]:
+              - button "Almuerzo" [ref=f1e693] [cursor=pointer]
+              - generic [ref=f1e694]: Sin marcar
+            - generic [ref=f1e695]:
+              - button "Merienda" [ref=f1e696] [cursor=pointer]
+              - generic [ref=f1e697]: Sin marcar
+            - generic [ref=f1e698]:
+              - button "Cena" [ref=f1e699] [cursor=pointer]
+              - generic [ref=f1e700]: Sin marcar
+        - generic [ref=f1e701]:
+          - generic [ref=f1e702]:
+            - generic [ref=f1e703]:
+              - heading "Inglés" [level=3] [ref=f1e704]
+              - paragraph [ref=f1e705]: Seguimiento liviano, separado del entrenamiento.
+            - button "Marcar" [ref=f1e706] [cursor=pointer]
+          - generic [ref=f1e709]: Si ese día hiciste inglés, marcá y opcionalmente agregá un detalle.
+        - generic [ref=f1e710]:
+          - generic [ref=f1e711]:
+            - generic [ref=f1e712]:
+              - heading "Lectura" [level=3] [ref=f1e713]
+              - paragraph [ref=f1e714]: Páginas y el libro, si lo anotás.
+            - button "Marcar" [ref=f1e715] [cursor=pointer]
+          - generic [ref=f1e718]: Si leíste, marcá y anotá las páginas y el libro.
+        - generic [ref=f1e719]:
+          - generic [ref=f1e720]:
+            - generic [ref=f1e721]:
+              - heading "Piano" [level=3] [ref=f1e722]
+              - paragraph [ref=f1e723]: Minutos y la pieza, si la anotás.
+            - button "Marcar" [ref=f1e724] [cursor=pointer]
+          - generic [ref=f1e727]: Si tocaste, marcá y anotá los minutos y la pieza.
+        - generic [ref=f1e729]:
+          - generic [ref=f1e730]:
+            - heading "Creatina" [level=3] [ref=f1e731]
+            - paragraph [ref=f1e732]: ¿La tomaste hoy?
+          - button "Marcar" [ref=f1e733] [cursor=pointer]
+        - generic [ref=f1e737]:
+          - text: Notas (opcional)
+          - textbox "Notas (opcional)" [ref=f1e738]:
+            - /placeholder: Detalle libre del día…
+        - generic [ref=f1e739]:
+          - button "Guardar día" [ref=f1e740] [cursor=pointer]
+          - button "Cerrar sin guardar" [ref=f1e741] [cursor=pointer]
+          - button "Eliminar día" [ref=f1e745] [cursor=pointer]
+  - alert [ref=f1e541]
+  - generic [aria-hidden] [ref=f1e542]: "0"

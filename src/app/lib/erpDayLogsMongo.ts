@@ -1,5 +1,6 @@
 import { getMongoClient } from "@/app/lib/mongoClient";
 import {
+  emptyReadingSession,
   emptyTrainingSession,
   emptyWorkTimers,
   normalizeAlarm,
@@ -48,6 +49,8 @@ function toErpDayLog(doc: ErpDayLogDoc & { foodScore?: number | null }): ErpDayL
     activeWorkTimer: normalizeActiveWorkTimer(doc.activeWorkTimer ?? null),
     training: doc.training,
     english: doc.english ?? emptyTrainingSession(),
+    reading: doc.reading ?? emptyReadingSession(),
+    piano: doc.piano ?? emptyTrainingSession(),
     creatine: Boolean(doc.creatine),
     sleepHours: doc.sleepHours,
     food: normalizeFood(doc.food),

@@ -1,0 +1,59 @@
+- generic [active] [ref=e1]:
+  - main [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]:
+        - generic [ref=e5]:
+          - link "Volver a contabilidad" [ref=e6] [cursor=pointer]:
+            - /url: /admin92/contabilidad
+          - button [ref=e10] [cursor=pointer]:
+            - heading "ERP Personal" [level=1] [ref=e11]
+            - paragraph [ref=e12]: Filtrá por día, semana o mes.
+        - generic [ref=e14]:
+          - button "Hábitos" [ref=e15] [cursor=pointer]
+          - button "Rutina" [ref=e19] [cursor=pointer]
+          - button "Entregables" [ref=e23] [cursor=pointer]
+          - button "Dashboard" [ref=e28] [cursor=pointer]
+          - button "Cargar día" [ref=e34] [cursor=pointer]
+      - generic [ref=e39]:
+        - generic [ref=e41]:
+          - paragraph [ref=e42]: Timer live
+          - heading "Empezar a trabajar" [level=2] [ref=e43]
+          - paragraph [ref=e44]: Nombres de la categoría · atajos 1–5
+        - generic [ref=e46]:
+          - paragraph [ref=e47]:
+            - text: Proyectos
+            - generic [ref=e48]: "· totales: Mié 18/11"
+          - generic [ref=e49]:
+            - button "Abrir calendario de cuotas" [ref=e50] [cursor=pointer]:
+              - generic [aria-hidden] [ref=e51]: 📅
+            - generic [ref=e52]:
+              - button "Updates para entregar" [ref=e53] [cursor=pointer]:
+                - generic [aria-hidden] [ref=e54]: 📦
+              - button "Ver ciclo de cada cuota" [ref=e55] [cursor=pointer]
+              - button "Mostrar cuotas" [ref=e59] [cursor=pointer]:
+                - generic [aria-hidden] [ref=e60]: 👁️
+        - generic [ref=e61]:
+          - generic [ref=e62]:
+            - paragraph [ref=e63]: Categoría
+            - button "Software development" [ref=e64] [cursor=pointer]
+          - generic [ref=e71]:
+            - text: Nombre del timer · opcional
+            - textbox "Nombre del timer · opcional" [ref=e72]:
+              - /placeholder: Analia, ERP… o elegí de la lista
+          - generic [ref=e73]:
+            - generic [ref=e74]:
+              - paragraph [ref=e75]: Tiempo
+              - paragraph [ref=e76]: 0:00:00
+            - button "Iniciar" [ref=e77] [cursor=pointer]
+      - generic [ref=e80]:
+        - generic [ref=e81]:
+          - button "Día" [ref=e82] [cursor=pointer]
+          - button "Semana" [ref=e83] [cursor=pointer]
+          - button "Mes" [ref=e84] [cursor=pointer]
+        - generic [ref=e85]:
+          - button "Período anterior" [ref=e86] [cursor=pointer]
+          - button "Mié 18/11" [ref=e90] [cursor=pointer]
+          - button "Período siguiente" [ref=e94] [cursor=pointer]
+      - button "“No podemos evitar ser influenciados, pero sí podemos elegir las fuentes de esa influencia”" [ref=e98] [cursor=pointer]
+      - generic "Cargando métricas" [ref=e99]
+  - alert [ref=e108]
